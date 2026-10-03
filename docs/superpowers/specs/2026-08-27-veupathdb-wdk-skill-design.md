@@ -56,7 +56,7 @@ veupathdb-skills/
 ├── .gitignore                     (.env)
 ├── .env                           (VEUPATHDB_BEARER_TOKEN=…, never committed)
 ├── docs/superpowers/specs/        (this file)
-└── veupathdb-wdk-strategies/
+└── veupathdb_database/
     ├── SKILL.md                   ≤200 lines; frontmatter, workflow, script index, pointers
     ├── references/
     │   ├── auth.md                cookie auth, guest detection, user-id resolution
