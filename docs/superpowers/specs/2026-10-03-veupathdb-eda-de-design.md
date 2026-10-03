@@ -36,8 +36,20 @@ The long-term aim is to use skills to prototype richer per-gene summaries:
    between users.
 
 This spec does **not** promise expression summaries. Publicly, only EDA support is
-promised as the next step for `veupathdb_database`. Three design choices follow
-from the motivation:
+promised as the next step for `veupathdb_database`.
+
+**The summaries would live in a separate skill in this repo**,
+`veupathdb_gene_summaries`, planned as of 2026-10-03. It would aim wider than
+expression (protein features such as signal peptides, orthologs and so on) and
+use `veupathdb_database` purely for data access. First-stage summaries stay
+**siloed**: each sees only its own input and does not know the gene id, name or
+other annotations. Only the final summary-of-summaries sees everything. This
+keeps `veupathdb_database` a plain database skill alongside `ensembl_database`
+and `interpro_database`, and the two skills can be submitted to science-skills
+separately. How the summaries skill calls this skill's scripts (sibling paths or
+a documented CLI contract) is for its own design.
+
+Four design choices follow from the motivation:
 
 - **The scripts handle deterministic work; the agent handles judgement.**
   Enumerating contrasts, canonicalising them, building specs and shaping DE tables
@@ -52,6 +64,14 @@ from the motivation:
 - **Outputs join to existing data.** They use the same gene ids and `DS_…` dataset
   ids as the existing `wdk.py expression` and `gene-expression` subcommands, and
   JSON throughout.
+- **Identity is separate from data in JSON outputs.** Fields that reveal identity
+  (gene ids, dataset/study ids, study names, contrast labels) are kept apart from
+  the numbers (effect sizes, p-values, group sizes, threshold counts), so a
+  consumer can strip identity with a simple key filter before passing data to a
+  blind first-stage summariser. Concretely: `de --json` puts per-gene numbers in
+  `rows` keyed by an index or opaque key, with an `identity` block mapping keys to
+  gene ids, and dataset and contrast labelling in a `context` block. The exact
+  shape is settled in the plan.
 
 ## Scope
 
@@ -365,8 +385,9 @@ Deterministic enumeration; the agent ranks the results.
   padj NA (filtered).
 - `--tsv` writes the full table: gene, effectSize, pValue, adjustedPValue.
 - `--json` produces a machine-readable result: contrast id, dataset, comparator,
-  groups, counts, thresholds, rows on request. This is the contract for later
-  consumers such as the summary work.
+  groups, counts, thresholds, rows on request. It follows the identity/data
+  separation described under Wider context. This is the contract for later
+  consumers such as `veupathdb_gene_summaries`.
 
 ### `eda.py de-spec SITE DATASET_ID --contrast … [--thresholds …] [--filters FILE]`
 
