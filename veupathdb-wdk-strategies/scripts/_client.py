@@ -9,8 +9,6 @@ import httpx
 
 from _sites import SITES, service_url
 
-# scripts/ -> veupathdb-wdk-strategies/ -> pathfinder-skills/
-REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 CACHE_DIR = pathlib.Path.home() / ".cache" / "veupathdb-wdk"
 CACHE_TTL_S = 7 * 24 * 3600
 

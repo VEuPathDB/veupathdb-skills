@@ -2,7 +2,7 @@
 
 Date: 2026-08-27
 Status: APPROVED (design), implementation not started
-Repos: `pathfinder-skills` (this repo, the deliverable); `../pathfinder` (source of distilled knowledge, read-only)
+Repos: `veupathdb-skills` (this repo, the deliverable; formerly `pathfinder-skills`); `../pathfinder-as-a-skill/pathfinder` (source of distilled knowledge, read-only; fork `ahmedOmuharram/pathfinder`, branch `pydantic-ai`)
 
 ## Goal
 
@@ -52,7 +52,7 @@ basket/dataset uploads beyond what strategy creation needs.
 ## Repository layout
 
 ```
-pathfinder-skills/
+veupathdb-skills/
 ├── .gitignore                     (.env)
 ├── .env                           (VEUPATHDB_BEARER_TOKEN=…, never committed)
 ├── docs/superpowers/specs/        (this file)

@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Repo: `/home/maccallr/work/pathfinder-as-a-skill/pathfinder-skills` (all paths below relative to it). Commit here, never in `../pathfinder`.
+- Repo: `/home/maccallr/work/veupathdb-skills` (all paths below relative to it). Commit here, never in `../pathfinder-as-a-skill/pathfinder`.
 - `SKILL.md` ≤ 200 lines. Reference docs hold the depth.
 - Runtime dependency: `httpx` only. Tests may add `pytest`. Nothing else.
 - Supply chain: rely on the user's global `~/.config/uv/uv.toml` `exclude-newer`; document this in SKILL.md. Do not add per-script exclude-newer.
