@@ -64,13 +64,24 @@ Four design choices follow from the motivation:
 - **Outputs join to existing data.** They use the same gene ids and `DS_…` dataset
   ids as the existing `wdk.py expression` and `gene-expression` subcommands, and
   JSON throughout.
-- **Identity is separate from data in JSON outputs.** Fields that reveal identity
-  (gene ids, dataset/study ids, study names, contrast labels) are kept apart from
-  the numbers (effect sizes, p-values, group sizes, threshold counts), so a
-  consumer can strip identity with a simple key filter before passing data to a
-  blind first-stage summariser. Concretely: `de --json` puts per-gene numbers in
-  `rows` keyed by an index or opaque key, with an `identity` block mapping keys to
-  gene ids, and dataset and contrast labelling in a `context` block. The exact
+- **Gene identity is separate from data in JSON outputs.** A blind first-stage
+  summariser must not see which gene it is looking at, but it does need the
+  experimental context, or the numbers mean nothing. JSON outputs therefore keep
+  three kinds of field apart, so a consumer can strip what it needs with a simple
+  key filter:
+  - **Gene identity** (gene ids): in an `identity` block mapping opaque row keys
+    to gene ids. This is the only part a blind consumer strips.
+  - **Experimental context** (comparator variable, groupA/groupB labels such as
+    `sex=male` vs `sex=female`, which group is the reference, n_A and n_B,
+    method, filters, thresholds, study description): in a `context` block, kept.
+  - **Provenance** (dataset `DS_…` id, contrast/job id): in a `provenance`
+    block. A blind consumer does not need it, but keeps it to attach to its
+    output for later stages to cite. This matches the existing server-side
+    expression summaries, which summarise sample labels and values and then add
+    dataset ids to the output JSON.
+
+  Per-gene numbers (effect sizes, p-values) go in `rows` keyed by the opaque key.
+  This skill only provides the separation; it does no summarising. The exact
   shape is settled in the plan.
 
 ## Scope
@@ -385,9 +396,9 @@ Deterministic enumeration; the agent ranks the results.
   padj NA (filtered).
 - `--tsv` writes the full table: gene, effectSize, pValue, adjustedPValue.
 - `--json` produces a machine-readable result: contrast id, dataset, comparator,
-  groups, counts, thresholds, rows on request. It follows the identity/data
-  separation described under Wider context. This is the contract for later
-  consumers such as `veupathdb_gene_summaries`.
+  groups, counts, thresholds, rows on request. It uses the
+  `identity`/`context`/`provenance`/`rows` split described under Wider context.
+  This is the contract for later consumers such as `veupathdb_gene_summaries`.
 
 ### `eda.py de-spec SITE DATASET_ID --contrast … [--thresholds …] [--filters FILE]`
 
