@@ -77,8 +77,9 @@ Four design choices follow from the motivation:
   - **Provenance** (dataset `DS_…` id, contrast/job id): in a `provenance`
     block. A blind consumer does not need it, but keeps it to attach to its
     output for later stages to cite. This matches the existing server-side
-    expression summaries, which summarise sample labels and values and then add
-    dataset ids to the output JSON.
+    expression summaries (ApiCommonWebsite `Summarizer.java`): `dataset_id` is
+    removed before the per-experiment call and added back, with `assay_type`
+    and `experiment_name`, to that call's output for the summary-of-summaries.
 
   Per-gene numbers (effect sizes, p-values) go in `rows` keyed by the opaque key.
   This skill only provides the separation; it does no summarising. The exact
@@ -104,12 +105,17 @@ datasets (the agent loops for now), and expression summaries.
 
 | Repo | Path | Commit / branch |
 |---|---|---|
-| pathfinder (fork `ahmedOmuharram/pathfinder`) | `~/work/pathfinder-as-a-skill/pathfinder`, `docs/knowledge/eda/*.md` | `8a8d6f25` `pydantic-ai` |
-| ApiCommonWebService | `~/work/EDA/ApiCommonWebService/WSFPlugin/src/main/java/org/apidb/apicomplexa/wsfplugin/eda/` | `069d725` master |
-| ApiCommonModel | `~/work/EDA/ApiCommonModel` (`Model/lib/dst/antibodyArray.dst`, `rnaSeqTemplates.dst`, `geneQueries.xml`) | `88b6dfaa5` master (origin, 2026-09-30) |
-| service-eda | `~/work/EDA/service-eda` | `b3bb8bac` master (2026-07-28; may be behind) |
-| veupathUtils (R) | `~/work/EDA/veupathUtils/R/method-differentialExpression.R`, `method-pca.R` | `df5bfa2` v2.12.11 |
-| web-monorepo | `~/work/EDA/web-monorepo/packages/libs/eda/src/lib/notebook/` | `9d14072b0f` on branch `orthomcl-msa`, not master; re-check presets on master |
+| pathfinder (fork `ahmedOmuharram/pathfinder`) | `~/work/pathfinder-as-a-skill/pathfinder`, `docs/knowledge/eda/*.md` | `8a8d6f25` `pydantic-ai` (machine A) |
+| pathfinder (upstream `VEuPathDB/pathfinder`) | `~/work/pathfinder`, `docs/knowledge/eda/*.md` | `39399c2b` `pydantic-ai` (machine B; descends from `8a8d6f25`; `eda-wdk-bridge.md` and `rest-surface.md` have changed since) |
+| ApiCommonWebService | `~/work/EDA/ApiCommonWebService/WSFPlugin/src/main/java/org/apidb/apicomplexa/wsfplugin/eda/` | `069d725` master (same on both machines, = origin as of 2026-10-03) |
+| ApiCommonModel | `~/work/EDA/ApiCommonModel` (`Model/lib/dst/antibodyArray.dst`, `rnaSeqTemplates.dst`, `geneQueries.xml`) | `88b6dfaa5` master (2026-09-30; same on both machines) |
+| service-eda | `~/work/EDA/service-eda` | `b3bb8bac` master (2026-07-28; = origin as of 2026-10-03, so current) |
+| veupathUtils (R) | `~/work/EDA/veupathUtils/R/method-differentialExpression.R`, `method-pca.R` | `df5bfa2` v2.12.11 `main` (same on both machines) |
+| web-monorepo | `~/work/EDA/web-monorepo/packages/libs/eda/src/lib/notebook/` | `564bc092d3` `main` (2026-10-03) |
+| ApiCommonWebsite (server-side AI expression summaries; motivation only) | `~/work/ai-wdk/ApiCommonWebsite/Model/src/main/java/org/apidb/apicommon/model/report/ai/expression/Summarizer.java` | `f7104264d` master (2026-10-01) |
+
+Two machines hold these checkouts at the same paths. Machine A was used to write
+this spec. Machine B has upstream pathfinder.
 
 Pathfinder EDA docs worth reading during implementation: `eda-wdk-bridge.md`,
 `notebook-presets.md`, `computes-and-jobs.md`, `subsetting-and-tabular.md`,
@@ -531,10 +537,7 @@ SKILL.md is currently 229 lines, over its own 200-line limit.
    antibody-array studies with 40+ variables.
 4. Where the study or dataset description comes from (EDA study metadata vs the
    WDK dataset record).
-5. web-monorepo presets were read on branch `orthomcl-msa`; confirm against
-   master. Also check that `service-eda` master hasn't changed the DE or PCA
-   plugins since `b3bb8bac`.
-6. How `de-datasets` should detect searches (the `edaNotebookType` property in the
+5. How `de-datasets` should detect searches (the `edaNotebookType` property in the
    catalog vs param inspection), and whether the catalog cache already holds
    question properties.
 
