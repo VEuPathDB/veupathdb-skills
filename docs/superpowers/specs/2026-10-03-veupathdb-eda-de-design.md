@@ -271,7 +271,15 @@ conventions as `wdk.py`), with private modules:
 | `_eda.py` | Endpoint wrappers: permissions (DS → STUDY), study metadata, count, tabular, distribution (fallback), compute status/start, volcano statistics, PCA scores |
 | `_samples.py` | Metadata pruning, sample-table assembly (joining entities on ancestor keys), local counts and ranges |
 | `_contrasts.py` | Candidate enumeration, replicate checks, confounding and nesting detection, stratification suggestions, canonicalisation, job-id derivation (MD5 identical to `JobIDs.kt`) |
-| `_de.py` | Compute body and spec builders (matching the plugin exactly), DE result shaping and thresholding, PCA associations and outliers |
+| `_de.py` | Compute body and spec builders (matching the plugin exactly), DE result shaping and thresholding |
+| `_stats.py` | All statistics: PCA associations (r, R², eta²), outliers, and any other numerical summaries. Standard library only (see below) |
+
+**Statistics are zero-dependency Python.** `_stats.py` uses only the standard
+library (`math`, `statistics`), with no numpy, scipy or pandas, so the skill
+stays light to install and the code can be ported later. R is a **development
+dependency only**, needed on the machine that runs the tests, where base R
+(`cor`, `aov`/`lm` and so on) serves as the gold standard (see Testing). Nothing
+the skill runs at use time needs R.
 
 Why a separate CLI rather than more `wdk.py` subcommands: EDA is a different API
 with different auth, `wdk.py` is already 959 lines, and a separate CLI keeps each
@@ -431,15 +439,34 @@ against the plugin's rules before printing.
   PC3 or PC4.
 - Fetches the per-sample scores (job output files or the scatterplot endpoint; to
   be settled in the plan) and parses variance explained from the computed-variable
-  display names (fragile, so it gets a test).
+  display names (fragile, so it gets a test). Reading variance explained from a
+  label is tech debt; returning it as data is a candidate server-side change for
+  later.
 - **Computed locally by `eda.py`:**
   - each PC joined to the sample table
-  - for each sample variable and PC, the association: R² for continuous, eta²
-    (one-way ANOVA) for categorical
-  - a ranked list of "variables that track PC k", which replaces trying colourings
-    one at a time
+  - for each sample variable, scored against **each PC separately** (PC1 and
+    PC2 by default, since that is what the notebook config returns): Pearson r
+    and R² for continuous variables, eta² (one-way ANOVA) for categorical ones,
+    each with the n used and, for categorical, the number of levels. No combined
+    score across PCs; the agent weighs PC1 and PC2 hits itself, using variance
+    explained.
+  - a ranked list of "variables that track PC k" for each PC, which replaces
+    trying colourings one at a time
   - outliers more than 3 SD from the centroid in PC1–PC2 (or the first k PCs),
     suggested as filter candidates
+- **Edge cases** (each reported as "not scored: <reason>", never silently
+  dropped or turned into a misleading score):
+  - a variable with only one distinct value among the samples (constant, which
+    is common after `--filters`)
+  - fewer than 3 samples with a value, after dropping missing values per
+    variable
+  - a categorical variable with as many levels as samples, or no level with
+    2 or more samples: eta² would be 1 by construction. Identifier-like
+    variables fall here.
+  - a PC with zero variance (e.g. very few samples)
+  - outlier detection when the SD is zero or there are too few samples
+  Singleton levels are allowed but visible through the reported n and level
+  count, since eta² inflates as levels approach n.
 - Output: compact text plus `--json`.
 
 ### `eda.py de-datasets SITE [--json]`
@@ -493,11 +520,18 @@ query). Running across datasets for one gene is an agent loop in v1:
   - spec builder output accepted by the plugin's rules (volcano present, both
     thresholds, `studyId` = DS)
   - threshold logic identical to `isRetainedRow`
-  - PCA association maths and variance-label parsing
+  - variance-label parsing
+  - every edge case listed under `pca`, each giving its "not scored" reason
   - Fixture studies: the heat-shock RNA-Seq study `DS_e973eadd57` /
     `STUDY_e973eadd57` on PlasmoDB (12 samples, `VAR_081ab087` febrile/normal
     6/6, stranded counts) and one PlasmoDB antibody-array study (pick from the 5
     `GenesByAntibodyArrayEdaSubset_*`).
+- **R gold-standard tests** for `_stats.py`: run base R (`Rscript`) on the same
+  inputs and compare to the Python results within a stated tolerance. Cover
+  r, R² and eta² (from `aov`/`lm`) on fixture sample tables and on synthetic
+  cases: missing values, singleton levels, ties, and near-constant variables.
+  These tests skip with a clear message when `Rscript` is not on PATH, so they
+  run on the development machine and not in an R-less environment.
 - **Live gold tests** registered in `TESTS.md`, as for the WDK suite:
   - the skill's job id equals the id the WDK step drives
   - the count passing at thresholds equals the WDK step's count (see the
