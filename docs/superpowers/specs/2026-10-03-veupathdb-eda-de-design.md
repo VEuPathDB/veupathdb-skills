@@ -180,6 +180,12 @@ so **jobs are shared across users**.
 - Any change to filters, `studyId`, the method, or the comparator (including
   swapping groupA and groupB, or the order of labels within a group) is a
   different job.
+- **Swapping groupA and groupB changes the job id but not the statistics**, apart
+  from sign. The design is a single two-level factor with no shrinkage, so
+  DESeq2's Wald test and limma's `coef=2` give the same p and padj with
+  effectSize negated (independent filtering uses baseMean, which the swap leaves
+  alone). This is from reading veupathUtils; a live gold test confirms it
+  numerically. The skill uses it for **mirror reuse** (see `de`).
 - `POST /computes/{name}?autostart=false` reports status **without starting** the
   job (pathfinder measured this live). `GET /jobs/{id}` also reports status.
 - If the skill sends exactly the body the plugin sends, it gets the same job id
@@ -375,13 +381,25 @@ Deterministic enumeration; the agent ranks the results.
    (status only, does not start a job) reports `complete`, `no-such-job` and so
    on. "Complete" means free to use, and also hints at which contrasts website
    users actually run. Cap at about 30 checks per call.
-5. **Output:** for each candidate, an index, comparator `{entityId, variableId}`,
-   groupA labels (reference), groupB labels, filters, n_A, n_B, notes (low
-   replicates, confounded-with), cache status and job id.
+5. **Bounded list:** each pair of levels appears once (never in both
+   orientations), pooled groups are never generated, and the whole list is capped
+   (about 50 candidates; crossed designs multiply stratified versions). The output
+   says how many were left out and suggests `--vars`.
+6. **Output:** for each candidate, an index, comparator `{entityId, variableId}`,
+   groupA labels (reference), groupB labels, a `reference` hint (`label match`
+   or `arbitrary`), filters, n_A, n_B, notes (low replicates, confounded-with),
+   cache status and job id.
+
+**Choosing the reference is the agent's call.** A synonym list (control, WT,
+mock, naïve, pre-infection, …) cannot be made failsafe, so the scripts only
+suggest an orientation: a control-like label goes in groupA (`label match`),
+otherwise groupA is the larger level (`arbitrary`). The agent can flip it with a
+contrast file. Some variation between runs is acceptable here because of mirror
+reuse: a flipped contrast whose mirror is cached costs nothing.
 
 **Canonical form** (used everywhere a contrast is built):
-- groupA is the reference/control, groupB the treatment/condition. When the
-  reference can't be told apart, list both orientations and let the agent choose.
+- groupA is the reference/control, groupB the treatment/condition, as chosen by
+  the agent from the suggested orientation.
 - Labels sorted within each group; filters sorted by (entityId, variableId).
 - `pValueFloor: "1e-200"` and the method implied by the search family (DESeq for
   `…DESeq` and `GenesByDESeqUserDataset`, limma for antibody arrays).
@@ -393,11 +411,18 @@ Deterministic enumeration; the agent ranks the results.
   match those from WDK steps and website notebooks. A unit test computes the MD5
   locally and checks it against a captured live job id.
 
-### `eda.py de SITE DATASET_ID --contrast <idx | file.json> [--method auto|DESeq|limma] [--thresholds FC,P[,upOnly|downOnly]] [--genes ID,…] [--tsv FILE] [--json] [--no-wait]`
+### `eda.py de SITE DATASET_ID --contrast <idx | file.json> [--method auto|DESeq|limma] [--thresholds FC,P[,upOnly|downOnly]] [--genes ID,…] [--tsv FILE] [--json] [--no-wait] [--no-mirror]`
 
 - Builds the canonical body, then POSTs `?autostart=true` and polls (backoff,
   progress on stderr, configurable timeout). `--no-wait` returns after starting
   and reports status.
+- **Mirror reuse:** before starting anything, `de` checks the job's status. If
+  it has never run (`no-such-job`) and the swapped-groups job is `complete`, `de`
+  uses the mirror's statistics with effectSize negated and starts nothing.
+  Provenance keeps this orientation's job id as the contrast id and adds
+  `statisticsFrom` (the mirror job). A note warns that the WDK step for this
+  orientation is not cached and will start its own job. Failed or expired jobs
+  never fall back to the mirror. `--no-mirror` turns reuse off.
 - When complete, fetches the volcano statistics once (`/apps/differentialexpression/visualizations/volcanoplot`)
   and applies thresholds locally, exactly as `isRetainedRow` does (default 1,
   0.05, upAndDown, as on the website).
@@ -516,6 +541,9 @@ query). Running across datasets for one gene is an agent loop in v1:
   - joining the sample table across entities
   - contrast enumeration, confounding and nesting detection, stratification
   - canonicalisation (label and filter order invariance)
+  - one orientation per level pair with its `reference` hint; the overall
+    candidate cap
+  - mirror reuse: negated effect sizes, both job ids in provenance, nothing started
   - job-id MD5 matches a captured live job id
   - spec builder output accepted by the plugin's rules (volcano present, both
     thresholds, `studyId` = DS)
@@ -538,6 +566,8 @@ query). Running across datasets for one gene is an agent loop in v1:
     gene/transcript note)
   - a limma antibody-array run end to end
   - `contrasts` on the heat-shock study proposes febrile vs normal with 6/6
+  - swapping groups on the heat-shock contrast negates effectSize and leaves p
+    and padj unchanged, row for row (the basis of mirror reuse)
 
 ## SKILL.md restructure
 
@@ -554,7 +584,8 @@ SKILL.md is currently 229 lines, over its own 200-line limit.
 - Add an EDA section to `gotchas.md`: raw-p thresholding, orientation, unshrunk
   LFC, padj NA, all-zero genes absent, single comparator with no covariates, a
   `studyId` that is really a DS id, 202 on first answer, cache sharing, swapped
-  groups = new job.
+  groups = new job id but the same statistics sign-flipped (mirror reuse), and
+  the reference is the agent's choice.
 - Update the frontmatter `description` to cover EDA-backed differential
   expression and antibody-array searches in concrete terms. Keep it crisp for
   triggering.
@@ -567,7 +598,7 @@ SKILL.md is currently 229 lines, over its own 200-line limit.
 2. How to fetch PCA scores: `GET /jobs/{id}/files` plus the data file, or the
    scatterplot visualization endpoint. Also the exact config key for `nPCs`.
 3. The exact pruned-output thresholds (identifier rule, vocabulary top-N, the
-   ~30 cache-check cap, the ~5,000-row fallback). Tune them on 2–3 real
+   ~30 cache-check cap, the ~50-candidate cap, the ~5,000-row fallback). Tune them on 2–3 real
    antibody-array studies with 40+ variables.
 4. Where the study or dataset description comes from (EDA study metadata vs the
    WDK dataset record).

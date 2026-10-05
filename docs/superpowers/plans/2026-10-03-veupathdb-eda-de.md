@@ -63,6 +63,7 @@
 3. **Non-numeric volcano values** (`null` padj, `"NA"`, `"Inf"`, Python-only spellings such as `"nan"`, `"inf"`): thresholding must match Java `Double.valueOf` exactly and never crash; JSON output must never contain `NaN`/`Infinity`. Test: Task 9 `test_java_double_matches_java_parsing` and `test_de_table_is_json_safe`.
 4. **`eda_analysis_spec` given as a JSON object** in `--params` instead of a string: it must be sent as compact JSON text, not a Python repr. Test: Task 12 `test_encode_params_serialises_object_values_as_json`.
 5. **Missing comparator values** (empty tabular cells): those samples belong to no group, are not a level `""`, and are not counted in n. Test: Task 7 `test_missing_values_are_not_a_level`.
+6. **Mirror reuse** (Task 10): reused statistics must be the mirror's with effectSize negated and nothing else changed, provenance must name both jobs, and nothing may be started. It rests on the live symmetry check EDA-9 (Task 14). Tests: Task 9 `test_negate_effects_flips_sign_only`, Task 10 `test_de_reuses_cached_mirror_with_negated_effects`.
 
 ---
 
@@ -1988,7 +1989,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes: `_samples.GENE_ID`, `COUNT_VALUE_IDS`, `NUMERIC_TYPES`, `summarise_variable`; `_eda.EdaError`
 - Produces (in `_contrasts`):
-  - constants `PLUGIN_DE = "differentialexpression"`, `PLUGIN_PCA = "dimensionalityreduction"`, `P_VALUE_FLOOR = "1e-200"`, `METHODS = ("DESeq", "limma")`, `NOTEBOOK_METHODS = {"differentialExpressionNotebook": "DESeq", "antibodyArrayNotebook": "limma"}`, `MIN_REPLICATES = 2`, `LOW_REPLICATES = 3`, `MAX_PAIRWISE_LEVELS = 6`, `MAX_CACHE_CHECKS = 30`
+  - constants `PLUGIN_DE = "differentialexpression"`, `PLUGIN_PCA = "dimensionalityreduction"`, `P_VALUE_FLOOR = "1e-200"`, `METHODS = ("DESeq", "limma")`, `NOTEBOOK_METHODS = {"differentialExpressionNotebook": "DESeq", "antibodyArrayNotebook": "limma"}`, `MIN_REPLICATES = 2`, `LOW_REPLICATES = 3`, `MAX_PAIRWISE_LEVELS = 6`, `MAX_CACHE_CHECKS = 30`, `MAX_CANDIDATES = 50`
   - `class ContrastError(EdaError)`
   - `job_id(plugin, body) -> str` (32 lowercase hex)
   - `canonical_group(group) -> list[{"label", "min"?, "max"?}]` (string values, sorted)
@@ -2176,6 +2177,7 @@ MIN_REPLICATES = 2
 LOW_REPLICATES = 3
 MAX_PAIRWISE_LEVELS = 6
 MAX_CACHE_CHECKS = 30
+MAX_CANDIDATES = 50  # crossed designs multiply strata; past this, narrow with --vars
 
 
 class ContrastError(EdaError):
@@ -2327,7 +2329,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `samples_in_group(rows, var_id, group) -> list[sampleId]`
   - `aliased(rows, a, b) -> bool`, `determines(rows, a, b) -> bool`
   - `replicate_check(n_a, n_b) -> note | None` (raises `ContrastError` below 2)
-  - `enumerate_contrasts(rows, var_meta, base_filters=(), only_vars=None) -> {"candidates", "skipped", "aliases", "nested"}` (`nested` items: `{"variableId", "displayName", "within", "withinName"}`), where a candidate is `{"index", "comparator": {"entityId", "variableId", "displayName"}, "groupA", "groupB", "filters", "nA", "nB", "notes", "stratum": None | {"variableId", "displayName", "label"}}`
+  - `enumerate_contrasts(rows, var_meta, base_filters=(), only_vars=None, max_candidates=MAX_CANDIDATES) -> {"candidates", "skipped", "aliases", "nested", "truncated"}` (`nested` items: `{"variableId", "displayName", "within", "withinName"}`; `truncated` is `None` or `{"shown", "total"}`), where a candidate is `{"index", "comparator": {"entityId", "variableId", "displayName"}, "groupA", "groupB", "reference", "filters", "nA", "nB", "notes", "stratum": None | {"variableId", "displayName", "label"}}`
+  - `reference` is `"label match"` (groupA's label looks like a control) or `"arbitrary"` (neither or both do; groupA is the larger level, then the first label). It is a **hint**: choosing the reference is the agent's call, and a swap costs nothing when the mirror job is cached (Task 10). Each level pair is listed **once**, never in both orientations, so the list stays bounded.
   - `load_contrast(obj, var_meta, var_entities, chain, base_filters=()) -> candidate-shaped dict` (no `index`/`nA`/`nB`)
 
 - [ ] **Step 1: Write the failing tests**
@@ -2387,7 +2390,9 @@ def test_crossed_design_first_candidate_and_strata():
     assert first["index"] == 1
     assert first["comparator"] == {"entityId": "ENT_s", "variableId": "temp", "displayName": "temperature_condition"}
     assert first["groupA"] == [{"label": "normal"}] and first["groupB"] == [{"label": "febrile"}]
+    assert first["reference"] == "label match"
     assert (first["nA"], first["nB"], first["filters"], first["stratum"]) == (6, 6, [], None)
+    assert out["truncated"] is None
     assert any("same grouping as temperature" in n for n in first["notes"])
     assert any("strain varies within the groups" in n for n in first["notes"])
     strata = out["candidates"][1:4]
@@ -2432,13 +2437,39 @@ def test_partial_confounding_is_noted():
     assert "groups also differ in batch: b1 vs b2" in hit["notes"]
 
 
-def test_ambiguous_orientation_lists_both():
+def test_ambiguous_orientation_lists_one_with_hint():
     from _contrasts import enumerate_contrasts
 
     rows = [{"sampleId": f"s{i}", "col": c} for i, c in enumerate(["red"] * 3 + ["blue"] * 3)]
     cands = enumerate_contrasts(rows, {"col": meta("col")})["candidates"]
-    assert [(c["groupA"][0]["label"], c["groupB"][0]["label"]) for c in cands] == [("blue", "red"), ("red", "blue")]
-    assert all(any("reference unclear" in n for n in c["notes"]) for c in cands)
+    assert [(c["groupA"][0]["label"], c["groupB"][0]["label"]) for c in cands] == [("blue", "red")]
+    assert cands[0]["reference"] == "arbitrary"
+    assert any("reference unclear" in n and "swap" in n for n in cands[0]["notes"])
+
+
+def test_label_matched_reference_is_a_hint_not_a_rule():
+    from _contrasts import enumerate_contrasts
+
+    rows = [{"sampleId": f"s{i}", "g": c} for i, c in enumerate(["mutant"] * 3 + ["WT"] * 3)]
+    cands = enumerate_contrasts(rows, {"g": meta("g")})["candidates"]
+    assert len(cands) == 1
+    assert cands[0]["groupA"] == [{"label": "WT"}] and cands[0]["reference"] == "label match"
+    assert any("reference guessed from label" in n and "swap" in n for n in cands[0]["notes"])
+
+
+def test_candidate_list_is_capped():
+    from _contrasts import enumerate_contrasts
+
+    # three crossed 6-level factors, 2 replicates per cell: hundreds of pairs and strata
+    rows = [
+        {"sampleId": f"{a}{b}{c}{r}", "f1": f"a{a}", "f2": f"b{b}", "f3": f"c{c}"}
+        for a in range(6) for b in range(6) for c in range(6) for r in range(2)
+    ]
+    var_meta = {v: meta(v) for v in ("f1", "f2", "f3")}
+    out = enumerate_contrasts(rows, var_meta)
+    assert [c["index"] for c in out["candidates"]] == list(range(1, 51))
+    assert out["truncated"]["shown"] == 50 and out["truncated"]["total"] > 50
+    assert enumerate_contrasts(rows, var_meta, max_candidates=None)["truncated"] is None
 
 
 def test_missing_values_are_not_a_level():
@@ -2666,60 +2697,65 @@ def _pair_candidates(rows, var_meta, prof, vid, base, aliases):
     stratifiers = [z for z in others if prof[z]["reason"] is None and not aliased(rows, vid, z) and not determines(rows, z, vid)]
     out = []
     for (ea, ids_a), (eb, ids_b) in itertools.combinations(p["usable"], 2):
+        # One orientation per pair. The control-label match is only a hint: the agent
+        # decides the reference, and a swap reuses the cached mirror job (Task 10).
         ca, cb = is_control_label(ea["label"]), is_control_label(eb["label"])
-        if ca and not cb:
-            orientations = [((ea, ids_a), (eb, ids_b))]
-        elif cb and not ca:
-            orientations = [((eb, ids_b), (ea, ids_a))]
+        (ga, a_ids), (gb, b_ids) = (ea, ids_a), (eb, ids_b)
+        if cb and not ca:
+            (ga, a_ids), (gb, b_ids) = (gb, b_ids), (ga, a_ids)
+        reference = "label match" if ca != cb else "arbitrary"
+        notes = []
+        if reference == "label match":
+            notes.append(f"reference guessed from label {ga['label']!r}: swap groups in a contrast file if "
+                         "groupB is the real baseline (same statistics, sign flipped)")
         else:
-            orientations = [((ea, ids_a), (eb, ids_b)), ((eb, ids_b), (ea, ids_a))]
-        for (ga, a_ids), (gb, b_ids) in orientations:
-            notes = []
-            if len(orientations) == 2:
-                notes.append("reference unclear: both orientations listed; pick the one whose groupA is the baseline")
-            if twins:
-                notes.append(f"same grouping as {', '.join(twins)}: effects cannot be separated")
-            if p["excluded"]:
-                notes.append("levels with <2 samples left out: " + ", ".join(f"{label} ({n})" for label, n in p["excluded"]))
-            low = _low_note(len(a_ids), len(b_ids))
-            if low:
-                notes.append(low)
-            for z in confounders:
-                za, zb = _counts_by(rows, a_ids, z), _counts_by(rows, b_ids, z)
-                if len(za) == 1 and len(zb) == 1 and set(za) != set(zb):
-                    notes.append(f"groups also differ in {var_meta[z]['displayName']}: {_label(next(iter(za)))} vs {_label(next(iter(zb)))}")
-            strata = []
-            for z in stratifiers:
-                za, zb = _counts_by(rows, a_ids, z), _counts_by(rows, b_ids, z)
-                if len(za) < 2 and len(zb) < 2:
-                    continue
-                shared = sorted((v for v in set(za) & set(zb) if za[v] >= MIN_REPLICATES and zb[v] >= MIN_REPLICATES), key=str)
-                if not shared:
-                    continue
-                zname = var_meta[z]["displayName"]
-                notes.append(f"{zname} varies within the groups (the compute has no covariates): stratified versions follow")
-                for v in shared:
-                    strata.append({
-                        "comparator": _comparator(meta),
-                        "groupA": canonical_group([ga]),
-                        "groupB": canonical_group([gb]),
-                        "filters": merge_filters(base, [_filter_for(var_meta[z], v)]),
-                        "nA": za[v],
-                        "nB": zb[v],
-                        "notes": [n for n in [_low_note(za[v], zb[v])] if n] + [f"stratum of the contrast above: {zname} = {_label(v)}"],
-                        "stratum": {"variableId": z, "displayName": zname, "label": _label(v)},
-                    })
-            out.append({
-                "comparator": _comparator(meta),
-                "groupA": canonical_group([ga]),
-                "groupB": canonical_group([gb]),
-                "filters": list(base),
-                "nA": len(a_ids),
-                "nB": len(b_ids),
-                "notes": notes,
-                "stratum": None,
-            })
-            out.extend(strata)
+            notes.append("reference unclear: groupA chosen arbitrarily; swap groups in a contrast file if "
+                         "groupB is the baseline (same statistics, sign flipped)")
+        if twins:
+            notes.append(f"same grouping as {', '.join(twins)}: effects cannot be separated")
+        if p["excluded"]:
+            notes.append("levels with <2 samples left out: " + ", ".join(f"{label} ({n})" for label, n in p["excluded"]))
+        low = _low_note(len(a_ids), len(b_ids))
+        if low:
+            notes.append(low)
+        for z in confounders:
+            za, zb = _counts_by(rows, a_ids, z), _counts_by(rows, b_ids, z)
+            if len(za) == 1 and len(zb) == 1 and set(za) != set(zb):
+                notes.append(f"groups also differ in {var_meta[z]['displayName']}: {_label(next(iter(za)))} vs {_label(next(iter(zb)))}")
+        strata = []
+        for z in stratifiers:
+            za, zb = _counts_by(rows, a_ids, z), _counts_by(rows, b_ids, z)
+            if len(za) < 2 and len(zb) < 2:
+                continue
+            shared = sorted((v for v in set(za) & set(zb) if za[v] >= MIN_REPLICATES and zb[v] >= MIN_REPLICATES), key=str)
+            if not shared:
+                continue
+            zname = var_meta[z]["displayName"]
+            notes.append(f"{zname} varies within the groups (the compute has no covariates): stratified versions follow")
+            for v in shared:
+                strata.append({
+                    "comparator": _comparator(meta),
+                    "groupA": canonical_group([ga]),
+                    "groupB": canonical_group([gb]),
+                    "reference": reference,
+                    "filters": merge_filters(base, [_filter_for(var_meta[z], v)]),
+                    "nA": za[v],
+                    "nB": zb[v],
+                    "notes": [n for n in [_low_note(za[v], zb[v])] if n] + [f"stratum of the contrast above: {zname} = {_label(v)}"],
+                    "stratum": {"variableId": z, "displayName": zname, "label": _label(v)},
+                })
+        out.append({
+            "comparator": _comparator(meta),
+            "groupA": canonical_group([ga]),
+            "groupB": canonical_group([gb]),
+            "reference": reference,
+            "filters": list(base),
+            "nA": len(a_ids),
+            "nB": len(b_ids),
+            "notes": notes,
+            "stratum": None,
+        })
+        out.extend(strata)
     return out
 
 
@@ -2727,9 +2763,10 @@ def _label(v):
     return _fmt(v) if isinstance(v, float) else str(v)
 
 
-def enumerate_contrasts(rows, var_meta, base_filters=(), only_vars=None):
+def enumerate_contrasts(rows, var_meta, base_filters=(), only_vars=None, max_candidates=MAX_CANDIDATES):
     """Deterministic candidates; the agent ranks them. Order: fewest levels first,
-    categorical before numeric, featured first, then display name."""
+    categorical before numeric, featured first, then display name. At most
+    max_candidates are returned (None = no cap); `truncated` says how many exist."""
     base = canonical_filters(base_filters)
     prof = {vid: _profile(rows, m) for vid, m in var_meta.items()}
 
@@ -2771,7 +2808,11 @@ def enumerate_contrasts(rows, var_meta, base_filters=(), only_vars=None):
         for z in comparators
         if z != vid and determines(rows, z, vid) and not aliased(rows, z, vid)
     ]
-    return {"candidates": candidates, "skipped": skipped, "aliases": aliases, "nested": nested}
+    truncated = None
+    if max_candidates is not None and len(candidates) > max_candidates:
+        truncated = {"shown": max_candidates, "total": len(candidates)}
+        candidates = candidates[:max_candidates]
+    return {"candidates": candidates, "skipped": skipped, "aliases": aliases, "nested": nested, "truncated": truncated}
 
 
 def load_contrast(obj, var_meta, var_entities, chain, base_filters=()):
@@ -2808,6 +2849,7 @@ def load_contrast(obj, var_meta, var_entities, chain, base_filters=()):
         "groupA": groups["groupA"],
         "groupB": groups["groupB"],
         "filters": merge_filters(base_filters, obj.get("filters") or []),
+        "reference": "contrast file",
         "notes": [],
         "stratum": None,
     }
@@ -2842,7 +2884,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `eda.contrast_setup(args, t, filters) -> (view, value_var, method, notes)` (raises `EdaError` when there is no joint table)
   - `eda._contrast_args(sp)` adds `--value-var`, `--method {auto,DESeq,limma}`, `--vars`
   - `_contrasts.render_contrasts(out) -> list[str]`
-  - `contrasts --json` output: `{"datasetId", "valueVariable", "method", "notes", "candidates": [... + "cache": {"status", "jobId"}], "skipped", "aliases", "nested"}`
+  - `contrasts --json` output: `{"datasetId", "valueVariable", "method", "notes", "candidates": [... + "cache": {"status", "jobId"}], "skipped", "aliases", "nested", "truncated"}`
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -2921,8 +2963,12 @@ def _labels(group):
 def render_contrasts(out):
     lines = [
         f"{out['datasetId']}  value={out['valueVariable']}  method={out['method']}  "
-        f"{len(out['candidates'])} candidates (groupA is the reference: positive log2FC = higher in groupB)"
+        f"{len(out['candidates'])} candidates (groupA is the reference: positive log2FC = higher in groupB; "
+        "the suggested reference is a hint, and you decide)"
     ]
+    if out.get("truncated"):
+        tr = out["truncated"]
+        lines.append(f"note: showing the first {tr['shown']} of {tr['total']} candidates; narrow with --vars")
     lines += [f"note: {n}" for n in out["notes"]]
     for c in out["candidates"]:
         where = f"  | {c['stratum']['displayName']} = {c['stratum']['label']}" if c.get("stratum") else ""
@@ -3055,6 +3101,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Produces (in `_de`):
   - `DIRECTIONS`, `DEFAULT_THRESHOLDS = "1,0.05,upAndDown"`, `class SpecError(EdaError)`
   - `java_double(value) -> float | None`
+  - `negate_effects(statistics) -> statistics` (mirror contrast: effectSize negated, everything else unchanged)
   - `parse_thresholds(text) -> (fc: float, p: float, direction: str)` (raises `EdaError`)
   - `is_retained(effect_size, p_value, fc, p, direction) -> bool`
   - `wdk_step_genes(statistics, thresholds) -> list[str]`
@@ -3187,6 +3234,18 @@ def test_de_json_separates_identity():
     json.dumps(out, allow_nan=False)
 
 
+def test_negate_effects_flips_sign_only():
+    from _de import negate_effects
+
+    stats = [stat("G1", "1.5", "0.01", "0.02"), stat("G2", "-2e-3", "0.5"), stat("G3", "0", "1"), stat("G4", "NA", "NA", None)]
+    out = negate_effects(stats)
+    assert [s["effectSize"] for s in out] == ["-1.5", "0.002", "0", "NA"]
+    assert [(s["pointID"], s["pValue"], s["adjustedPValue"]) for s in out] == [
+        (s["pointID"], s["pValue"], s["adjustedPValue"]) for s in stats
+    ]
+    assert stats[0]["effectSize"] == "1.5"  # input untouched
+
+
 def test_table_tsv():
     from _de import de_table, table_tsv
 
@@ -3234,6 +3293,19 @@ def java_double(value):
     if not _JAVA_DOUBLE.fullmatch(s):
         return None
     return float(s.rstrip("fFdD"))
+
+
+def negate_effects(statistics):
+    """Statistics of the mirror contrast (groupA and groupB swapped): with a two-level
+    ~comparator design and no shrinkage, DESeq2 results() and limma topTable(coef=2)
+    give the same p and padj with effectSize negated. Unparseable values pass through."""
+    out = []
+    for s in statistics:
+        x = java_double(s.get("effectSize"))
+        if x is not None and math.isfinite(x):
+            s = {**s, "effectSize": repr(-x) if x else s["effectSize"]}
+        out.append(s)
+    return out
 
 
 def parse_thresholds(text):
@@ -3458,7 +3530,9 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `contrast_counts(t, contrast, base_filters, view) -> (n_a, n_b)`
   - `prepare_de(args) -> {"t", "contrast", "nA", "nB", "valueVar", "method", "config", "body", "notes"}` (Task 11 reuses it)
   - `de_context(p, thresholds) -> dict`
-  - CLI: `de SITE DATASET --contrast N|FILE [--thresholds FC,P[,dir]] [--value-var] [--method] [--vars] [--entity] [--genes IDS] [--rows none|passing|all] [--top N] [--tsv FILE] [--json] [--no-wait] [--retry] [--timeout S]`
+  - `mirror_body(p) -> body` (the same contrast with groupA and groupB swapped)
+  - CLI: `de SITE DATASET --contrast N|FILE [--thresholds FC,P[,dir]] [--value-var] [--method] [--vars] [--entity] [--genes IDS] [--rows none|passing|all] [--top N] [--tsv FILE] [--json] [--no-wait] [--retry] [--timeout S] [--no-mirror]`
+- **Mirror reuse:** when this orientation's job has never run (`no-such-job`) but the swapped contrast's job is `complete`, `de` reuses the mirror's statistics with `negate_effects` and starts nothing. Provenance keeps this orientation's `jobId` (the contrast id) and adds `statisticsFrom: {"jobId", "negated": true}`; a context note says so and warns that the WDK step for this orientation is not cached. This makes the agent's choice of reference cheap to get "wrong". `--no-mirror` turns it off. A failed or expired job never falls back to the mirror (that is `--retry`'s job).
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -3529,6 +3603,8 @@ def test_de_failed_job_and_retry(run_eda, eda_mock, contrast_file, capsys):
     calls = {"n": 0}
 
     def compute(request):
+        if request.url.params.get("autostart") == "false":  # de's status lookup
+            return httpx.Response(200, json={"jobID": eda_mock.de_job, "status": "failed"})
         calls["n"] += 1
         status = "failed" if calls["n"] == 1 else "complete"
         return httpx.Response(200, json={"jobID": eda_mock.de_job, "status": status})
@@ -3566,6 +3642,42 @@ def test_de_bad_contrast_number(run_eda, capsys):
 def test_de_method_override_is_noted(run_eda, contrast_file):
     out = run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", contrast_file(), "--method", "limma")
     assert "separate job" in out and "limma on" in out
+
+
+def _mirror_routes(eda_mock):
+    """normal→febrile has never run (but would start fine); febrile→normal is cached."""
+    def compute(request):
+        body = json.loads(request.content)
+        if body["config"]["comparator"]["groupA"] == [{"label": "normal"}]:
+            status = "no-such-job" if request.url.params.get("autostart") == "false" else "complete"
+            return httpx.Response(200, json={"jobID": "a" * 32, "status": status})
+        return httpx.Response(200, json={"jobID": "b" * 32, "status": "complete"})
+
+    eda_mock.routes[("POST", "/computes/differentialexpression")] = compute
+
+
+def test_de_reuses_cached_mirror_with_negated_effects(run_eda, eda_mock, contrast_file, tmp_path):
+    _mirror_routes(eda_mock)
+    tsv = tmp_path / "de.tsv"
+    out = json.loads(run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", contrast_file(), "--json", "--tsv", str(tsv)))
+    assert out["provenance"]["jobId"] == "a" * 32
+    assert out["provenance"]["statisticsFrom"] == {"jobId": "b" * 32, "negated": True}
+    assert any("mirror" in n and "WDK step" in n for n in out["context"]["notes"])
+    computes = [q for m, p, q, b in eda_mock.requests if p == "/computes/differentialexpression"]
+    assert computes and all(q == {"autostart": "false"} for q in computes)  # nothing started
+    vol = [b for m, p, q, b in eda_mock.requests if p.endswith("/volcanoplot")]
+    assert vol[-1]["computeConfig"]["comparator"]["groupA"] == [{"label": "febrile"}]
+    first = eda_fixture("volcano_heatshock.json")["statistics"][0]
+    gene, es = tsv.read_text().splitlines()[1].split("\t")[:2]
+    assert gene == first["pointID"] and float(es) == -float(first["effectSize"])
+
+
+def test_de_no_mirror_runs_its_own_job(run_eda, eda_mock, contrast_file):
+    _mirror_routes(eda_mock)
+    out = json.loads(run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", contrast_file(), "--json", "--no-mirror"))
+    assert out["provenance"]["jobId"] == "a" * 32 and out["provenance"]["statisticsFrom"] is None
+    bodies = eda_mock.compute_bodies("differentialexpression")
+    assert all(b["config"]["comparator"]["groupA"] == [{"label": "normal"}] for b in bodies)
 ```
 
 - [ ] **Step 2: Run them to verify they fail**
@@ -3585,11 +3697,13 @@ def resolve_contrast(args, t, filters, view):
 
     spec = args.contrast
     if spec.isdigit():
-        cands = enumerate_contrasts(view["table"]["rows"], view["meta"], filters, _only_vars(args))["candidates"]
+        out = enumerate_contrasts(view["table"]["rows"], view["meta"], filters, _only_vars(args))
+        cands = out["candidates"]
         hit = next((c for c in cands if c["index"] == int(spec)), None)
         if hit is None:
+            more = " (the list is capped: narrow it with --vars)" if out["truncated"] else ""
             raise EdaError(
-                f"--contrast {spec}: no such candidate (1..{len(cands)}); re-run 'eda.py contrasts' "
+                f"--contrast {spec}: no such candidate (1..{len(cands)}){more}; re-run 'eda.py contrasts' "
                 "with the same --filters/--vars/--value-var"
             )
         return hit
@@ -3662,6 +3776,16 @@ def de_context(p, thresholds):
     }
 
 
+def mirror_body(p):
+    """The same contrast with groupA and groupB swapped: a different job, same statistics
+    with effectSize negated (see _de.negate_effects)."""
+    from _contrasts import compute_body, de_config
+
+    c = p["contrast"]
+    cfg = de_config(p["t"]["expr"]["entityId"], p["valueVar"], c["comparator"], c["groupB"], c["groupA"], p["method"])
+    return compute_body(p["t"]["dataset"]["studyId"], cfg, c["filters"])
+
+
 def _next_hint(p, args):
     search = p["t"]["search"] or "<DE search for this dataset: see eda.py de-datasets SITE>"
     return (
@@ -3675,7 +3799,7 @@ def _next_hint(p, args):
 def cmd_de(args) -> None:
     from _client import WDKError
     from _contrasts import PLUGIN_DE
-    from _de import de_json, de_table, gene_rows, parse_thresholds, render_de, summarise, table_tsv
+    from _de import de_json, de_table, gene_rows, negate_effects, parse_thresholds, render_de, summarise, table_tsv
     from _eda import EdaError, compute_status, delete_job, volcano, wait_for_job
 
     thresholds = parse_thresholds(args.thresholds)
@@ -3687,26 +3811,42 @@ def cmd_de(args) -> None:
         emit({"jobId": st["jobID"], "status": st["status"],
               "next": "re-run without --no-wait to fetch results (the job keeps running server-side)"})
         return
-    st = wait_for_job(c, PLUGIN_DE, body, timeout_s=args.timeout, log=log)
-    if st["status"] in ("failed", "expired") and args.retry:
-        if st["status"] == "failed":
-            try:
-                delete_job(c, st["jobID"])
-            except WDKError as e:
-                log(f"could not delete failed job {st['jobID']}: {e}")
+    mirror = None
+    if not args.no_mirror:
+        st = compute_status(c, PLUGIN_DE, body, start=False)
+        if st["status"] == "no-such-job":
+            mbody = mirror_body(p)
+            mst = compute_status(c, PLUGIN_DE, mbody, start=False)
+            if mst["status"] == "complete":
+                mirror = {"jobId": mst["jobID"], "negated": True}
+    if mirror:
+        stats = negate_effects(volcano(c, mbody)["statistics"])
+        p["notes"].append(
+            f"statistics reused from the cached mirror job {mirror['jobId']} (groups swapped), effect sizes "
+            "negated; p-values are unchanged by the swap. The WDK step for this orientation is not cached: "
+            "creating it starts its own job (the first answer is HTTP 202)"
+        )
+    else:
         st = wait_for_job(c, PLUGIN_DE, body, timeout_s=args.timeout, log=log)
-    if st["status"] != "complete":
-        hint = ""
-        if st["status"] == "failed":
-            hint = (" A job that fails quickly usually means a bad config (e.g. identifier and value "
-                    "variables on different entities).")
-        raise EdaError(f"job {st['jobID']} is {st['status']}.{hint} --retry resubmits it.")
-    stats = volcano(c, body)["statistics"]
+        if st["status"] in ("failed", "expired") and args.retry:
+            if st["status"] == "failed":
+                try:
+                    delete_job(c, st["jobID"])
+                except WDKError as e:
+                    log(f"could not delete failed job {st['jobID']}: {e}")
+            st = wait_for_job(c, PLUGIN_DE, body, timeout_s=args.timeout, log=log)
+        if st["status"] != "complete":
+            hint = ""
+            if st["status"] == "failed":
+                hint = (" A job that fails quickly usually means a bad config (e.g. identifier and value "
+                        "variables on different entities).")
+            raise EdaError(f"job {st['jobID']} is {st['status']}.{hint} --retry resubmits it.")
+        stats = volcano(c, body)["statistics"]
     table = de_table(stats)
     summary = summarise(stats, thresholds, top_n=args.top)
     context = de_context(p, thresholds)
     provenance = {"site": t["site"], "datasetId": t["dataset"]["datasetId"], "studyId": t["dataset"]["studyId"],
-                  "plugin": PLUGIN_DE, "jobId": st["jobID"], "search": t["search"]}
+                  "plugin": PLUGIN_DE, "jobId": st["jobID"], "statisticsFrom": mirror, "search": t["search"]}
     genes = [g.strip() for g in args.genes.split(",") if g.strip()] if args.genes else []
     if args.tsv:
         pathlib.Path(args.tsv).write_text(table_tsv(table), encoding="utf-8")
@@ -3751,6 +3891,8 @@ In `build_parser`, before `return p`:
     sp.add_argument("--no-wait", action="store_true", help="start the job and report its status only")
     sp.add_argument("--retry", action="store_true", help="resubmit a failed or expired job")
     sp.add_argument("--timeout", type=int, default=900, help="seconds to wait for the job (default 900)")
+    sp.add_argument("--no-mirror", action="store_true",
+                    help="never reuse the cached swapped-groups job; always run this orientation")
     sp.set_defaults(func=cmd_de)
 ```
 
@@ -4626,7 +4768,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: the whole stage 1 CLI, `eda.build_parser`, `eda.prepare_de`, `_shaping.encode_params`/`get_search_detail`/`run_report`/`extract_count`, `_strategy.build_strategy`
-- Produces: gold cases EDA-2 … EDA-8 in TESTS.md
+- Produces: gold cases EDA-2 … EDA-9 in TESTS.md
 
 - [ ] **Step 1: Write the live tests**
 
@@ -4750,6 +4892,29 @@ def test_live_wdk_step_drives_the_same_job(live_eda, contrast_path, token):
     assert after["status"] in ("queued", "in-progress", "complete")
 
 
+def test_live_mirror_job_has_negated_effects(live_eda, contrast_path):
+    """The basis of mirror reuse: swapping groups negates effectSize and leaves p and
+    padj unchanged, row for row. Runs the febrile-reference job once (about 2 min);
+    later runs hit the cache."""
+    import eda as eda_cli
+    from _de import java_double
+    from _eda import volcano, wait_for_job
+    from _contrasts import PLUGIN_DE
+
+    argv = ["de", "plasmodb", HS, "--contrast", contrast_path(TEMP)]
+    p = eda_cli.prepare_de(eda_cli.build_parser().parse_args(argv))
+    c, mbody = p["t"]["client"], eda_cli.mirror_body(p)
+    assert wait_for_job(c, PLUGIN_DE, mbody, timeout_s=1800)["status"] == "complete"
+    fwd, rev = volcano(c, p["body"])["statistics"], volcano(c, mbody)["statistics"]
+    assert [s["pointID"] for s in fwd] == [s["pointID"] for s in rev]  # same row order: WDK row-0 drop agrees
+    for f, r in zip(fwd, rev):
+        for key, sign in (("effectSize", -1), ("pValue", 1), ("adjustedPValue", 1)):
+            a, b = java_double(f.get(key)), java_double(r.get(key))
+            assert (a is None) == (b is None), (f["pointID"], key)
+            if a is not None:
+                assert b == pytest.approx(sign * a, rel=1e-6, abs=1e-12), (f["pointID"], key)
+
+
 def test_live_de_datasets_plasmodb(live_eda):
     rows = json.loads(live_eda("de-datasets", "plasmodb", "--json"))
     by_ds = {r["datasetId"]: r for r in rows}
@@ -4771,7 +4936,7 @@ def test_live_limma_antibody(live_eda):
 - [ ] **Step 2: Run them live**
 
 Run: `cd veupathdb_database && uv run --with pytest --with httpx python -m pytest tests/test_eda_live.py -v`
-Expected: PASS (the strong identity test may SKIP if `RARE` was already computed: note it). Without a token: every test SKIPs. Record the observed values for Step 3.
+Expected: PASS (the strong identity test may SKIP if `RARE` was already computed: note it). Without a token: every test SKIPs. Record the observed values for Step 3. If the mirror test fails on values (not on a timeout), stop: mirror reuse in `de` rests on it, so either loosen the tolerance with a reason recorded in TESTS.md or make `--no-mirror` the default.
 
 - [ ] **Step 3: Register the gold cases**
 
@@ -4786,6 +4951,7 @@ Append to `veupathdb_database/TESTS.md`, filling `Gold (captured)` from Step 2 w
 | EDA-6 | test_live_create_strategy_from_de_spec | strategy from `de-spec --format params` via leaf "@file" is valid | fields-present | (estimated_size) | |
 | EDA-7 | `eda.py de-datasets plasmodb` / test_live_de_datasets_plasmodb | heat-shock and Crompton antibody searches with DS ids and methods | range ≥30 rows | (row count) | |
 | EDA-8 | `eda.py de plasmodb DS_24d441b301 --contrast N` / test_live_limma_antibody | limma end to end on an antibody array | fields-present | (contrast, tested) | |
+| EDA-9 | test_live_mirror_job_has_negated_effects | heat-shock febrile→normal job: same rows in the same order, effectSize negated, p and padj equal | rel 1e-6 | (mirror job id) | |
 | EDA-WEB-1 | manual: open the EDA-6 strategy URL before teardown (or re-create it), click the step's revise/edit | the notebook opens with the same comparator, groups and thresholds | manual | | |
 ```
 
@@ -4915,8 +5081,10 @@ searches (WGCNA modules, phenotype subsets) are not supported.
 1. `eda.py de-datasets SITE`: DS ids, methods and search names.
 2. `eda.py study SITE DS_…`: samples, annotation, DE-readiness, the study description.
 3. `eda.py contrasts SITE DS_…`: canonical candidates with n per group, confounding notes,
-   stratified versions and cache status. **You** choose, using the description and the question.
-4. `eda.py de SITE DS_… --contrast N`: runs or reuses the shared job; counts and top genes.
+   stratified versions and cache status. **You** choose the contrast and its reference
+   (groupA), using the description and the question; the suggested reference is a hint.
+4. `eda.py de SITE DS_… --contrast N`: runs or reuses the shared job (or its cached
+   swapped-groups mirror); counts and top genes.
    Re-thresholding (`--thresholds FC,P[,upOnly|downOnly]`) costs nothing.
 5. `eda.py de-spec SITE DS_… --contrast N --format params > p.json`, then
    `wdk.py create-strategy SITE --spec '{"leaf": {"search": "SEARCH", "params": "@p.json"}}'`.
@@ -4934,7 +5102,8 @@ Pass the same `--vars`, `--value-var` and `--entity` to every command after
   harnesses): read the JSON output and use the built-in flags.
 - **`--tables Sequences` dumps raw sequence**: use `GeneTranscripts` unless FASTA is asked for.
 - **EDA thresholds use the raw p-value**, as the website does; `de` also reports padj counts.
-- **groupA is the reference**: positive log2FC = higher in groupB. Swapped groups are a new job.
+- **groupA is the reference**: positive log2FC = higher in groupB. You pick it; `de` reuses a
+  cached swapped-groups job with the sign flipped.
 - **One comparator, no covariates, no pairing**: use the stratified contrasts for crossed designs.
 - **A gene absent from DE output was not tested** (all-zero counts); it is not "unchanged".
 
@@ -5012,10 +5181,18 @@ computation that has a thresholded volcano plot, and keeps the rows that pass.
   (each value becomes a half-open bin `[v, next value)`), on sample-side entities.
   Levels need at least 2 samples. Up to 6 levels are paired; with more, pool
   levels into groups in a contrast file.
-- Orientation: a control-like label (control, normal, WT, wild type, untreated,
-  mock, baseline, uninfected, naive, vehicle, healthy, pre, day 0, …) becomes
-  groupA, the reference. If neither or both look like controls, both orientations
-  are listed. Pick the one whose groupA is the baseline.
+- Orientation: each pair of levels is listed once. **Choosing the reference is your
+  call**; the listed orientation is only a hint, shown in `reference`:
+  - `label match`: groupA's label looks like a control (control, normal, WT, wild
+    type, untreated, mock, baseline, uninfected, naive, vehicle, healthy, pre,
+    day 0, …). Usually right, but check it against the study description.
+  - `arbitrary`: neither or both labels look like controls; groupA is just the
+    larger level.
+  To flip, write a contrast file with groupA and groupB swapped. If the listed
+  orientation is cached, `de` reuses it with effect sizes negated, so a flip costs
+  nothing (see "Canonical form and the shared cache").
+- At most 50 candidates are listed (crossed designs multiply the stratified
+  versions); a note gives the total. Narrow with `--vars`.
 - Notes to weigh:
   - `same grouping as X`: X splits the samples identically (aliased). The effects
     cannot be separated. The alias is listed once, not as its own candidate.
@@ -5046,8 +5223,15 @@ body; no user identity is included. So a contrast computed by anyone (website us
 other agent) is free for everyone, and the job id is a stable **contrast id** to cite.
 eda.py builds every contrast in one canonical form: labels sorted within each group,
 filters sorted, `pValueFloor` `1e-200`, the website's method for the search family,
-and exactly the body the WSF plugin sends. Swapping groups, changing a filter, the
-value variable or the method makes a new job. Thresholds are not part of the job.
+and exactly the body the WSF plugin sends. Changing a filter, the value variable or
+the method makes a new job. Thresholds are not part of the job.
+
+Swapping groupA and groupB also makes a new job id, but not new statistics: with a
+single two-level comparator and no shrinkage, the swap only negates `effectSize`
+(p and padj are identical; verified live, TESTS.md EDA-9). So when this orientation
+has never run but its mirror is cached, `de` reuses the mirror, negates the effect
+sizes, and records the mirror's job under `provenance.statisticsFrom`. The WDK step
+for this orientation still runs its own job. `--no-mirror` disables the reuse.
 
 ## Reading `de`
 
@@ -5071,7 +5255,8 @@ value variable or the method makes a new job. Thresholds are not part of the job
 {"context":    comparator, groups (labels, n, which is the reference), orientation,
                 method, value variable, filters, thresholds, notes, counts,
                 top lists as row keys,
- "provenance": site, datasetId, studyId, plugin, jobId (the contrast id), search,
+ "provenance": site, datasetId, studyId, plugin, jobId (the contrast id),
+                statisticsFrom (null, or the mirror job reused with negated effects), search,
  "identity":   {"r1": "PF3D7_…", …},
  "rows":       {"r1": {"effectSize", "pValue", "adjustedPValue", "status"}, …}}
 ```
@@ -5098,8 +5283,10 @@ Row keys are opaque (ordered by p-value). Rows hold the top genes, any `--genes`
 
 1. ★ Thresholds use the **raw** p-value (plugin and website volcano). padj is reported
    by `de` for judgement; the WDK step never uses it.
-2. ★ groupA is the reference: positive log2FC = higher in groupB. Swapping groups, or
-   changing label order outside eda.py, makes a different job.
+2. ★ groupA is the reference: positive log2FC = higher in groupB. The agent chooses
+   it; the control-label match in `contrasts` is a hint, not a rule. Swapping groups
+   makes a different job id with the same statistics sign-flipped (`de` reuses a cached
+   mirror). Changing label order outside eda.py also makes a different job.
 3. Fold changes are unshrunk log2 ratios: large values for low-count genes are noise.
 4. padj NA = removed by independent filtering; absent gene = not tested (all zero).
 5. One comparator, no covariates, no paired design: crossed or repeated-measures
