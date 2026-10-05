@@ -4,7 +4,7 @@
 
 **Goal:** Let an agent do what a website user does with an EDA differential-expression or antibody-array notebook: explore the samples, discover and choose a contrast, run DESeq2/limma on the shared EDA compute cache, and turn the result into a normal WDK step that returns the same genes the website would.
 
-**Architecture:** A new PEP 723 CLI, `veupathdb_database/scripts/eda.py`, sits next to `wdk.py`. It is backed by private modules: `_eda.py` (endpoint wrappers on an EDA-flavoured `_client.Client`), `_samples.py` (metadata pruning, sample-table join, filters), `_contrasts.py` (enumeration, canonical compute bodies, job ids), `_de.py` (threshold logic identical to the WSF plugin, result shaping, `eda_analysis_spec` builder), `_stats.py` (stdlib-only statistics) and `_pca.py` (PCA parsing and reporting). The handoff to WDK is a JSON file: `eda.py de-spec --format params` writes the WDK params, and `wdk.py` accepts `@file` wherever it takes a params object.
+**Architecture:** A new PEP 723 CLI, `veupathdb_database/scripts/eda.py`, sits next to `wdk.py`. It is backed by private modules: `_eda.py` (endpoint wrappers on an EDA-flavoured `_client.Client`), `_samples.py` (metadata pruning, sample-table join, filters), `_contrasts.py` (enumeration, canonical compute bodies, job ids), `_de.py` (threshold logic identical to the WSF plugin, result shaping, `eda_analysis_spec` builder), `_stats.py` (stdlib-only statistics) and `_pca.py` (PCA parsing and reporting). The handoff to WDK is a JSON file: `eda.py de-spec --save` writes the WDK params to a content-addressed file in the skill cache (never the user's working directory) and prints a ready strategy leaf, and `wdk.py` accepts `@file` wherever it takes a params object. Contrasts and filters are passed inline as JSON, so a normal session writes no files of its own.
 
 **Tech Stack:** Python ≥3.11, `uv` (PEP 723 inline metadata), `httpx` (only runtime dependency), `pytest` (tests), base R `Rscript` (test-time gold standard for `_stats.py` only).
 
@@ -3526,7 +3526,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes: Tasks 6–9; `_eda.compute_status`, `wait_for_job`, `delete_job`, `volcano`
 - Produces (in `eda.py`):
-  - `resolve_contrast(args, t, filters, view) -> contrast` (`--contrast N` re-enumerates; otherwise a JSON file)
+  - `json_arg(raw, flag, expected) -> object` (inline JSON when `raw` starts with `{` or `[`; otherwise a file path, optional leading `@`)
+  - `resolve_contrast(args, t, filters, view) -> contrast` (`--contrast N` re-enumerates; otherwise inline JSON or a JSON file)
   - `contrast_counts(t, contrast, base_filters, view) -> (n_a, n_b)`
   - `prepare_de(args) -> {"t", "contrast", "nA", "nB", "valueVar", "method", "config", "body", "notes"}` (Task 11 reuses it)
   - `de_context(p, thresholds) -> dict`
@@ -3563,7 +3564,8 @@ def test_de_text_report(run_eda, eda_mock, contrast_file):
     assert f"contrast {eda_mock.de_job}" in out
     assert "groupA (reference) normal n=6 → groupB febrile n=6" in out
     assert "the WDK step returns" in out
-    assert "eda.py de-spec plasmodb DS_e973eadd57 --contrast" in out
+    assert "eda.py de-spec plasmodb DS_e973eadd57 --contrast" in out and "--save" in out
+    assert "params.json" not in out
     starts = [(q, b) for m, p, q, b in eda_mock.requests if p == "/computes/differentialexpression"]
     assert starts[-1] == ({"autostart": "true"}, eda_fixture("jobs.json")["de_heatshock"]["body"])
     assert any(p.endswith("/volcanoplot") for m, p, q, b in eda_mock.requests)
@@ -3633,6 +3635,22 @@ def test_de_refuses_too_few_replicates(run_eda, contrast_file, capsys):
     assert "too few replicates" in capsys.readouterr().err
 
 
+def test_de_inline_contrast_equals_file(run_eda, eda_mock, contrast_file):
+    a = json.loads(run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", contrast_file(), "--json"))
+    b = json.loads(run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", json.dumps(TEMP), "--json"))
+    c = json.loads(run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", "@" + contrast_file(), "--json"))
+    assert a == b == c
+
+
+def test_de_bad_inline_contrast(run_eda, capsys):
+    with pytest.raises(SystemExit):
+        run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", '{"comparator": ')
+    assert "inline JSON is not valid" in capsys.readouterr().err
+    with pytest.raises(SystemExit):
+        run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", "nope.json")
+    assert "file not found" in capsys.readouterr().err
+
+
 def test_de_bad_contrast_number(run_eda, capsys):
     with pytest.raises(SystemExit):
         run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", "999")
@@ -3690,6 +3708,26 @@ Expected: FAIL (`invalid choice: 'de'`).
 Add to `eda.py` after `cmd_contrasts`:
 
 ```python
+def json_arg(raw, flag, expected):
+    """Inline JSON (starts with { or [) or a JSON file path (an optional leading @, as in
+    wdk.py). Inline is the default for small objects, so no glue files are needed."""
+    from _eda import EdaError
+
+    text = raw.strip()
+    if text[:1] in ("{", "["):
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError as e:
+            raise EdaError(f"{flag}: inline JSON is not valid: {e}") from None
+    path = pathlib.Path(text.removeprefix("@")).expanduser()
+    if not path.is_file():
+        raise EdaError(f"{flag} {raw!r} is not {expected} (file not found: {path})")
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise EdaError(f"{flag} file {path} is not valid JSON: {e}") from None
+
+
 def resolve_contrast(args, t, filters, view):
     from _contrasts import enumerate_contrasts, load_contrast
     from _eda import EdaError
@@ -3707,13 +3745,7 @@ def resolve_contrast(args, t, filters, view):
                 "with the same --filters/--vars/--value-var"
             )
         return hit
-    path = pathlib.Path(spec).expanduser()
-    if not path.is_file():
-        raise EdaError(f"--contrast {spec!r} is neither a candidate number nor a contrast file")
-    try:
-        obj = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as e:
-        raise EdaError(f"contrast file {path} is not valid JSON: {e}") from None
+    obj = json_arg(spec, "--contrast", "a candidate number, inline JSON or a contrast file")
     return load_contrast(obj, view["meta"], all_var_entities(t["index"]), view["chain"], filters)
 
 
@@ -3787,12 +3819,12 @@ def mirror_body(p):
 
 
 def _next_hint(p, args):
-    search = p["t"]["search"] or "<DE search for this dataset: see eda.py de-datasets SITE>"
+    import shlex
+
     return (
         f"next (same --filters/--vars/--value-var): eda.py de-spec {args.site} {args.dataset} "
-        f"--contrast {args.contrast} --thresholds {args.thresholds} --format params > params.json; "
-        f"wdk.py create-strategy {args.site} --spec "
-        f"'{{\"leaf\": {{\"search\": \"{search}\", \"params\": \"@params.json\"}}}}'"
+        f"--contrast {shlex.quote(args.contrast)} --thresholds {args.thresholds} --save, then use the "
+        "printed \"leaf\" in wdk.py create-strategy --spec (no file of your own needed)"
     )
 
 
@@ -3870,7 +3902,8 @@ Add after `_contrast_args`:
 def _de_args(sp):
     from _de import DEFAULT_THRESHOLDS
 
-    sp.add_argument("--contrast", required=True, help="candidate number from 'contrasts', or a contrast JSON file")
+    sp.add_argument("--contrast", required=True,
+                    help="candidate number from 'contrasts', inline contrast JSON, or a contrast JSON file")
     sp.add_argument("--thresholds", default=DEFAULT_THRESHOLDS,
                     help="FC,P[,upAndDown|upOnly|downOnly]: |log2FC| >= FC and raw p <= P (website defaults)")
 ```
@@ -3903,7 +3936,7 @@ Expected: PASS.
 
 - [ ] **Step 5: Try it live (needs a token)**
 
-Run: `cd veupathdb_database && echo '{"comparator": {"variableId": "VAR_081ab087"}, "groupA": [{"label": "normal"}], "groupB": [{"label": "febrile"}]}' > /tmp/claude-hs.json && uv run scripts/eda.py de plasmodb DS_e973eadd57 --contrast /tmp/claude-hs.json`
+Run: `cd veupathdb_database && uv run scripts/eda.py de plasmodb DS_e973eadd57 --contrast '{"comparator": {"variableId": "VAR_081ab087"}, "groupA": [{"label": "normal"}], "groupB": [{"label": "febrile"}]}'`
 Expected: `contrast db04204e5386396e1ca2cb78469ab6fb`, `passing raw p: 1543  → the WDK step returns 1543 genes`, returned at once because the job is cached.
 
 - [ ] **Step 6: Commit**
@@ -3921,6 +3954,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Modify: `veupathdb_database/scripts/_de.py` (append)
+- Modify: `veupathdb_database/scripts/_client.py` (append `stash_json`)
 - Modify: `veupathdb_database/scripts/eda.py`
 - Test: `veupathdb_database/tests/test_de_spec.py`
 
@@ -3931,7 +3965,9 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `find_volcano_computation(computations) -> dict | None` (port of the plugin's `findVolcanoComputation`)
   - `validate_spec(spec, dataset_id) -> None` (raises `SpecError`)
   - `wdk_params(spec) -> {"eda_dataset_id": DS, "eda_analysis_spec": compact JSON string}`
-  - CLI: `de-spec SITE DATASET --contrast … [--thresholds …] [--format spec|params]` → JSON on stdout; the DE job id on stderr
+  - CLI: `de-spec SITE DATASET --contrast … [--thresholds …] [--format spec|params] [--save]` → JSON on stdout; the DE job id on stderr
+- Produces (in `_client`): `stash_json(kind, data) -> pathlib.Path`: writes `EDA_CACHE_DIR/{kind}/{sha256 of the canonical JSON, first 16 hex}.json` by temp file + `os.replace` (atomic; parallel writers of the same content are harmless), refreshes the mtime, and prunes files in that directory older than `CACHE_TTL_S`. Returns the absolute path.
+- `--save` writes the WDK params with `stash_json("params", …)` and prints `{"paramsFile": PATH, "leaf": {"search": SEARCH, "params": "@PATH"}}`, ready to drop into a `wdk.py create-strategy --spec` tree. Glue files therefore never land in the user's working directory and never clobber each other. Plain `--format params` (stdout) stays for users who want their own copy.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -4022,6 +4058,47 @@ def test_de_spec_cli_matches_de_body(run_eda, eda_mock, tmp_path):
     params = json.loads(run_eda("de-spec", "plasmodb", "DS_e973eadd57", "--contrast", str(contrast), "--format", "params"))
     assert params["eda_dataset_id"] == "DS_e973eadd57"
     assert eda_mock.de_job in run_eda.err
+
+
+TEMP = {"comparator": {"variableId": "VAR_081ab087"}, "groupA": [{"label": "normal"}], "groupB": [{"label": "febrile"}]}
+
+
+def test_de_spec_save_is_content_addressed(run_eda, eda_cache, monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)  # nothing may be written to the working directory
+    args = ("de-spec", "plasmodb", "DS_e973eadd57", "--contrast", json.dumps(TEMP), "--save")
+    a = json.loads(run_eda(*args))
+    b = json.loads(run_eda(*args))
+    c = json.loads(run_eda(*args, "--thresholds", "2,0.01"))
+    assert a == b and a["paramsFile"] != c["paramsFile"]
+    path = a["paramsFile"]
+    assert path.startswith(str((eda_cache / "params").resolve())) and path.endswith(".json")
+    assert a["leaf"]["params"] == "@" + path and a["leaf"]["search"]
+    stdout_params = json.loads(run_eda("de-spec", "plasmodb", "DS_e973eadd57", "--contrast", json.dumps(TEMP), "--format", "params"))
+    assert json.loads(open(path, encoding="utf-8").read()) == stdout_params
+    assert not [f for f in tmp_path.iterdir() if f.is_file()]  # the working directory stays clean
+
+
+def test_stash_json_is_atomic_parallel_and_pruned(eda_cache):
+    import os
+    import time
+    from concurrent.futures import ThreadPoolExecutor
+
+    import _client
+
+    stale = eda_cache / "params" / "0123456789abcdef.json"
+    stale.parent.mkdir(parents=True)
+    stale.write_text("{}")
+    old = time.time() - _client.CACHE_TTL_S - 60
+    os.utime(stale, (old, old))
+    payloads = [{"n": i} for i in range(20)] * 2  # every payload written twice, concurrently
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        paths = list(pool.map(lambda d: _client.stash_json("params", d), payloads))
+    assert len(set(paths)) == 20
+    for d, p in zip(payloads, paths):
+        assert json.loads(p.read_text()) == d
+    names = sorted(f.name for f in (eda_cache / "params").iterdir())
+    assert len(names) == 20 and all(n.endswith(".json") for n in names)  # no temp leftovers
+    assert not stale.exists()
 ```
 
 - [ ] **Step 2: Run them to verify they fail**
@@ -4144,7 +4221,45 @@ def cmd_de_spec(args) -> None:
                       pca_config(t["expr"]["entityId"], p["valueVar"]), thresholds)
     validate_spec(spec, ds["datasetId"])
     log(f"DE job id {job_id(PLUGIN_DE, p['body'])} (same body as 'eda.py de'; run de first so the WDK step answers at once)")
+    if args.save:
+        from _client import stash_json
+
+        path = str(stash_json("params", wdk_params(spec)))
+        out = {"paramsFile": path, "leaf": {"search": t["search"], "params": "@" + path}}
+        if not t["search"]:
+            out["note"] = "no search name known for this dataset: find it with 'eda.py de-datasets SITE'"
+        emit(out)
+        return
     emit(wdk_params(spec) if args.format == "params" else spec)
+```
+
+Append to `_client.py` (add `import hashlib`, `import os` and `import tempfile` to its imports if missing):
+
+```python
+def stash_json(kind, data):
+    """Content-addressed glue file in the skill's cache: EDA_CACHE_DIR/{kind}/{hash}.json.
+    Same content, same path; temp file + os.replace, so parallel writers never see a
+    partial file; files older than CACHE_TTL_S are pruned. Never the user's directory."""
+    text = json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    root = EDA_CACHE_DIR / kind
+    root.mkdir(parents=True, exist_ok=True)
+    path = root / f"{hashlib.sha256(text.encode('utf-8')).hexdigest()[:16]}.json"
+    fd, tmp = tempfile.mkstemp(dir=root, prefix=".tmp-", suffix=".json")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        os.replace(tmp, path)  # also refreshes the mtime, so a file in use is not pruned
+    except BaseException:
+        pathlib.Path(tmp).unlink(missing_ok=True)
+        raise
+    cutoff = time.time() - CACHE_TTL_S
+    for old in root.glob("*.json"):
+        try:
+            if old.stat().st_mtime < cutoff:
+                old.unlink()
+        except FileNotFoundError:  # a parallel process pruned it first
+            pass
+    return path.resolve()
 ```
 
 In `build_parser`, before `return p`:
@@ -4156,6 +4271,9 @@ In `build_parser`, before `return p`:
     _de_args(sp)
     sp.add_argument("--format", choices=["spec", "params"], default="spec",
                     help="spec = the analysis JSON; params = {eda_dataset_id, eda_analysis_spec} for wdk.py --params @file")
+    sp.add_argument("--save", action="store_true",
+                    help="write the WDK params to the skill cache (content-addressed) and print the path and a "
+                         "ready-made strategy leaf; nothing is written to the working directory")
     sp.set_defaults(func=cmd_de_spec)
 ```
 
@@ -4850,15 +4968,14 @@ def test_live_wdk_count_matches_de(live_eda, contrast_path, token, thresholds):
     assert count == de["context"]["counts"]["wdk_step_genes"]
 
 
-def test_live_create_strategy_from_de_spec(live_eda, contrast_path, tmp_path, token):
+def test_live_create_strategy_from_de_spec(live_eda, token):
     from _client import Client, fetch_catalog
     from _strategy import build_strategy
 
-    params = tmp_path / "params.json"
-    params.write_text(live_eda("de-spec", "plasmodb", HS, "--contrast", contrast_path(TEMP), "--format", "params"))
+    saved = json.loads(live_eda("de-spec", "plasmodb", HS, "--contrast", json.dumps(TEMP), "--save"))
+    assert saved["leaf"]["search"] == HS_SEARCH
     c = Client("plasmodb", token=token)
-    out = build_strategy(c, fetch_catalog(c), {"leaf": {"search": HS_SEARCH, "params": f"@{params}"}},
-                         "__skill_test__: eda de step")
+    out = build_strategy(c, fetch_catalog(c), {"leaf": saved["leaf"]}, "__skill_test__: eda de step")
     try:
         assert out["steps"][0]["valid"] is True
         size = out["estimated_size"]
@@ -4948,7 +5065,7 @@ Append to `veupathdb_database/TESTS.md`, filling `Gold (captured)` from Step 2 w
 | EDA-3 | `eda.py de plasmodb DS_e973eadd57 --contrast <normal→febrile file>` / test_live_de_heatshock_gold | job id = gold; passing raw p at 1,0.05 | exact job id; range ±20% count | 1543 | 2026-10-03 |
 | EDA-4 | test_live_wdk_count_matches_de[1,0.05 / 0,1] | WDK displayTotalCount = de's "WDK step returns" | exact | 1543; 5509 (= 5510 passing − dropped statistics[0]) | 2026-10-03 |
 | EDA-5 | test_live_wdk_step_drives_the_same_job | a fresh contrast's job is started by the WDK step under our job id | exact | (job id, date of the run that did not skip) | |
-| EDA-6 | test_live_create_strategy_from_de_spec | strategy from `de-spec --format params` via leaf "@file" is valid | fields-present | (estimated_size) | |
+| EDA-6 | test_live_create_strategy_from_de_spec | strategy from the `de-spec --save` leaf (cache "@file") is valid | fields-present | (estimated_size) | |
 | EDA-7 | `eda.py de-datasets plasmodb` / test_live_de_datasets_plasmodb | heat-shock and Crompton antibody searches with DS ids and methods | range ≥30 rows | (row count) | |
 | EDA-8 | `eda.py de plasmodb DS_24d441b301 --contrast N` / test_live_limma_antibody | limma end to end on an antibody array | fields-present | (contrast, tested) | |
 | EDA-9 | test_live_mirror_job_has_negated_effects | heat-shock febrile→normal job: same rows in the same order, effectSize negated, p and padj equal | rel 1e-6 | (mirror job id) | |
@@ -5086,11 +5203,13 @@ searches (WGCNA modules, phenotype subsets) are not supported.
 4. `eda.py de SITE DS_… --contrast N`: runs or reuses the shared job (or its cached
    swapped-groups mirror); counts and top genes.
    Re-thresholding (`--thresholds FC,P[,upOnly|downOnly]`) costs nothing.
-5. `eda.py de-spec SITE DS_… --contrast N --format params > p.json`, then
-   `wdk.py create-strategy SITE --spec '{"leaf": {"search": "SEARCH", "params": "@p.json"}}'`.
+5. `eda.py de-spec SITE DS_… --contrast N --save` prints a ready strategy `leaf`; use it
+   in `wdk.py create-strategy SITE --spec '{"leaf": …}'`.
 
 Pass the same `--vars`, `--value-var` and `--entity` to every command after
-`contrasts`, or `--contrast N` names a different candidate.
+`contrasts`, or `--contrast N` names a different candidate. Give contrasts and filters
+inline (`--contrast '{…}'`); glue files live in the skill cache (`--save`). Write files
+to the user's directory only when they ask to keep them.
 
 ## Top gotchas (full list: references/gotchas.md)
 
@@ -5152,13 +5271,27 @@ computation that has a thresholded volcano plot, and keeps the rows that pass.
 2. `eda.py study SITE DATASET`: the samples and their annotation.
 3. `eda.py contrasts SITE DATASET`: canonical candidate contrasts. Choose one.
 4. `eda.py de SITE DATASET --contrast N`: compute (or reuse), then summarise.
-5. `eda.py de-spec SITE DATASET --contrast N --format params > p.json`, then
-   `wdk.py create-strategy SITE --spec '{"leaf": {"search": "SEARCH", "params": "@p.json"}}'`
-   (or `wdk.py count SITE SEARCH --params @p.json`).
+5. `eda.py de-spec SITE DATASET --contrast N --save`. It writes the WDK params to
+   the skill cache and prints `{"paramsFile", "leaf"}`; put the `leaf` in
+   `wdk.py create-strategy SITE --spec '{"leaf": …}'` (or combine it with other
+   steps), or run `wdk.py count SITE SEARCH --params @PARAMSFILE`.
 
 `--contrast N` re-enumerates the candidates, so give every command after
-`contrasts` the same `--vars`, `--value-var` and `--entity`. A contrast file
+`contrasts` the same `--vars`, `--value-var` and `--entity`. An explicit contrast
 (below) avoids that dependency.
+
+## Files
+
+Nothing needs a file in the user's working directory:
+- `--contrast` and `--filters` take inline JSON (`'{…}'` / `'[…]'`), or a file path
+  when the user wants to keep one.
+- `de-spec --save` writes the WDK params to
+  `~/.cache/veupathdb-wdk/eda/params/{content hash}.json`: the same content gives the
+  same file, different contrasts or thresholds never collide, writes are atomic, and
+  files are pruned after 7 days. Each `--save` prints its own path, so parallel
+  sessions are safe.
+- Save results (`--tsv`, JSON) where the user and their project want them; ask if
+  unsure.
 
 ## Reading `study`
 
@@ -5204,7 +5337,8 @@ computation that has a thresholded volcano plot, and keeps the rows that pass.
 - `[complete]`: the job already exists in the shared cache, so `de` is instant
   (and someone, maybe a website user, ran it). Only the first 30 candidates are
   checked, with `autostart=false`, which never starts work.
-- Contrast file (for pooled or custom groups; `filters` optional):
+- Explicit contrast, inline or as a file (for pooled or custom groups, or a flipped
+  reference; `filters` optional):
 
   ```json
   {"comparator": {"variableId": "VAR_…"},
@@ -5334,7 +5468,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Modify: `veupathdb_database/scripts/_samples.py` (append `FILTER_FIELDS`, `validate_filters`)
-- Modify: `veupathdb_database/scripts/eda.py` (`read_filters`, `_load_filters_file`, `resolve_contrast`, `_target_args`)
+- Modify: `veupathdb_database/scripts/eda.py` (`read_filters`, `_load_filters`, `resolve_contrast`, `_target_args`)
 - Modify: `veupathdb_database/references/eda.md`, `veupathdb_database/SKILL.md`
 - Test: `veupathdb_database/tests/test_filters.py`
 
@@ -5342,7 +5476,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `_contrasts.canonical_filters`; the `read_filters(args, t)` hook every command already calls (Task 4)
 - Produces:
   - `_samples.validate_filters(filters, index) -> filters` (raises `SampleError` with suggestions)
-  - `--filters FILE` on every command that uses `_target_args` (study, contrasts, de, de-spec, and pca in Task 18). FILE holds a JSON array of EDA filters, `{"filters": [...]}`, or a whole analysis spec (its `descriptor.subset.descriptor` is used).
+  - `--filters JSON|FILE` on every command that uses `_target_args` (study, contrasts, de, de-spec, and pca in Task 18), parsed with `json_arg` (Task 10): inline JSON or a file. It holds a JSON array of EDA filters, `{"filters": [...]}`, or a whole analysis spec (its `descriptor.subset.descriptor` is used).
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -5427,10 +5561,20 @@ def test_contrasts_and_de_carry_filters(run_eda, eda_mock, filter_file):
     assert spec["descriptor"]["subset"]["descriptor"] == first["filters"]
 
 
+def test_inline_filters_equal_file(run_eda, filter_file):
+    a = json.loads(run_eda("study", "plasmodb", "DS_e973eadd57", "--json", "--filters", filter_file(FEBRILE)))
+    b = json.loads(run_eda("study", "plasmodb", "DS_e973eadd57", "--json", "--filters", json.dumps(FEBRILE)))
+    c = json.loads(run_eda("study", "plasmodb", "DS_e973eadd57", "--json", "--filters", json.dumps({"filters": FEBRILE})))
+    assert a == b == c
+
+
 def test_bad_filter_file_fails_cleanly(run_eda, filter_file, tmp_path, capsys):
     with pytest.raises(SystemExit):
         run_eda("study", "plasmodb", "DS_e973eadd57", "--filters", str(tmp_path / "missing.json"))
     assert "not found" in capsys.readouterr().err
+    with pytest.raises(SystemExit):
+        run_eda("study", "plasmodb", "DS_e973eadd57", "--filters", "[{")
+    assert "inline JSON is not valid" in capsys.readouterr().err
     with pytest.raises(SystemExit):
         run_eda("study", "plasmodb", "DS_e973eadd57", "--filters", filter_file({"x": 1}))
     assert "JSON array" in capsys.readouterr().err
@@ -5503,16 +5647,10 @@ def validate_filters(filters, index):
 In `eda.py`, replace `read_filters` with:
 
 ```python
-def _load_filters_file(path):
+def _load_filters(raw):
     from _samples import SampleError
 
-    p = pathlib.Path(path).expanduser()
-    if not p.is_file():
-        raise SampleError(f"--filters file not found: {p}")
-    try:
-        data = json.loads(p.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as e:
-        raise SampleError(f"--filters file {p} is not valid JSON: {e}") from None
+    data = json_arg(raw, "--filters", "inline JSON or a filters file")
     if isinstance(data, dict) and "filters" in data:
         data = data["filters"]
     elif isinstance(data, dict) and "descriptor" in data:
@@ -5527,10 +5665,10 @@ def read_filters(args, t):
     from _contrasts import canonical_filters
     from _samples import validate_filters
 
-    path = getattr(args, "filters", None)
-    if not path:
+    raw = getattr(args, "filters", None)
+    if not raw:
         return []
-    return canonical_filters(validate_filters(_load_filters_file(path), t["index"]))
+    return canonical_filters(validate_filters(_load_filters(raw), t["index"]))
 ```
 
 In `resolve_contrast`, just before `return load_contrast(...)`, add:
@@ -5545,8 +5683,8 @@ In `resolve_contrast`, just before `return load_contrast(...)`, add:
 In `_target_args`, add:
 
 ```python
-    sp.add_argument("--filters", help="JSON file restricting the samples: an array of EDA filters, "
-                                      '{"filters": [...]}, or a saved analysis spec')
+    sp.add_argument("--filters", help="inline JSON or a JSON file restricting the samples: an array of EDA "
+                                      'filters, {"filters": [...]}, or a saved analysis spec')
 ```
 
 - [ ] **Step 4: Run the tests and the suite**
@@ -5559,11 +5697,12 @@ Expected: PASS.
 Append to `references/eda.md`, after `## Contrasts`:
 
 ````markdown
-## Sample filters (`--filters FILE`)
+## Sample filters (`--filters JSON|FILE`)
 
-`study`, `contrasts`, `de`, `de-spec` and `pca` take `--filters FILE`, which restricts
-the samples exactly as the notebook's subset step does. The file holds an array of
-EDA filters, `{"filters": [...]}`, or a saved analysis spec (its subset is used):
+`study`, `contrasts`, `de`, `de-spec` and `pca` take `--filters`, which restricts
+the samples exactly as the notebook's subset step does. Pass it inline (preferred:
+no file to manage) or as a file. It holds an array of EDA filters,
+`{"filters": [...]}`, or a saved analysis spec (its subset is used):
 
 ```json
 [{"entityId": "ENT_…", "variableId": "VAR_…", "type": "stringSet", "stringSet": ["febrile"]},
@@ -5580,7 +5719,7 @@ In `SKILL.md`, change the sentence after the EDA steps to:
 
 ```markdown
 Pass the same `--filters`, `--vars`, `--value-var` and `--entity` to every command
-after `contrasts`, or `--contrast N` names a different candidate. `study --filters FILE`
+after `contrasts`, or `--contrast N` names a different candidate. `study --filters '[…]'`
 previews a sample subset.
 ```
 
@@ -5939,7 +6078,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `parse_variance(meta) -> {pc: percent | None}`
   - `pca_report(pcs, scores, variance, rows, var_meta, outlier_pcs=2) -> {"pcs", "samples", "unmatched", "tracks", "notScored", "outliers", "scores"}`
   - `render_pca(report, top=5) -> list[str]`
-  - CLI: `pca SITE DATASET [--filters FILE] [--value-var V] [--npcs N] [--top N] [--json] [--timeout S]`
+  - CLI: `pca SITE DATASET [--filters JSON|FILE] [--value-var V] [--npcs N] [--top N] [--json] [--timeout S]`
 
 - [ ] **Step 1: Write the failing tests**
 

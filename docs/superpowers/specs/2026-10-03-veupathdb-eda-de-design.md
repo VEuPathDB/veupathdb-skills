@@ -308,13 +308,13 @@ inspected and diffed, and it is exactly what the website would save.
    using the study description and the user's question.
 5. Run `eda.py de SITE DS_… --contrast N` to compute or reuse the job and see how
    many genes pass and which are top. Re-thresholding costs nothing.
-6. Run `eda.py de-spec … > spec.json`, then `wdk.py create-strategy` with the
-   `eda_analysis_spec` param read from the file (needs `@file` support for param
-   values; see Handoff).
+6. Run `eda.py de-spec … --save`, which writes the WDK params to the skill cache
+   and prints a ready strategy leaf, then `wdk.py create-strategy` with that leaf
+   (needs `@file` support for param values; see Handoff and Files).
 
 ## Commands
 
-### `eda.py study SITE DATASET_ID [--filters FILE] [--json]`
+### `eda.py study SITE DATASET_ID [--filters JSON|FILE] [--json]`
 
 A pruned overview of the study, built for agent context.
 
@@ -361,7 +361,7 @@ ENT_8151325d "Sample" — 12 records
 - Include the study or dataset description when available (from study metadata,
   or from the WDK dataset record). The agent needs it to choose contrasts.
 
-### `eda.py contrasts SITE DATASET_ID [--filters FILE] [--vars V1,V2] [--json]`
+### `eda.py contrasts SITE DATASET_ID [--filters JSON|FILE] [--vars V1,V2] [--json]`
 
 Deterministic enumeration; the agent ranks the results.
 
@@ -411,7 +411,7 @@ reuse: a flipped contrast whose mirror is cached costs nothing.
   match those from WDK steps and website notebooks. A unit test computes the MD5
   locally and checks it against a captured live job id.
 
-### `eda.py de SITE DATASET_ID --contrast <idx | file.json> [--method auto|DESeq|limma] [--thresholds FC,P[,upOnly|downOnly]] [--genes ID,…] [--tsv FILE] [--json] [--no-wait] [--no-mirror]`
+### `eda.py de SITE DATASET_ID --contrast <idx | JSON | file.json> [--method auto|DESeq|limma] [--thresholds FC,P[,upOnly|downOnly]] [--genes ID,…] [--tsv FILE] [--json] [--no-wait] [--no-mirror]`
 
 - Builds the canonical body, then POSTs `?autostart=true` and polls (backoff,
   progress on stderr, configurable timeout). `--no-wait` returns after starting
@@ -439,9 +439,10 @@ reuse: a flipped contrast whose mirror is cached costs nothing.
   `identity`/`context`/`provenance`/`rows` split described under Wider context.
   This is the contract for later consumers such as `veupathdb_gene_summaries`.
 
-### `eda.py de-spec SITE DATASET_ID --contrast … [--thresholds …] [--filters FILE]`
+### `eda.py de-spec SITE DATASET_ID --contrast … [--thresholds …] [--filters …] [--format spec|params] [--save]`
 
-Writes the complete `eda_analysis_spec` to stdout:
+Writes the complete `eda_analysis_spec` (or the WDK params) to stdout, or with
+`--save` to the skill cache (see Files):
 - `studyId` = DS id, `displayName` and `description`, `isPublic: false`, and the
   boilerplate fields the plugin's empty-spec synthesiser uses.
 - `descriptor.subset.descriptor` = filters.
@@ -454,7 +455,7 @@ Writes the complete `eda_analysis_spec` to stdout:
 The DE computation's config must be identical to what `de` hashed. Validate it
 against the plugin's rules before printing.
 
-### `eda.py pca SITE DATASET_ID [--filters FILE] [--value-var V] [--npcs N] [--json]` (stage 3)
+### `eda.py pca SITE DATASET_ID [--filters JSON|FILE] [--value-var V] [--npcs N] [--json]` (stage 3)
 
 - Runs `dimensionalityreduction` with the notebook's config: `dataFormat` is
   `rawCounts` for RNA-Seq and `normalizedValues` for arrays, and shared
@@ -518,6 +519,23 @@ query). Running across datasets for one gene is an agent loop in v1:
   passing raw p at the thresholds from `de`. Transcripts versus genes may differ:
   compare against `displayTotalCount` or gene count, per the pathfinder
   measurement of 1543 genes vs 1571 transcripts.
+
+## Files
+
+The skill will run in users' bioinformatics work directories, so it must not
+leave glue files there or let parallel sessions clobber each other's.
+
+- `--contrast` and `--filters` accept **inline JSON** as well as a file path. The
+  objects are small, so a normal session needs no files of its own.
+- `de-spec --save` writes the WDK params to
+  `~/.cache/veupathdb-wdk/eda/params/{sha256 prefix}.json`. The name is a hash of
+  the content: identical content gives the same file, and different contrasts or
+  thresholds never collide. Writes use a temp file and an atomic rename. Files
+  older than the cache TTL (7 days) are pruned. It prints
+  `{"paramsFile", "leaf": {"search", "params": "@PATH"}}`, so several DE leaves can
+  go in one strategy tree.
+- Where results the user wants to keep are saved (`--tsv`, JSON) is for the user
+  and their agent to decide; the skill only says so.
 
 ## Errors
 
