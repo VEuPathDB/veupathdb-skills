@@ -536,6 +536,12 @@ leave glue files there or let parallel sessions clobber each other's.
   go in one strategy tree.
 - Where results the user wants to keep are saved (`--tsv`, JSON) is for the user
   and their agent to decide; the skill only says so.
+- **Cache housekeeping without a cron job.** The EDA metadata caches
+  (`eda/{site}_permissions.json`, `eda/{site}_study_{STUDY}.json`) and the params
+  stash are written atomically. After every cache write, files in that directory
+  older than the 7-day TTL are deleted; a stale file would be refetched on its next
+  read anyway. Reads never delete anything. The existing WDK catalog and
+  record-type caches are one file per site and are simply overwritten.
 
 ## Errors
 
