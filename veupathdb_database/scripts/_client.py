@@ -3,6 +3,7 @@ import difflib
 import json
 import os
 import pathlib
+import tempfile
 import time
 
 import httpx
@@ -11,6 +12,8 @@ from _sites import SITES, service_url
 
 CACHE_DIR = pathlib.Path.home() / ".cache" / "veupathdb-wdk"
 CACHE_TTL_S = 7 * 24 * 3600
+EDA_CACHE_DIR = CACHE_DIR / "eda"
+EDA_TIMEOUT_S = 120
 
 
 class WDKError(Exception):
@@ -111,7 +114,7 @@ def _is_delayed(body):
 
 
 class Client:
-    def __init__(self, site_id, token=None, transport=None, backoff=2.0):
+    def __init__(self, site_id, token=None, transport=None, backoff=2.0, base_url=None, timeout=None):
         self.site_id = site_id
         self.token = token
         self.backoff = backoff
@@ -120,21 +123,21 @@ class Client:
             headers["Cookie"] = f"Authorization={token}"
             headers["Authorization"] = f"Bearer {token}"
         self._http = httpx.Client(
-            base_url=service_url(site_id),
+            base_url=base_url or service_url(site_id),
             headers=headers,
-            timeout=SITES[site_id]["timeout"],
+            timeout=timeout or SITES[site_id]["timeout"],
             follow_redirects=True,
             transport=transport,
         )
         self._user_id = None
 
-    def request(self, method, path, body=None, params=None, retries=3):
+    def request(self, method, path, body=None, params=None, retries=3, headers=None):
         last = None
         for attempt in range(retries):
             if attempt and self.backoff:
                 time.sleep(self.backoff**attempt)
             try:
-                r = self._http.request(method, path, json=body, params=params)
+                r = self._http.request(method, path, json=body, params=params, headers=headers)
             except (httpx.TimeoutException, httpx.ConnectError) as e:
                 last = WDKError(f"{type(e).__name__}: {e}", endpoint=path)
                 continue
@@ -156,8 +159,10 @@ class Client:
     def get(self, path, params=None):
         return self.request("GET", path, params=params)
 
-    def post(self, path, body, idempotent=True):
-        return self.request("POST", path, body=body, retries=3 if idempotent else 1)
+    def post(self, path, body, idempotent=True, params=None, headers=None):
+        return self.request(
+            "POST", path, body=body, params=params, retries=3 if idempotent else 1, headers=headers
+        )
 
     def put(self, path, body):
         return self.request("PUT", path, body=body)
@@ -200,6 +205,58 @@ class Client:
         }
         res = self.post("/users/current/datasets", body=payload)
         return int(res["id"])
+
+
+def eda_client(site_id, token=None, transport=None, backoff=2.0):
+    """A Client rooted at the site's EDA service (https://{host}/eda). The same token
+    works: the Bearer header is what EDA reads; WDK reads the cookie."""
+    from _sites import eda_url
+
+    return Client(
+        site_id,
+        token=token,
+        transport=transport,
+        backoff=backoff,
+        base_url=eda_url(site_id),
+        timeout=EDA_TIMEOUT_S,
+    )
+
+
+def write_atomic(path, text):
+    """Write via a temp file in the same directory and os.replace: a parallel session
+    sees the old file or the new one, never a partial one. Also refreshes the mtime."""
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=".tmp-", suffix=".json")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        os.replace(tmp, path)
+    except BaseException:
+        pathlib.Path(tmp).unlink(missing_ok=True)
+        raise
+
+
+def prune_stale(root, ttl_s=CACHE_TTL_S):
+    """Delete root/*.json older than ttl_s. Called after cache writes (no cron job): a
+    stale file would be refetched on its next read anyway, so deleting it loses nothing."""
+    cutoff = time.time() - ttl_s
+    for old in root.glob("*.json"):
+        try:
+            if old.stat().st_mtime < cutoff:
+                old.unlink()
+        except FileNotFoundError:  # a parallel session pruned it first
+            pass
+
+
+def cached_json(name, fetch, refresh=False, ttl_s=CACHE_TTL_S):
+    """Disk-cache fetch() as EDA_CACHE_DIR/{name}.json for ttl_s seconds."""
+    EDA_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    path = EDA_CACHE_DIR / f"{name}.json"
+    if not refresh and path.is_file() and time.time() - path.stat().st_mtime < ttl_s:
+        return json.loads(path.read_text())
+    data = fetch()
+    write_atomic(path, json.dumps(data))
+    prune_stale(EDA_CACHE_DIR)
+    return data
 
 
 DEFAULT_EXCLUDED_PARAM_PREFIXES = ("eda_",)
