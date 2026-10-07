@@ -56,3 +56,13 @@ Run all: `uv run --with pytest --with httpx python -m pytest tests -q`
 
 
 
+| EDA-1 | test_contrasts_canonical.py::test_job_id_matches_live_gold | local MD5 of the canonical body equals the live job id | exact (offline) | db04204e5386396e1ca2cb78469ab6fb | 2026-10-07 |
+| EDA-2 | `eda.py contrasts plasmodb DS_e973eadd57` / test_eda_live.py::test_live_contrasts_heatshock | candidate 1 = temperature_condition normal → febrile, 6/6, cache complete | exact | index 1, 6/6, db04204e5386396e1ca2cb78469ab6fb | 2026-10-07 |
+| EDA-3 | `eda.py de plasmodb DS_e973eadd57 --contrast <normal→febrile file>` / test_live_de_heatshock_gold | job id = gold; passing raw p at 1,0.05 | exact job id; range ±20% count | 1543 | 2026-10-07 |
+| EDA-4 | test_live_wdk_count_matches_de[1,0.05 / 0,1] | WDK displayTotalCount = de's "WDK step returns" | exact | 1543; 5509 (= 5510 passing − dropped statistics[0]) | 2026-10-07 |
+| EDA-5 | test_live_wdk_step_drives_the_same_job | a fresh contrast's job is started by the WDK step under our job id | exact | job 3d9eda4e2923d22dcb3656b173cc0b5c (DHC→LRR5 mutants, febrile→normal filter, antisense counts) | 2026-10-07 |
+| EDA-6 | test_live_create_strategy_from_de_spec | strategy from the `de-spec --save` leaf (cache "@file") is valid | fields-present | estimated_size 1543, step valid | 2026-10-07 |
+| EDA-7 | `eda.py de-datasets plasmodb` / test_live_de_datasets_plasmodb | heat-shock and Crompton antibody searches with DS ids and methods | range ≥30 rows | 58 rows | 2026-10-07 |
+| EDA-8 | `eda.py de plasmodb DS_24d441b301 --contrast N` / test_live_limma_antibody | limma end to end on an antibody array | fields-present | contrast 1 (Collection Date 5/1/06 → 12/1/06), tested 876 | 2026-10-07 |
+| EDA-9 | (pending: mirror-symmetry test withheld, see Task 14 report) | heat-shock febrile→normal job: same rows in the same order, effectSize negated, p and padj equal | rel 1e-6 (observed NOT met) | same 5511 rows and order; max relative deviation effectSize 7.4e-4 (max abs 2.9e-5), pValue 3.6e-5, padj 3.6e-5; mirror job 171e16e9e61424878d6ed8e00d9b6aec | 2026-10-07 |
+| EDA-WEB-1 | manual: open the EDA-6 strategy URL before teardown (or re-create it), click the step's revise/edit | the notebook opens with the same comparator, groups and thresholds | manual | | |
