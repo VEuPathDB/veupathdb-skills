@@ -53,10 +53,35 @@ def test_score_continuous():
 def test_outliers_flags_a_far_point():
     from _stats import outliers
 
-    pts = [(0, 0.1), (0.2, -0.1), (-0.1, 0.3), (0.3, 0), (-0.2, -0.2), (0.1, 0.2), (0, -0.3), (-0.3, 0.1), (0.2, 0.2), (100, 100)]
-    out = outliers({f"s{i}": list(p) for i, p in enumerate(pts)})
-    assert [s["sampleId"] for s in out["samples"]] == ["s9"]
+    out = outliers(_pca_like(12))
+    assert [s["sampleId"] for s in out["samples"]] == ["far"]
     assert out["samples"][0]["distance"] > 3 and out["pcs"] == 2
+
+
+def _pca_like(n):
+    """Centred, uncorrelated 2-PC scores with one sample as far out as n allows on PC1."""
+    others = n - 1
+    pc2 = [(-1.0) ** i for i in range(others - others % 2)] + [0.0] * (others % 2)
+    pts = {"far": [float(others), 0.0]}
+    pts |= {f"s{i}": [-1.0, v] for i, v in enumerate(pc2)}
+    for k in range(2):
+        assert sum(p[k] for p in pts.values()) == 0
+    assert sum(p[0] * p[1] for p in pts.values()) == 0
+    return pts
+
+
+@pytest.mark.parametrize("n,scored", [(10, False), (11, True), (12, True)])
+def test_outliers_reachability_bound(n, scored):
+    """Uncorrelated PC scores cap any sample's distance at (n-1)/sqrt(n) whatever the
+    number of PCs, so with threshold 3 nothing is reachable below n=11."""
+    from _stats import outliers
+
+    out = outliers(_pca_like(n))
+    if scored:
+        assert "not_scored" not in out and [s["sampleId"] for s in out["samples"]] == ["far"]
+        assert out["samples"][0]["distance"] == pytest.approx((n - 1) / n ** 0.5, abs=0.01)
+    else:
+        assert f"n={n}" in out["not_scored"] and "3" in out["not_scored"] and out["samples"] == []
 
 
 def test_outliers_not_scored_cases():
@@ -65,13 +90,12 @@ def test_outliers_not_scored_cases():
     assert "fewer than 5" in outliers({"a": [1.0, 2.0], "b": [2.0, 1.0]})["not_scored"]
     flat = {f"s{i}": [1.0, float(i)] for i in range(6)}
     assert "zero SD" in outliers(flat)["not_scored"]
-    with_missing = {f"s{i}": [float(i), float(i % 3)] for i in range(8)}
-    with_missing["s9"] = [None, 1.0]
+    with_missing = {f"s{i}": [float(i), float(i % 3)] for i in range(12)}
+    with_missing["s99"] = [None, 1.0]
     out = outliers(with_missing)
     assert "not_scored" not in out and out["pcs"] == 2 and out["samples"] == []
-    small = {f"s{i}": [0.0, 0.0] for i in range(5)}
-    small["s5"] = [1e6, 1e6]
-    out = outliers(small)  # n=6, 2 PCs: no point can reach distance 3
+    small = _pca_like(6)  # n=6: no point can reach distance 3, however many PCs
+    out = outliers(small)
     assert "too few samples" in out["not_scored"] and out["samples"] == []
 
 

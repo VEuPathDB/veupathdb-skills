@@ -82,10 +82,12 @@ def outliers(points, threshold=OUTLIER_Z, min_n=MIN_OUTLIER_N):
     if any(sd == 0 for sd in sds):
         return {"not_scored": "a PC has zero SD", "samples": []}
     n = len(complete)
-    # One point can contribute at most z = (n-1)/sqrt(n) per PC (the SD includes it).
-    if dims * (n - 1) ** 2 / n <= threshold ** 2:
-        return {"not_scored": f"too few samples to flag outliers (n={n}, {dims} PCs): "
-                              f"no point could reach distance {threshold}", "samples": []}
+    # PC scores are centred and uncorrelated, so a point's standardised distance is at
+    # most (n-1)/sqrt(n) however many PCs are used (the SDs include the point itself).
+    if (n - 1) ** 2 / n <= threshold ** 2:
+        return {"not_scored": f"too few samples to flag outliers: with n={n} no sample can "
+                              f"reach distance {threshold:g} (max (n-1)/√n = {(n - 1) / math.sqrt(n):.2f})",
+                "samples": []}
     flagged = []
     for s, p in complete.items():
         d = math.sqrt(math.fsum(((v - m) / sd) ** 2 for v, m, sd in zip(p, means, sds)))

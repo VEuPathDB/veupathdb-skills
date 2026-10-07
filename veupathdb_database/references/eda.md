@@ -208,7 +208,8 @@ EDA returns only per-sample scores. Everything else is computed locally:
   constant variable (common after `--filters`); no level with 2+ samples
   (identifier-like); a PC with zero variance.
 - **outliers**: samples whose standardised distance from the centroid in PC1–PC2
-  exceeds 3 (z per PC). With few samples this rarely triggers. Exclude a confirmed
+  exceeds 3 (z per PC). No sample can exceed (n-1)/√n, so outliers need at least
+  11 samples at 3 SD; below that the report says "not scored". Exclude a confirmed
   outlier with `--filters` and re-run `study`.
 - Variance explained is parsed from labels like `PC 1 (54.35% variance)`; if that format
   changes the report says "variance unknown".

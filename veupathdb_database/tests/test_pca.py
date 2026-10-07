@@ -59,6 +59,21 @@ def test_render_pca_groups_not_scored():
     assert any(l.startswith("outliers") and l.endswith("none") for l in lines)
 
 
+def test_render_pca_outliers_not_scored():
+    from _pca import parse_scores, parse_variance, pca_report, render_pca
+    from _samples import ancestors, build_sample_table, index_entities, variable_meta
+
+    index = index_entities(eda_fixture("study_heatshock.json")["rootEntity"])
+    meta = variable_meta(index, ancestors(index, "ENT_fd574cd6"))
+    table = build_sample_table(lambda e, ids: eda_fixture("tabular_heatshock_sample.json"), index, "ENT_fd574cd6", meta)
+    pcs, scores = parse_scores(eda_fixture("pca_heatshock_tabular.tsv"))
+    eight = dict(list(scores.items())[:8])
+    rep = pca_report(pcs, eight, parse_variance(eda_fixture("pca_heatshock_meta.json")), table["rows"], meta)
+    rep.update(datasetId="DS_e973eadd57", valueVariable="SEQUENCE_READ_COUNT_SENSE", dataFormat="rawCounts", jobId="j", notes=[])
+    line = next(l for l in render_pca(rep) if l.startswith("outliers"))
+    assert line.startswith("outliers: not scored (too few samples") and "n=8" in line and line.endswith(")")
+
+
 def test_pca_cli_uses_notebook_config(run_eda, eda_mock):
     out = run_eda("pca", "plasmodb", "DS_e973eadd57")
     assert "PC1 (54.35% variance) tracks:" in out and "temperature_condition" in out
