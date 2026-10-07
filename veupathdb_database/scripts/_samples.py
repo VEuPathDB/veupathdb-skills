@@ -1,5 +1,5 @@
 """EDA study metadata pruning and sample-table assembly (pure functions; no I/O)."""
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 from _eda import EdaError
 
@@ -171,4 +171,162 @@ def all_var_entities(index):
         for eid, node in index.items()
         for v in node["entity"].get("variables", [])
         if v.get("type") != "category"
+    }
+
+
+def convert_value(meta, raw):
+    if raw is None or raw == "":
+        return None
+    if meta.get("type") in NUMERIC_TYPES:
+        try:
+            return float(raw)
+        except ValueError:
+            return None
+    return raw
+
+
+def build_sample_table(fetch_tabular, index, expr_entity_id, var_meta):
+    """Join the expression entity's ancestors into one row per sample.
+
+    fetch_tabular(entity_id, variable_ids) returns /tabular rows: header first,
+    then own key, ancestor keys (nearest first), variable values.
+    """
+    chain = ancestors(index, expr_entity_id)
+    if not chain:
+        raise SampleError(f"expression entity {expr_entity_id} has no parent sample entity")
+    records, by_entity = {}, {}
+    for eid in chain:
+        ids = [vid for vid, m in var_meta.items() if m["entityId"] == eid]
+        rows = fetch_tabular(eid, ids)
+        header, data = rows[0], rows[1:]
+        n_anc = len(ancestors(index, eid))
+        var_cols = header[1 + n_anc:]
+        table = {}
+        for row in data:
+            vals = {
+                vid: convert_value(var_meta[vid], cell)
+                for vid, cell in zip(var_cols, row[1 + n_anc:])
+                if vid in var_meta
+            }
+            table[row[0]] = {"anc": row[1:1 + n_anc], "vals": vals}
+        records[eid] = table
+        by_entity[eid] = [rec["vals"] for rec in table.values()]
+    out = []
+    for key, rec in records[chain[0]].items():
+        row = {"sampleId": key, **rec["vals"]}
+        for depth, anc_key in enumerate(rec["anc"]):
+            anc = records[chain[depth + 1]].get(anc_key)
+            if anc:
+                row.update(anc["vals"])
+        out.append(row)
+    return {"entityId": chain[0], "rows": out, "byEntity": by_entity}
+
+
+def summarise_variable(meta, values):
+    present = [v for v in values if v is not None]
+    out = {"n": len(present), "missing": len(values) - len(present)}
+    if meta.get("type") in NUMERIC_TYPES:
+        out["kind"] = "continuous"
+        if present:
+            out.update(
+                min=min(present),
+                max=max(present),
+                mean=sum(present) / len(present),
+                distinct=len(set(present)),
+            )
+        return out
+    counts = Counter(present)
+    out["distinct"] = len(counts)
+    n_distinct = len(counts)
+    if (n_distinct > IDENT_MIN_DISTINCT and n_distinct >= IDENT_COVERAGE * len(present)) or (
+        n_distinct == len(present) and len(present) >= 3
+    ):
+        out["kind"] = "identifier"
+        return out
+    out["kind"] = "categorical"
+    out["levels"] = [[k, n] for k, n in sorted(counts.items(), key=lambda kv: (-kv[1], str(kv[0])))]
+    return out
+
+
+def _fmt_num(x):
+    return f"{x:g}" if isinstance(x, float) else str(x)
+
+
+def variable_line(item, summary):
+    star = "*" if item.get("featured") else " "
+    indent = "  " * (item["depth"] + 1)
+    units = f" ({item['units']})" if item.get("units") else ""
+    head = f"{indent}{star}{item['id']}  {item['displayName']}{units}"
+    kind = summary.get("kind")
+    if kind == "identifier":
+        return f"{head}  [identifier: {summary['distinct']} distinct / {summary['n']} records]"
+    if summary.get("unavailable"):
+        return f"{head}  [{item.get('dataShape') or item.get('type')}]  ({summary['unavailable']})"
+    shape = item.get("dataShape") or item.get("type")
+    if kind == "continuous":
+        if summary["n"]:
+            detail = (
+                f"{_fmt_num(summary['min'])}–{_fmt_num(summary['max'])}, "
+                f"mean {_fmt_num(round(summary['mean'], 3))}, {summary['missing']} missing"
+            )
+        else:
+            detail = f"no values, {summary['missing']} missing"
+    else:
+        levels = summary.get("levels", [])
+        detail = " · ".join(f"{label} {n}" for label, n in levels[:VOCAB_TOP])
+        if len(levels) > VOCAB_TOP:
+            detail += f" … {len(levels) - VOCAB_TOP} more"
+        if summary.get("missing"):
+            detail += f", {summary['missing']} missing"
+    return f"{head}  [{shape}]  {detail}"
+
+
+def render_study(dataset, expr, sections, others):
+    lines = [f"{dataset['studyId']} ({dataset['datasetId']}) \"{dataset['displayName']}\""]
+    desc = dataset.get("description")
+    if desc:
+        lines.append("  " + (desc if len(desc) <= 1000 else desc[:999] + "…"))
+    lines.append(
+        f"DE-ready: gene entity {expr['entityId']} \"{expr['displayName']}\" — "
+        f"{GENE_ID} ({expr['geneCount']}), values: {', '.join(expr['valueIds'])}"
+    )
+    for s in sections:
+        rec = f"{s['records']} of {s['total']} records" if s["records"] != s["total"] else f"{s['total']} records"
+        lines.append(f"{s['entityId']} \"{s['displayName']}\" — {rec}")
+        if s.get("note"):
+            lines.append(f"  ({s['note']})")
+        for item, summary in s["items"]:
+            if item["kind"] == "category":
+                lines.append(f"{'  ' * (item['depth'] + 1)}{item['displayName']}:")
+            else:
+                lines.append(variable_line(item, summary))
+    for o in others:
+        lines.append(
+            f"{o['entityId']} \"{o['displayName']}\" — {o['records']} records "
+            "(not an ancestor of the expression entity: not usable as a comparator)"
+        )
+    return lines
+
+
+def study_json(dataset, expr, sections, others, table, filters):
+    def clean(item):
+        return {k: v for k, v in item.items() if not k.startswith("_") and k != "vocabulary"}
+
+    return {
+        "dataset": dataset,
+        "expression": expr,
+        "filters": filters,
+        "entities": [
+            {
+                "entityId": s["entityId"],
+                "displayName": s["displayName"],
+                "records": s["records"],
+                "total": s["total"],
+                "note": s["note"],
+                "variables": [{**clean(i), **({"summary": sm} if sm else {})} for i, sm in s["items"]],
+            }
+            for s in sections
+        ],
+        "otherEntities": others,
+        "samples": table["rows"] if table else None,
     }
