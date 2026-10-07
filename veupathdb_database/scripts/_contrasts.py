@@ -175,11 +175,31 @@ def _usable_spec(meta):
 
 def _bin_entry(v, spec):
     """Half-open [start, end) bin of width binWidth anchored at displayRangeMin."""
-    rmin, w = float(spec["displayRangeMin"]), float(spec["binWidth"])
-    start = rmin + math.floor((float(v) - rmin) / w) * w
-    # round away float drift (0.1 * 3 -> 0.30000000000000004) so labels and edges are clean
-    lo, hi = _fmt(float(f"{start:.12g}")), _fmt(float(f"{start + w:.12g}"))
+    rmin, w, x = float(spec["displayRangeMin"]), float(spec["binWidth"]), float(v)
+
+    def edges(k):
+        # round away float drift (0.1 * 3 -> 0.30000000000000004) so labels and edges are clean
+        return float(f"{rmin + k * w:.12g}"), float(f"{rmin + (k + 1) * w:.12g}")
+
+    k = math.floor((x - rmin) / w)
+    lo, hi = edges(k)
+    # the quotient can fall just below an integer (0.3 / 0.1); settle on the bin that holds x
+    # under the rounded edges, which are what samples_in_group tests against
+    while x < lo:
+        k -= 1
+        lo, hi = edges(k)
+    while x >= hi:
+        k += 1
+        lo, hi = edges(k)
+    lo, hi = _fmt(lo), _fmt(hi)
     return {"label": f"[{lo}, {hi})", "min": lo, "max": hi}
+
+
+def _is_binned(rows, meta):
+    """True when comparator_levels bins this variable (many distinct values, usable _binSpec)."""
+    if meta.get("type") not in NUMERIC_TYPES or not _usable_spec(meta):
+        return False
+    return len({r.get(meta["id"]) for r in rows} - {None}) > MAX_PAIRWISE_LEVELS
 
 
 def comparator_levels(rows, meta):
@@ -195,7 +215,7 @@ def comparator_levels(rows, meta):
     if meta.get("type") in NUMERIC_TYPES:
         values = sorted(by_value)
         entries = []
-        if len(values) > MAX_PAIRWISE_LEVELS and _usable_spec(meta):
+        if len(values) > MAX_PAIRWISE_LEVELS and _usable_spec(meta):  # see _is_binned
             bins = {}
             for v in values:
                 entry = _bin_entry(v, meta["_binSpec"])
@@ -308,7 +328,7 @@ def _pair_candidates(rows, var_meta, prof, vid, base, aliases):
     # sorted: note order must not depend on dict order; aliases are covered by their twin
     others = sorted(z for z in var_meta if z != vid and not prof[z]["identifier"] and z not in alias_ids)
     confounders = [z for z in others if not determines(rows, z, vid)]
-    stratifiers = [z for z in others if prof[z]["reason"] is None and not aliased(rows, vid, z) and not determines(rows, z, vid)]
+    stratifiers = [z for z in others if prof[z]["reason"] is None and not _is_binned(rows, var_meta[z]) and not aliased(rows, vid, z) and not determines(rows, z, vid)]
     out = []
     for (ea, ids_a), (eb, ids_b) in itertools.combinations(p["usable"], 2):
         # One orientation per pair. The control-label match is only a hint: the agent

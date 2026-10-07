@@ -206,6 +206,7 @@ def test_load_contrast_validates_and_merges_filters():
     with pytest.raises(ContrastError):
         load_contrast({"comparator": {"variableId": "deg"}, "groupA": [{"label": "37"}], "groupB": [{"label": "41"}]}, var_meta, owners, ["ENT_s"])
 
+
 def _binned_rows():
     # 8 distinct values; bins of width 10 anchored at 0: [0,10) x3, [10,20) x2, [20,30) x3
     vals = [1.0, 2.0, 9.0, 11.0, 19.0, 21.0, 25.0, 29.0]
@@ -246,3 +247,26 @@ def test_many_valued_numeric_without_bin_spec_needs_contrast_file():
     assert out["candidates"] == []
     assert "write a contrast file" in out["skipped"][0]["reason"]
 
+
+
+def test_values_on_bin_edges_land_in_their_bin():
+    from _contrasts import comparator_levels, samples_in_group
+
+    m = meta("x", "x", "number")
+    m["_binSpec"] = {"displayRangeMin": 0, "displayRangeMax": 1, "binWidth": 0.1}
+    rows = [{"sampleId": f"s{i}", "x": v} for i, v in enumerate([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.3])]
+    levels = comparator_levels(rows, m)
+    assert len(levels) == 8
+    for entry, ids in levels:
+        assert samples_in_group(rows, "x", [entry]) == sorted(ids, key=lambda i: int(i[1:])), entry
+    assert {"label": "[0.3, 0.4)", "min": "0.3", "max": "0.4"} in [e for e, _ in levels]
+
+
+def test_binned_numeric_is_not_a_stratifier():
+    from _contrasts import enumerate_contrasts
+
+    m = meta("age", "age", "number")
+    m["_binSpec"] = {"displayRangeMin": 0, "displayRangeMax": 80, "binWidth": 10}
+    rows = [{"sampleId": f"s{i}", "cond": "control" if i % 2 else "treated", "age": float((i // 4) * 5)} for i in range(32)]
+    out = enumerate_contrasts(rows, {"cond": meta("cond"), "age": m}, only_vars={"cond"})
+    assert out["candidates"] and all(c["stratum"] is None for c in out["candidates"])
