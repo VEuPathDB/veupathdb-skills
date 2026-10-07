@@ -45,7 +45,14 @@ def job_id(plugin, body):
     return hashlib.md5(payload.encode("utf-8")).hexdigest()
 
 
-def canonical_group(group):
+CONTRAST_SHAPE = ('{"comparator": {"variableId": "VAR_…"}, "groupA": [{"label": "…"}], '
+                  '"groupB": [{"label": "…"}], "filters": [...]?}')
+
+
+def canonical_group(group, key="group"):
+    if not isinstance(group, list) or not all(isinstance(g, dict) for g in group):
+        raise ContrastError(f'{key} must be a list of objects like [{{"label": "…"}}], got {group!r}; '
+                            f"a contrast looks like {CONTRAST_SHAPE}")
     out = []
     for g in group:
         item = {k: str(g[k]) for k in ("label", "min", "max") if g.get(k) is not None}
@@ -452,8 +459,14 @@ def enumerate_contrasts(rows, var_meta, base_filters=(), only_vars=None, max_can
 def load_contrast(obj, var_meta, var_entities, chain, base_filters=()):
     """Validate a contrast file: {"comparator": {"variableId", "entityId"?}, "groupA", "groupB", "filters"?}."""
     if not isinstance(obj, dict):
-        raise ContrastError("a contrast file holds one JSON object: {comparator, groupA, groupB, filters?}")
-    vid = (obj.get("comparator") or {}).get("variableId")
+        raise ContrastError(f"a contrast file holds one JSON object: {CONTRAST_SHAPE}")
+    comparator = obj.get("comparator") or {}
+    if not isinstance(comparator, dict):
+        raise ContrastError(f'comparator must be an object like {{"variableId": "VAR_…"}}, got {comparator!r}; '
+                            f"a contrast looks like {CONTRAST_SHAPE}")
+    if not isinstance(obj.get("filters") or [], list):
+        raise ContrastError(f"filters must be a list of EDA filters; a contrast looks like {CONTRAST_SHAPE}")
+    vid = comparator.get("variableId")
     if vid not in var_meta:
         if vid in var_entities:
             raise ContrastError(
@@ -466,7 +479,7 @@ def load_contrast(obj, var_meta, var_entities, chain, base_filters=()):
     numeric = m.get("type") in NUMERIC_TYPES
     groups = {}
     for key in ("groupA", "groupB"):
-        group = canonical_group(obj.get(key) or [])
+        group = canonical_group(obj.get(key) or [], key)
         if not group:
             raise ContrastError(f"{key} is empty")
         if numeric and any("min" not in g or "max" not in g for g in group):

@@ -295,12 +295,16 @@ def json_arg(raw, flag, expected):
         except json.JSONDecodeError as e:
             raise EdaError(f"{flag}: inline JSON is not valid: {e}") from None
     path = pathlib.Path(text.removeprefix("@")).expanduser()
-    if not path.is_file():
+    if not path.exists():
         raise EdaError(f"{flag} {raw!r} is not {expected} (file not found: {path})")
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as e:
         raise EdaError(f"{flag} file {path} is not valid JSON: {e}") from None
+    except UnicodeDecodeError:
+        raise EdaError(f"{flag} file {path} is not UTF-8 text") from None
+    except OSError as e:
+        raise EdaError(f"{flag} file {path} could not be read: {e.strerror or e}") from None
 
 
 def resolve_contrast(args, t, filters, view):
@@ -407,6 +411,23 @@ def _next_hint(p, args):
     )
 
 
+def check_writable(raw, flag):
+    """Fail before any job runs if the output file cannot be written."""
+    import os
+
+    from _eda import EdaError
+
+    path = pathlib.Path(raw).expanduser()
+    parent = path.parent
+    if path.is_dir():
+        raise EdaError(f"{flag} {raw}: is a directory; give a file path")
+    if not parent.is_dir():
+        raise EdaError(f"{flag} {raw}: directory {parent} does not exist")
+    if not os.access(parent, os.W_OK) or (path.exists() and not os.access(path, os.W_OK)):
+        raise EdaError(f"{flag} {raw}: not writable")
+    return path
+
+
 def cmd_de(args) -> None:
     from _client import WDKError
     from _contrasts import PLUGIN_DE
@@ -414,6 +435,7 @@ def cmd_de(args) -> None:
     from _eda import EdaError, compute_status, delete_job, volcano, wait_for_job
 
     thresholds = parse_thresholds(args.thresholds)
+    tsv_path = check_writable(args.tsv, "--tsv") if args.tsv else None
     p = prepare_de(args)
     t, body = p["t"], p["body"]
     c = t["client"]
@@ -461,8 +483,12 @@ def cmd_de(args) -> None:
     provenance = {"site": t["site"], "datasetId": t["dataset"]["datasetId"], "studyId": t["dataset"]["studyId"],
                   "plugin": PLUGIN_DE, "jobId": st["jobID"], "statisticsFrom": mirror, "search": t["search"]}
     genes = [g.strip() for g in args.genes.split(",") if g.strip()] if args.genes else []
-    if args.tsv:
-        pathlib.Path(args.tsv).write_text(table_tsv(table), encoding="utf-8")
+    if tsv_path:
+        try:
+            tsv_path.write_text(table_tsv(table), encoding="utf-8")
+        except OSError as e:
+            raise EdaError(f"--tsv {args.tsv}: could not write ({e.strerror or e}); job {st['jobID']} "
+                           "is cached, so re-running with another path is quick") from None
         log(f"wrote {len(table)} rows to {args.tsv}")
     if args.json:
         extra = list(genes)

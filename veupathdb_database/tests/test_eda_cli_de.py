@@ -53,6 +53,32 @@ def test_de_genes_and_tsv(run_eda, contrast_file, tmp_path):
     assert len(lines) == 1 + len(eda_fixture("volcano_heatshock.json")["statistics"])
 
 
+def test_de_tsv_unwritable_fails_before_any_job(run_eda, eda_mock, contrast_file, tmp_path, capsys):
+    for bad in (tmp_path / "no-such-dir" / "de.tsv", tmp_path):
+        with pytest.raises(SystemExit):
+            run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", contrast_file(), "--tsv", str(bad))
+        err = capsys.readouterr().err
+        assert err.startswith("error: --tsv") and "Traceback" not in err
+    assert not any(p.startswith("/computes/") for m, p, q, b in eda_mock.requests)
+
+
+def test_de_tsv_write_failure_after_job_is_clean(run_eda, contrast_file, tmp_path, capsys, monkeypatch):
+    import pathlib
+
+    real = pathlib.Path.write_text
+
+    def boom(self, *a, **k):
+        if self.name == "de.tsv":
+            raise PermissionError(13, "Permission denied", str(self))
+        return real(self, *a, **k)
+
+    monkeypatch.setattr(pathlib.Path, "write_text", boom)
+    with pytest.raises(SystemExit):
+        run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", contrast_file(), "--tsv", str(tmp_path / "de.tsv"))
+    err = capsys.readouterr().err
+    assert err.startswith("error: --tsv") and "Permission denied" in err
+
+
 def test_de_no_wait_does_not_fetch_statistics(run_eda, eda_mock, contrast_file):
     out = json.loads(run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", contrast_file(), "--no-wait"))
     assert out["jobId"] == eda_mock.de_job and out["status"] == "complete"

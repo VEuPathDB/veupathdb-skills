@@ -29,6 +29,9 @@ def test_validate_filters_accepts_known_values():
         ([{"entityId": "ENT_8151325d", "variableId": "VAR_7033e90f", "type": "numberRange", "min": 41, "max": 37}], "min > max"),
         ([{"entityId": "ENT_8151325d", "variableId": "VAR_7033e90f", "type": "numberRange", "min": "a", "max": 37}], "different types"),
         (["not an object"], "object"),
+        ([{"entityId": "ENT_8151325d", "variableId": "VAR_081ab087", "type": "stringSet", "stringSet": "febrile"}], "must be a list"),
+        ([{"entityId": "ENT_8151325d", "variableId": "VAR_7033e90f", "type": "numberSet", "numberSet": 41}], "must be a list"),
+        ([{"entityId": "ENT_8151325d", "variableId": "VAR_7033e90f", "type": "dateSet", "dateSet": "2020-01-01"}], "must be a list"),
     ],
 )
 def test_validate_filters_rejects_with_hints(bad, needle):
@@ -104,3 +107,11 @@ def test_contrast_file_filters_are_validated(run_eda, tmp_path, capsys):
     with pytest.raises(SystemExit):
         run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", str(p))
     assert "hot" in capsys.readouterr().err
+
+
+def test_contrast_with_string_groups_fails_cleanly(run_eda, capsys):
+    bad = json.dumps({"comparator": {"variableId": "VAR_081ab087"}, "groupA": ["normal"], "groupB": ["febrile"]})
+    with pytest.raises(SystemExit):
+        run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", bad)
+    err = capsys.readouterr().err
+    assert err.startswith("error: ") and '{"label"' in err

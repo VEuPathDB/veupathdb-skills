@@ -410,9 +410,14 @@ def _load_json_arg(raw, flag):
     """JSON from an inline string, or from a file when the value is @path."""
     if raw.startswith("@"):
         path = pathlib.Path(raw[1:]).expanduser()
-        if not path.is_file():
+        if not path.exists():
             fail(f"{flag} file not found: {path}")
-        raw = path.read_text(encoding="utf-8")
+        try:
+            raw = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            fail(f"{flag} file {path} is not UTF-8 text")
+        except OSError as e:
+            fail(f"{flag} file {path} could not be read: {e.strerror or e}")
     try:
         return json.loads(raw)
     except json.JSONDecodeError as e:

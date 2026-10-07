@@ -207,6 +207,26 @@ def test_load_contrast_validates_and_merges_filters():
         load_contrast({"comparator": {"variableId": "deg"}, "groupA": [{"label": "37"}], "groupB": [{"label": "41"}]}, var_meta, owners, ["ENT_s"])
 
 
+@pytest.mark.parametrize(
+    "obj, needle",
+    [
+        ({"comparator": "temp", "groupA": [{"label": "normal"}], "groupB": [{"label": "febrile"}]}, '"comparator": {"variableId"'),
+        ({"comparator": {"variableId": "temp"}, "groupA": ["normal"], "groupB": [{"label": "febrile"}]}, '[{"label"'),
+        ({"comparator": {"variableId": "temp"}, "groupA": {"label": "normal"}, "groupB": [{"label": "febrile"}]}, '[{"label"'),
+        ({"comparator": {"variableId": "temp"}, "groupA": [{"label": "normal"}], "groupB": "febrile"}, "groupB"),
+        ({"comparator": {"variableId": "temp"}, "groupA": [{"label": "normal"}], "groupB": [{"label": "febrile"}],
+          "filters": {"entityId": "ENT_s"}}, "filters"),
+    ],
+)
+def test_load_contrast_rejects_bad_shapes(obj, needle):
+    from _contrasts import ContrastError, load_contrast
+
+    var_meta = {"temp": meta("temp", "temperature_condition", vocab=["febrile", "normal"])}
+    with pytest.raises(ContrastError) as e:
+        load_contrast(obj, var_meta, {"temp": "ENT_s"}, ["ENT_s"])
+    assert needle in str(e.value)
+
+
 def _binned_rows():
     # 8 distinct values; bins of width 10 anchored at 0: [0,10) x3, [10,20) x2, [20,30) x3
     vals = [1.0, 2.0, 9.0, 11.0, 19.0, 21.0, 25.0, 29.0]

@@ -80,3 +80,40 @@ def test_wdk_load_json_arg(tmp_path):
     assert wdk._load_params('{"b": 2}') == {"b": 2}
     with pytest.raises(SystemExit):
         wdk._load_params(f"@{tmp_path / 'nope.json'}")
+
+
+@pytest.fixture
+def bad_json_files(tmp_path):
+    """A directory, a non-UTF-8 file and (unless running as root) an unreadable file."""
+    import os
+
+    d = tmp_path / "adir"
+    d.mkdir()
+    latin = tmp_path / "latin1.json"
+    latin.write_bytes(b'{"a": "caf\xe9"}')
+    out = {"directory": d, "not UTF-8": latin}
+    if os.geteuid() != 0:
+        locked = tmp_path / "locked.json"
+        locked.write_text("{}")
+        locked.chmod(0)
+        out["unreadable"] = locked
+    return out
+
+
+def test_at_file_errors_are_clean(bad_json_files, capsys):
+    import wdk
+    from _eda import EdaError
+    from _strategy import SpecError, resolve_params
+    from eda import json_arg
+
+    for kind, path in bad_json_files.items():
+        with pytest.raises(SpecError) as e:
+            resolve_params(f"@{path}")
+        assert str(path) in str(e.value), kind
+        with pytest.raises(SystemExit):
+            wdk._load_params(f"@{path}")
+        err = capsys.readouterr().err
+        assert err.startswith("error: --params") and str(path) in err, kind
+        with pytest.raises(EdaError) as e:
+            json_arg(f"@{path}", "--contrast", "a contrast file")
+        assert "--contrast" in str(e.value) and str(path) in str(e.value), kind

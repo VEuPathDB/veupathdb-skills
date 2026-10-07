@@ -387,6 +387,8 @@ def validate_filters(filters, index):
         missing = [k for k in FILTER_FIELDS[ftype] if k not in f]
         if missing:
             raise SampleError(f"{ftype} filter on {vid} needs {missing}")
+        if ftype in ("stringSet", "numberSet", "dateSet") and not isinstance(f[ftype], list):
+            raise SampleError(f"{ftype} filter on {vid}: {ftype} must be a list, got {f[ftype]!r}")
         vocab = variables[eid][vid].get("vocabulary")
         if ftype == "stringSet" and vocab:
             bad = [s for s in f["stringSet"] if s not in vocab]

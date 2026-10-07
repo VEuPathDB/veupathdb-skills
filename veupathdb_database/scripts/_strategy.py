@@ -35,6 +35,10 @@ def resolve_params(value):
             raise SpecError(f"params file not found: {path}") from None
         except json.JSONDecodeError as e:
             raise SpecError(f"params file {path} is not valid JSON: {e}") from None
+        except UnicodeDecodeError:
+            raise SpecError(f"params file {path} is not UTF-8 text") from None
+        except OSError as e:
+            raise SpecError(f"params file {path} could not be read: {e.strerror or e}") from None
         if not isinstance(loaded, dict):
             raise SpecError(f"params file {path} must hold a JSON object")
         return loaded
