@@ -55,6 +55,8 @@ def score_against_pc(kind, values, pc):
         return {"n": n, "not_scored": "constant: one distinct value among these samples"}
     if sum_sq(ys) == 0:
         return {"n": n, "not_scored": "PC has zero variance"}
+    if kind not in ("continuous", "categorical"):
+        raise ValueError(f"kind must be 'continuous' or 'categorical', got {kind!r}")
     if kind == "continuous":
         r = pearson(xs, ys)
         return {"stat": "r", "r": r, "r2": r * r, "value": r * r, "n": n}
@@ -72,11 +74,18 @@ def outliers(points, threshold=OUTLIER_Z, min_n=MIN_OUTLIER_N):
     if len(complete) < min_n:
         return {"not_scored": f"fewer than {min_n} samples with scores", "samples": []}
     dims = len(next(iter(complete.values())))
+    if any(len(p) != dims for p in complete.values()):
+        raise ValueError("samples have inconsistent numbers of PC scores")
     cols = [[p[k] for p in complete.values()] for k in range(dims)]
     means = [mean(c) for c in cols]
     sds = [math.sqrt(sum_sq(c) / (len(c) - 1)) for c in cols]
     if any(sd == 0 for sd in sds):
         return {"not_scored": "a PC has zero SD", "samples": []}
+    n = len(complete)
+    # One point can contribute at most z = (n-1)/sqrt(n) per PC (the SD includes it).
+    if dims * (n - 1) ** 2 / n <= threshold ** 2:
+        return {"not_scored": f"too few samples to flag outliers (n={n}, {dims} PCs): "
+                              f"no point could reach distance {threshold}", "samples": []}
     flagged = []
     for s, p in complete.items():
         d = math.sqrt(math.fsum(((v - m) / sd) ** 2 for v, m, sd in zip(p, means, sds)))

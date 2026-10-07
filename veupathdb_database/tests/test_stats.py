@@ -65,6 +65,25 @@ def test_outliers_not_scored_cases():
     assert "fewer than 5" in outliers({"a": [1.0, 2.0], "b": [2.0, 1.0]})["not_scored"]
     flat = {f"s{i}": [1.0, float(i)] for i in range(6)}
     assert "zero SD" in outliers(flat)["not_scored"]
-    with_missing = {f"s{i}": [float(i), float(i % 3)] for i in range(6)}
+    with_missing = {f"s{i}": [float(i), float(i % 3)] for i in range(8)}
     with_missing["s9"] = [None, 1.0]
-    assert outliers(with_missing)["samples"] == []
+    out = outliers(with_missing)
+    assert "not_scored" not in out and out["pcs"] == 2 and out["samples"] == []
+    small = {f"s{i}": [0.0, 0.0] for i in range(5)}
+    small["s5"] = [1e6, 1e6]
+    out = outliers(small)  # n=6, 2 PCs: no point can reach distance 3
+    assert "too few samples" in out["not_scored"] and out["samples"] == []
+
+
+def test_outliers_rejects_inconsistent_pc_counts():
+    from _stats import outliers
+
+    with pytest.raises(ValueError):
+        outliers({f"s{i}": [float(i), 1.0] for i in range(6)} | {"x": [1.0]})
+
+
+def test_score_rejects_unknown_kind():
+    from _stats import score_against_pc
+
+    with pytest.raises(ValueError):
+        score_against_pc("ordinal", ["a", "a", "b"], [1.0, 2.0, 3.0])

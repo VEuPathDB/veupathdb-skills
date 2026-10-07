@@ -104,4 +104,6 @@ def test_heatshock_pearson_temperature_matches_r(tmp_path):
     xs = [float(r["VAR_7033e90f"]) for r in rows]
     ys = [pcs[r[key]][0] for r in rows]
     want = r_value(tmp_path, [("a", x, y) for x, y in zip(xs, ys)], "cor(d$x, d$y)")
-    assert close(pearson(xs, ys), want, TOL)
+    got = pearson(xs, ys)
+    assert close(got, want, TOL)
+    assert round(got * got, 4) == 0.7751  # binary, so r² equals the live eta² on PC1
