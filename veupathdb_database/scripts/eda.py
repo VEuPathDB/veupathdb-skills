@@ -119,6 +119,38 @@ def _load_filters(raw):
     return data
 
 
+def cmd_pca(args) -> None:
+    from _contrasts import PLUGIN_PCA, choose_value_var, compute_body, pca_config
+    from _eda import EdaError, compute_file, wait_for_job
+    from _pca import parse_scores, parse_variance, pca_report, render_pca
+
+    t = load_target(args)
+    filters = read_filters(args, t)
+    view = sample_view(t, filters)
+    if view["table"] is None:
+        raise EdaError(f"{', '.join(view['too_big'])} has too many records for the joint sample table; narrow it with --filters")
+    value_var, vnote = choose_value_var(t["expr"], args.value_var)
+    body = compute_body(t["dataset"]["studyId"], pca_config(t["expr"]["entityId"], value_var, args.npcs), filters)
+    c = t["client"]
+    st = wait_for_job(c, PLUGIN_PCA, body, timeout_s=args.timeout, log=log)
+    if st["status"] != "complete":
+        raise EdaError(f"PCA job {st['jobID']} is {st['status']}")
+    pcs, scores = parse_scores(compute_file(c, PLUGIN_PCA, body, "tabular"))
+    variance = parse_variance(json.loads(compute_file(c, PLUGIN_PCA, body, "meta")))
+    report = pca_report(pcs, scores, variance, view["table"]["rows"], view["meta"])
+    notes = [n for n in (vnote,) if n]
+    if args.npcs:
+        notes.append(f"--npcs {args.npcs}: an explicit nPCs is a separate job from the website's PCA")
+    if any(v is None for v in variance.values()):
+        notes.append("variance explained could not be parsed from the PC labels")
+    report.update(jobId=st["jobID"], datasetId=t["dataset"]["datasetId"], valueVariable=value_var,
+                  dataFormat=body["config"]["dataFormat"], filters=filters, notes=notes)
+    if args.json:
+        emit(report)
+    else:
+        print("\n".join(render_pca(report, top=args.top)))
+
+
 def read_filters(args, t):
     """Validated, canonical sample filters from --filters (empty without it)."""
     from _contrasts import canonical_filters
@@ -561,6 +593,15 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--json", action="store_true")
     sp.add_argument("--refresh", action="store_true", help="re-read the WDK catalog and search details")
     sp.set_defaults(func=cmd_de_datasets)
+
+    sp = sub.add_parser("pca", help="PCA (website notebook config): variables that track each PC, outliers")
+    _target_args(sp)
+    sp.add_argument("--value-var", help="expression value variable (default as for contrasts)")
+    sp.add_argument("--npcs", type=int, help="ask for N PCs (a separate job; default = the notebook's 2)")
+    sp.add_argument("--top", type=int, default=5, help="variables listed per PC")
+    sp.add_argument("--json", action="store_true")
+    sp.add_argument("--timeout", type=int, default=900)
+    sp.set_defaults(func=cmd_pca)
     return p
 
 

@@ -81,13 +81,14 @@ searches (WGCNA modules, phenotype subsets) are not supported.
 
 1. `eda.py de-datasets SITE`: DS ids, methods and search names.
 2. `eda.py study SITE DS_…`: samples, annotation, DE-readiness, the study description.
-3. `eda.py contrasts SITE DS_…`: canonical candidates with n per group, confounding notes,
+3. `eda.py pca SITE DS_…`: which sample variables track PC1/PC2 (batch effects), and outliers.
+4. `eda.py contrasts SITE DS_…`: canonical candidates with n per group, confounding notes,
    stratified versions and cache status. **You** choose the contrast and its reference
    (groupA), using the description and the question; the suggested reference is a hint.
-4. `eda.py de SITE DS_… --contrast N`: runs or reuses the shared job (or its cached
+5. `eda.py de SITE DS_… --contrast N`: runs or reuses the shared job (or its cached
    swapped-groups mirror); counts and top genes.
    Re-thresholding (`--thresholds FC,P[,upOnly|downOnly]`) costs nothing.
-5. `eda.py de-spec SITE DS_… --contrast N --save` prints a ready strategy `leaf`; use it
+6. `eda.py de-spec SITE DS_… --contrast N --save` prints a ready strategy `leaf`; use it
    in `wdk.py create-strategy SITE --spec '{"leaf": …}'`.
 
 Pass the same `--filters`, `--vars`, `--value-var` and `--entity` to every command

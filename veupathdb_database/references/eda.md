@@ -190,3 +190,28 @@ Row keys are opaque (ordered by p-value). Rows hold the top genes, any `--genes`
 - `wdk.py count` or a report on a DE search whose EDA job is not computed yet returns a
   clean error saying the job has been started or is running: retry in a few minutes
   (or run `eda.py de` first).
+
+## PCA (`eda.py pca`)
+
+Runs the notebook's PCA (`dimensionalityreduction`, `rawCounts` for RNA-Seq,
+`normalizedValues` for arrays, no explicit nPCs), so the job is the one website users
+share; `--npcs N` is a separate job, for when batch effects may sit on PC3 or PC4.
+EDA returns only per-sample scores. Everything else is computed locally:
+
+- **tracks**: for each PC separately, each sample variable is scored: Pearson r and R²
+  for numeric variables, eta² (one-way ANOVA) for categorical ones, with the n used and
+  the number of levels. There is no combined score: weigh PC1 hits above PC2 hits using
+  the variance explained.
+- eta² inflates as the number of levels approaches n (a 6-level label in 12 samples
+  scores high by construction). Check `levels` and `n` before reading it as an effect.
+- **not scored** (never silently dropped): fewer than 3 samples with a value; a
+  constant variable (common after `--filters`); no level with 2+ samples
+  (identifier-like); a PC with zero variance.
+- **outliers**: samples whose standardised distance from the centroid in PC1–PC2
+  exceeds 3 (z per PC). With few samples this rarely triggers. Exclude a confirmed
+  outlier with `--filters` and re-run `study`.
+- Variance explained is parsed from labels like `PC 1 (54.35% variance)`; if that format
+  changes the report says "variance unknown".
+
+Interpretation: a variable that tracks PC1 strongly and is **not** your comparator is a
+batch effect or confounder candidate. Prefer contrasts stratified on it, or filter.

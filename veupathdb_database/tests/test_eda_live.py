@@ -154,3 +154,12 @@ def test_live_limma_antibody(live_eda):
     de = json.loads(live_eda("de", "plasmodb", AB, "--contrast", str(cand["index"]), "--json", "--timeout", "1800"))
     assert de["context"]["method"] == "limma"
     assert de["context"]["counts"]["tested"] > 0
+
+
+def test_live_pca_heatshock(live_eda):
+    rep = json.loads(live_eda("pca", "plasmodb", HS, "--json"))
+    assert rep["jobId"] == "2679abb0e5c81b345a21b8f211db6a9b"
+    assert [p["variance"] for p in rep["pcs"]] == pytest.approx([54.35, 12.79], abs=0.05)
+    temp = next(e for e in rep["tracks"]["PC1"] if e["variableId"] == "VAR_081ab087")
+    assert temp["eta2"] == pytest.approx(0.7751, abs=0.05)
+    assert rep["outliers"]["samples"] == []
