@@ -43,7 +43,7 @@ def test_parse_thresholds():
 
     assert parse_thresholds("1,0.05") == (1.0, 0.05, "upAndDown")
     assert parse_thresholds("0.5, 0.01, upOnly") == (0.5, 0.01, "upOnly")
-    for bad in ("1", "a,0.05", "1,0", "1,1.5", "-1,0.05", "1,0.05,up"):
+    for bad in ("1", "a,0.05", "1,0", "1,1.5", "-1,0.05", "1,0.05,up", "nan,0.05", "inf,0.05"):
         with pytest.raises(EdaError):
             parse_thresholds(bad)
 
@@ -125,6 +125,13 @@ def test_negate_effects_flips_sign_only():
         (s["pointID"], s["pValue"], s["adjustedPValue"]) for s in stats
     ]
     assert stats[0]["effectSize"] == "1.5"  # input untouched
+
+
+def test_negate_effects_infinities_and_nan():
+    from _de import negate_effects
+
+    stats = [stat("G1", "Infinity", "0.01"), stat("G2", "-Infinity", "0.01"), stat("G3", "NaN", "0.5"), stat("G4", "0", "1")]
+    assert [s["effectSize"] for s in negate_effects(stats)] == ["-Infinity", "Infinity", "NaN", "0"]
 
 
 def test_table_tsv():

@@ -11,6 +11,7 @@ Run `eda.py --help` for subcommands, `eda.py <sub> --help` for details.
 """
 import argparse
 import json
+import pathlib
 import sys
 
 
@@ -193,6 +194,194 @@ def cmd_contrasts(args) -> None:
         print("\n".join(render_contrasts(out)))
 
 
+def json_arg(raw, flag, expected):
+    """Inline JSON (starts with { or [) or a JSON file path (an optional leading @, as in
+    wdk.py). Inline is the default for small objects, so no glue files are needed."""
+    from _eda import EdaError
+
+    text = raw.strip()
+    if text[:1] in ("{", "["):
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError as e:
+            raise EdaError(f"{flag}: inline JSON is not valid: {e}") from None
+    path = pathlib.Path(text.removeprefix("@")).expanduser()
+    if not path.is_file():
+        raise EdaError(f"{flag} {raw!r} is not {expected} (file not found: {path})")
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise EdaError(f"{flag} file {path} is not valid JSON: {e}") from None
+
+
+def resolve_contrast(args, t, filters, view):
+    from _contrasts import enumerate_contrasts, load_contrast
+    from _eda import EdaError
+    from _samples import all_var_entities
+
+    spec = args.contrast
+    if spec.isdigit():
+        out = enumerate_contrasts(view["table"]["rows"], view["meta"], filters, _only_vars(args))
+        cands = out["candidates"]
+        hit = next((c for c in cands if c["index"] == int(spec)), None)
+        if hit is None:
+            more = " (the list is capped: narrow it with --vars)" if out["truncated"] else ""
+            raise EdaError(
+                f"--contrast {spec}: no such candidate (1..{len(cands)}){more}; re-run 'eda.py contrasts' "
+                "with the same --filters/--vars/--value-var"
+            )
+        return hit
+    obj = json_arg(spec, "--contrast", "a candidate number, inline JSON or a contrast file")
+    return load_contrast(obj, view["meta"], all_var_entities(t["index"]), view["chain"], filters)
+
+
+def contrast_counts(t, contrast, base_filters, view):
+    """Samples per group under the contrast's own filters (strata included)."""
+    from _contrasts import canonical_filters, samples_in_group
+    from _eda import EdaError
+
+    rows = view["table"]["rows"]
+    if contrast["filters"] != canonical_filters(base_filters):
+        sub = sample_view(t, contrast["filters"])["table"]
+        rows = sub["rows"] if sub else []
+    vid = contrast["comparator"]["variableId"]
+    a = samples_in_group(rows, vid, contrast["groupA"])
+    b = samples_in_group(rows, vid, contrast["groupB"])
+    both = sorted(set(a) & set(b))
+    if both:
+        raise EdaError(f"samples fall in both groups: {both[:5]}")
+    return len(a), len(b)
+
+
+def prepare_de(args):
+    """Everything de and de-spec share, so de-spec's config is exactly what de hashed."""
+    from _contrasts import compute_body, de_config, replicate_check
+
+    t = load_target(args)
+    filters = read_filters(args, t)
+    view, value_var, method, notes = contrast_setup(args, t, filters)
+    contrast = resolve_contrast(args, t, filters, view)
+    n_a, n_b = contrast_counts(t, contrast, filters, view)
+    rnote = replicate_check(n_a, n_b)
+    if rnote:
+        notes.append(rnote)
+    cfg = de_config(t["expr"]["entityId"], value_var, contrast["comparator"], contrast["groupA"], contrast["groupB"], method)
+    body = compute_body(t["dataset"]["studyId"], cfg, contrast["filters"])
+    return {"t": t, "contrast": contrast, "nA": n_a, "nB": n_b, "valueVar": value_var,
+            "method": method, "config": cfg, "body": body, "notes": notes}
+
+
+def de_context(p, thresholds):
+    c, ds = p["contrast"], p["t"]["dataset"]
+    fc, pv, direction = thresholds
+    a = [g["label"] for g in c["groupA"]]
+    b = [g["label"] for g in c["groupB"]]
+    return {
+        "study": ds["displayName"],
+        "description": ds["description"],
+        "comparator": {"variable": c["comparator"]["displayName"], "variableId": c["comparator"]["variableId"],
+                       "entityId": c["comparator"]["entityId"]},
+        "groupA": {"labels": a, "n": p["nA"], "role": "reference"},
+        "groupB": {"labels": b, "n": p["nB"], "role": "comparison"},
+        "orientation": f"positive effectSize = higher in groupB ({'+'.join(b)}) than groupA ({'+'.join(a)}); "
+                       "unshrunk log2 fold change",
+        "method": p["method"],
+        "valueVariable": p["valueVar"],
+        "filters": c["filters"],
+        "thresholds": {"effectSize": fc, "pValue": pv, "direction": direction,
+                       "pValueType": "raw (as the website volcano plot and the WDK step)"},
+        "notes": p["notes"] + list(c.get("notes") or []),
+    }
+
+
+def mirror_body(p):
+    """The same contrast with groupA and groupB swapped: a different job, same statistics
+    with effectSize negated (see _de.negate_effects)."""
+    from _contrasts import compute_body, de_config
+
+    c = p["contrast"]
+    cfg = de_config(p["t"]["expr"]["entityId"], p["valueVar"], c["comparator"], c["groupB"], c["groupA"], p["method"])
+    return compute_body(p["t"]["dataset"]["studyId"], cfg, c["filters"])
+
+
+def _next_hint(p, args):
+    import shlex
+
+    return (
+        f"next (same --filters/--vars/--value-var): eda.py de-spec {args.site} {args.dataset} "
+        f"--contrast {shlex.quote(args.contrast)} --thresholds {args.thresholds} --save, then use the "
+        "printed \"leaf\" in wdk.py create-strategy --spec (no file of your own needed)"
+    )
+
+
+def cmd_de(args) -> None:
+    from _client import WDKError
+    from _contrasts import PLUGIN_DE
+    from _de import de_json, de_table, gene_rows, negate_effects, parse_thresholds, render_de, summarise, table_tsv
+    from _eda import EdaError, compute_status, delete_job, volcano, wait_for_job
+
+    thresholds = parse_thresholds(args.thresholds)
+    p = prepare_de(args)
+    t, body = p["t"], p["body"]
+    c = t["client"]
+    if args.no_wait:
+        st = compute_status(c, PLUGIN_DE, body, start=True)
+        emit({"jobId": st["jobID"], "status": st["status"],
+              "next": "re-run without --no-wait to fetch results (the job keeps running server-side)"})
+        return
+    mirror = None
+    if not args.no_mirror:
+        st = compute_status(c, PLUGIN_DE, body, start=False)
+        if st["status"] == "no-such-job":
+            mbody = mirror_body(p)
+            mst = compute_status(c, PLUGIN_DE, mbody, start=False)
+            if mst["status"] == "complete":
+                mirror = {"jobId": mst["jobID"], "negated": True}
+    if mirror:
+        stats = negate_effects(volcano(c, mbody)["statistics"])
+        p["notes"].append(
+            f"statistics reused from the cached mirror job {mirror['jobId']} (groups swapped), effect sizes "
+            "negated; p-values are unchanged by the swap. The WDK step for this orientation is not cached: "
+            "creating it starts its own job (the first answer is HTTP 202)"
+        )
+    else:
+        st = wait_for_job(c, PLUGIN_DE, body, timeout_s=args.timeout, log=log)
+        if st["status"] in ("failed", "expired") and args.retry:
+            if st["status"] == "failed":
+                try:
+                    delete_job(c, st["jobID"])
+                except WDKError as e:
+                    log(f"could not delete failed job {st['jobID']}: {e}")
+            st = wait_for_job(c, PLUGIN_DE, body, timeout_s=args.timeout, log=log)
+        if st["status"] != "complete":
+            hint = ""
+            if st["status"] == "failed":
+                hint = (" A job that fails quickly usually means a bad config (e.g. identifier and value "
+                        "variables on different entities).")
+            raise EdaError(f"job {st['jobID']} is {st['status']}.{hint} --retry resubmits it.")
+        stats = volcano(c, body)["statistics"]
+    table = de_table(stats)
+    summary = summarise(stats, thresholds, top_n=args.top)
+    context = de_context(p, thresholds)
+    provenance = {"site": t["site"], "datasetId": t["dataset"]["datasetId"], "studyId": t["dataset"]["studyId"],
+                  "plugin": PLUGIN_DE, "jobId": st["jobID"], "statisticsFrom": mirror, "search": t["search"]}
+    genes = [g.strip() for g in args.genes.split(",") if g.strip()] if args.genes else []
+    if args.tsv:
+        pathlib.Path(args.tsv).write_text(table_tsv(table), encoding="utf-8")
+        log(f"wrote {len(table)} rows to {args.tsv}")
+    if args.json:
+        extra = list(genes)
+        if args.rows == "passing":
+            extra += summary["passing_raw_genes"]
+        elif args.rows == "all":
+            extra += [r["gene"] for r in table]
+        emit(de_json(context, provenance, summary, table, extra))
+        return
+    lines = render_de(context, provenance, summary, t["expr"]["geneCount"],
+                      gene_rows(table, genes) if genes else None, _next_hint(p, args))
+    print("\n".join(lines))
+
+
 def cmd_study(args) -> None:
     from _samples import render_study, study_json
 
@@ -221,6 +410,15 @@ def _contrast_args(sp):
     sp.add_argument("--vars", help="comma-separated comparator variable ids to consider")
 
 
+def _de_args(sp):
+    from _de import DEFAULT_THRESHOLDS
+
+    sp.add_argument("--contrast", required=True,
+                    help="candidate number from 'contrasts', inline contrast JSON, or a contrast JSON file")
+    sp.add_argument("--thresholds", default=DEFAULT_THRESHOLDS,
+                    help="FC,P[,upAndDown|upOnly|downOnly]: |log2FC| >= FC and raw p <= P (website defaults)")
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="eda.py", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -237,6 +435,23 @@ def build_parser() -> argparse.ArgumentParser:
     _contrast_args(sp)
     sp.add_argument("--json", action="store_true")
     sp.set_defaults(func=cmd_contrasts)
+
+    sp = sub.add_parser("de", help="run (or reuse) DESeq2/limma for one contrast and summarise the result")
+    _target_args(sp)
+    _contrast_args(sp)
+    _de_args(sp)
+    sp.add_argument("--genes", help="comma-separated gene ids to report (absent = not tested)")
+    sp.add_argument("--rows", choices=["none", "passing", "all"], default="none",
+                    help="--json: which gene rows to include besides the top lists")
+    sp.add_argument("--top", type=int, default=10, help="top up/down genes by effect size among padj passers")
+    sp.add_argument("--tsv", help="write the full table (gene, effectSize, pValue, adjustedPValue)")
+    sp.add_argument("--json", action="store_true", help="identity/context/provenance/rows JSON")
+    sp.add_argument("--no-wait", action="store_true", help="start the job and report its status only")
+    sp.add_argument("--retry", action="store_true", help="resubmit a failed or expired job")
+    sp.add_argument("--timeout", type=int, default=900, help="seconds to wait for the job (default 900)")
+    sp.add_argument("--no-mirror", action="store_true",
+                    help="never reuse the cached swapped-groups job; always run this orientation")
+    sp.set_defaults(func=cmd_de)
 
     return p
 

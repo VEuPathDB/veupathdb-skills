@@ -28,15 +28,22 @@ def java_double(value):
     return float(s.rstrip("fFdD"))
 
 
+def _java_repr(x):
+    if math.isinf(x):
+        return "Infinity" if x > 0 else "-Infinity"
+    return repr(x)
+
+
 def negate_effects(statistics):
     """Statistics of the mirror contrast (groupA and groupB swapped): with a two-level
     ~comparator design and no shrinkage, DESeq2 results() and limma topTable(coef=2)
-    give the same p and padj with effectSize negated. Unparseable values pass through."""
+    give the same p and padj with effectSize negated (infinities in Java's spelling).
+    Unparseable and NaN values, and zero, pass through unchanged."""
     out = []
     for s in statistics:
         x = java_double(s.get("effectSize"))
-        if x is not None and math.isfinite(x):
-            s = {**s, "effectSize": repr(-x) if x else s["effectSize"]}
+        if x is not None and not math.isnan(x) and x:
+            s = {**s, "effectSize": _java_repr(-x)}
         out.append(s)
     return out
 
@@ -49,6 +56,8 @@ def parse_thresholds(text):
         fc, p = float(parts[0]), float(parts[1])
     except ValueError:
         raise EdaError(f"--thresholds: FC and P must be numbers, got {text!r}") from None
+    if not math.isfinite(fc):
+        raise EdaError(f"--thresholds: FC and P must be numbers, got {text!r}")
     direction = parts[2] if len(parts) == 3 else "upAndDown"
     if direction not in DIRECTIONS:
         hint = difflib.get_close_matches(direction, DIRECTIONS, n=1, cutoff=0.3)
