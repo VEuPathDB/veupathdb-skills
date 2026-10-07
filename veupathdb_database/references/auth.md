@@ -71,6 +71,9 @@ To delete the stored token:
   concrete ids make ownership errors loud 403s instead of silent misfires).
 - Logout does NOT invalidate a bearer token; treat tokens as long-lived
   secrets. Never print or commit them.
+- EDA (`https://{site host}/eda`, used by eda.py) reads the same token as
+  `Authorization: Bearer <token>`. The client sends both the WDK cookie and the
+  Bearer header, so one login serves both CLIs.
 
 ## Transport quirks the client handles for you
 

@@ -52,10 +52,6 @@ Run all: `uv run --with pytest --with httpx python -m pytest tests -q`
 | DATASET-1 | `Client.create_id_dataset(["AGAP001234"])` / test_client.py::test_create_id_dataset_unit & test_live_create_id_dataset | uploads ID lists to `POST /users/current/datasets` and returns integer dataset ID | exact | integer dataset ID > 0 | 2026-09-14 |
 | EXPR-1 | `wdk.py expression vectorbase AGAP009221 --dataset DS_46d69d95d1` / test_expression.py | joins ExpressionGraphs and ExpressionGraphsDataTable; ranks samples descending by percentile; supports summary and keyword filters | fields-present | total_datasets=40, top_sample="carcass: male (val: 9.23, pct: 97.1%)" | 2026-09-11 |
 | PROMPT-3 | "Where is Anopheles gambiae SRPN5 (AGAP009221) expressed across body parts and tissues?" | VectorBase, `wdk.py expression vectorbase AGAP009221 --filter body` or `--dataset DS_46d69d95d1` | exact | site=VectorBase, top_tissues=[carcass male (97.1%), head male (97.0%), whole body male (96.0%), maxillary palps female (97.8%)] | 2026-09-11 |
-
-
-
-
 | EDA-1 | test_contrasts_canonical.py::test_job_id_matches_live_gold | local MD5 of the canonical body equals the live job id | exact (offline) | db04204e5386396e1ca2cb78469ab6fb | 2026-10-07 |
 | EDA-2 | `eda.py contrasts plasmodb DS_e973eadd57` / test_eda_live.py::test_live_contrasts_heatshock | candidate 1 = temperature_condition normal → febrile, 6/6, cache complete | exact | index 1, 6/6, db04204e5386396e1ca2cb78469ab6fb | 2026-10-07 |
 | EDA-3 | `eda.py de plasmodb DS_e973eadd57 --contrast <normal→febrile file>` / test_live_de_heatshock_gold | job id = gold; passing raw p at 1,0.05 | exact job id; range ±20% count | 1543 | 2026-10-07 |
