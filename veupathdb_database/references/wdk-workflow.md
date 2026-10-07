@@ -23,7 +23,7 @@ When asked about a gene by symbol, name, or product (e.g. `SRPN2`, `K13`):
 
 ## The workflow
 
-1. **Check auth & pick the site**: Verify with `whoami`. If unauthenticated or GUEST, do NOT probe `~/.config` or `env`; immediately follow the onboarding questionnaire above (`detect-site`, conduct questionnaire, run login for the user). Otherwise resolve the site with `detect-site "QUERY"` or list all 14 with `sites`.
+1. **Check auth & pick the site**: Verify with `whoami`. If unauthenticated or GUEST, do NOT probe `~/.config` or `env`; immediately follow the onboarding questionnaire in SKILL.md (`detect-site`, conduct questionnaire, run login for the user). Otherwise resolve the site with `detect-site "QUERY"` or list all 14 with `sites`.
 2. **Discover searches** — dispatch a SUB-AGENT (keeps your context clean):
    its prompt = the research goal + "run `uv run scripts/wdk.py catalog SITE`,
    read every line, return 3–8 candidate searches (name, record type, why),

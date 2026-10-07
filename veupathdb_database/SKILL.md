@@ -90,8 +90,9 @@ searches (WGCNA modules, phenotype subsets) are not supported.
 5. `eda.py de-spec SITE DS_… --contrast N --save` prints a ready strategy `leaf`; use it
    in `wdk.py create-strategy SITE --spec '{"leaf": …}'`.
 
-Pass the same `--vars`, `--value-var` and `--entity` to every command after
-`contrasts`, or `--contrast N` names a different candidate. Give contrasts and filters
+Pass the same `--filters`, `--vars`, `--value-var` and `--entity` to every command
+after `contrasts`, or `--contrast N` names a different candidate. `study --filters '[…]'`
+previews a sample subset. Give contrasts and filters
 inline (`--contrast '{…}'`); glue files live in the skill cache (`--save`). Write files
 to the user's directory only when they ask to keep them.
 

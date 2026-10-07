@@ -106,9 +106,28 @@ def load_target(args):
     }
 
 
+def _load_filters(raw):
+    from _samples import SampleError
+
+    data = json_arg(raw, "--filters", "inline JSON or a filters file")
+    if isinstance(data, dict) and "filters" in data:
+        data = data["filters"]
+    elif isinstance(data, dict) and "descriptor" in data:
+        data = ((data.get("descriptor") or {}).get("subset") or {}).get("descriptor", [])
+    if not isinstance(data, list):
+        raise SampleError('--filters must hold a JSON array of EDA filters, {"filters": [...]}, or an analysis spec')
+    return data
+
+
 def read_filters(args, t):
-    """Sample filters for this command (Task 16 adds --filters)."""
-    return []
+    """Validated, canonical sample filters from --filters (empty without it)."""
+    from _contrasts import canonical_filters
+    from _samples import validate_filters
+
+    raw = getattr(args, "filters", None)
+    if not raw:
+        return []
+    return canonical_filters(validate_filters(_load_filters(raw), t["index"]))
 
 
 def sample_view(t, filters):
@@ -270,6 +289,10 @@ def resolve_contrast(args, t, filters, view):
             )
         return hit
     obj = json_arg(spec, "--contrast", "a candidate number, inline JSON or a contrast file")
+    from _samples import validate_filters
+
+    if isinstance(obj, dict) and obj.get("filters"):
+        validate_filters(obj["filters"], t["index"])
     return load_contrast(obj, view["meta"], all_var_entities(t["index"]), view["chain"], filters)
 
 
@@ -468,6 +491,8 @@ def _target_args(sp):
     sp.add_argument("dataset", help="DS_ dataset id, or a DE/antibody-array search name (see de-datasets)")
     sp.add_argument("--entity", help="expression entity id, when the study has several")
     sp.add_argument("--refresh", action="store_true", help="bypass the 7-day study metadata cache")
+    sp.add_argument("--filters", help="inline JSON or a JSON file restricting the samples: an array of EDA "
+                                      'filters, {"filters": [...]}, or a saved analysis spec')
 
 
 def _contrast_args(sp):

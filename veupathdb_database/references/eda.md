@@ -31,7 +31,7 @@ computation that has a thresholded volcano plot, and keeps the rows that pass.
    steps), or run `wdk.py count SITE SEARCH --params @PARAMSFILE`.
 
 `--contrast N` re-enumerates the candidates, so give every command after
-`contrasts` the same `--vars`, `--value-var` and `--entity`. An explicit contrast
+`contrasts` the same `--filters`, `--vars`, `--value-var` and `--entity`. An explicit contrast
 (below) avoids that dependency.
 
 ## Files
@@ -107,6 +107,23 @@ Nothing needs a file in the user's working directory:
 
   Numeric comparators need `{"label": "0-10", "min": "0", "max": "10"}`
   (half-open `[min, max)`).
+
+## Sample filters (`--filters JSON|FILE`)
+
+`study`, `contrasts`, `de`, `de-spec` and `pca` take `--filters`, which restricts
+the samples exactly as the notebook's subset step does. Pass it inline (preferred:
+no file to manage) or as a file. It holds an array of EDA filters,
+`{"filters": [...]}`, or a saved analysis spec (its subset is used):
+
+```json
+[{"entityId": "ENT_…", "variableId": "VAR_…", "type": "stringSet", "stringSet": ["febrile"]},
+ {"entityId": "ENT_…", "variableId": "VAR_…", "type": "numberRange", "min": 0, "max": 48}]
+```
+
+`study --filters` is the subset preview: entity lines read "6 of 12 records". Filters
+are part of the job (a different subset is a different job) and travel into the
+spec's subset. Typical uses: drop PCA outliers, or restrict to one level of a
+crossed factor by hand.
 
 ## Canonical form and the shared cache
 

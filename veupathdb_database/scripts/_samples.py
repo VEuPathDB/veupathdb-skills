@@ -352,3 +352,54 @@ def summarise_from_distribution(meta, dist):
     out["kind"] = "categorical"
     out["levels"] = sorted(levels, key=lambda kv: (-kv[1], str(kv[0])))
     return out
+
+
+FILTER_FIELDS = {
+    "stringSet": ("stringSet",),
+    "numberSet": ("numberSet",),
+    "dateSet": ("dateSet",),
+    "numberRange": ("min", "max"),
+    "dateRange": ("min", "max"),
+    "longitudeRange": ("left", "right"),
+}
+
+
+def validate_filters(filters, index):
+    """Check EDA subset filters against the study metadata, with suggestions."""
+    import difflib
+
+    variables = {
+        eid: {v["id"]: v for v in node["entity"].get("variables", []) if v.get("type") != "category"}
+        for eid, node in index.items()
+    }
+    for f in filters:
+        if not isinstance(f, dict):
+            raise SampleError(f"each filter must be an object, got {f!r}")
+        eid, vid, ftype = f.get("entityId"), f.get("variableId"), f.get("type")
+        if eid not in variables:
+            hint = difflib.get_close_matches(str(eid), list(variables), n=3, cutoff=0.5)
+            raise SampleError(f"filter entity {eid!r} is not in this study; did you mean {hint}?")
+        if vid not in variables[eid]:
+            hint = difflib.get_close_matches(str(vid), list(variables[eid]), n=3, cutoff=0.5)
+            raise SampleError(f"filter variable {vid!r} is not on {eid}; did you mean {hint}?")
+        if ftype not in FILTER_FIELDS:
+            raise SampleError(f"filter type {ftype!r} is not supported; use one of {sorted(FILTER_FIELDS)}")
+        missing = [k for k in FILTER_FIELDS[ftype] if k not in f]
+        if missing:
+            raise SampleError(f"{ftype} filter on {vid} needs {missing}")
+        vocab = variables[eid][vid].get("vocabulary")
+        if ftype == "stringSet" and vocab:
+            bad = [s for s in f["stringSet"] if s not in vocab]
+            if bad:
+                hints = {b: difflib.get_close_matches(str(b), vocab, n=2, cutoff=0.5) for b in bad}
+                raise SampleError(f"unknown value(s) {bad} for {vid}; did you mean {hints}? vocabulary: {vocab[:20]}")
+        if ftype in ("numberRange", "dateRange"):
+            try:
+                reversed_range = f["min"] > f["max"]
+            except TypeError:
+                raise SampleError(
+                    f"{ftype} filter on {vid} has min {f['min']!r} and max {f['max']!r} of different types"
+                ) from None
+            if reversed_range:
+                raise SampleError(f"{ftype} filter on {vid} has min > max")
+    return filters
