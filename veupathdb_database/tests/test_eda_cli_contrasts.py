@@ -56,6 +56,19 @@ def test_value_var_and_vars_options(run_eda):
     assert {c["comparator"]["variableId"] for c in out["candidates"]} == {"VAR_081ab087"}
 
 
+def test_unknown_vars_are_an_error(run_eda, capsys):
+    with pytest.raises(SystemExit):
+        run_eda("contrasts", "plasmodb", "DS_e973eadd57", "--vars", "VAR_081ab087,VAR_081ab08")
+    err = capsys.readouterr().err
+    assert err.startswith("error: --vars") and "'VAR_081ab08'" in err and "VAR_081ab087" in err.split("did you mean", 1)[1]
+    with pytest.raises(SystemExit):
+        run_eda("de", "plasmodb", "DS_e973eadd57", "--contrast", "1", "--vars", "temperature_condition")
+    err = capsys.readouterr().err
+    assert "'temperature_condition'" in err and "VAR_081ab087" in err
+    out = json.loads(run_eda("contrasts", "plasmodb", "DS_e973eadd57", "--json", "--vars", "VAR_081ab087, VAR_26d10fbf"))
+    assert {c["comparator"]["variableId"] for c in out["candidates"]} <= {"VAR_081ab087", "VAR_26d10fbf"}
+
+
 def test_contrasts_refuse_without_joint_table(run_eda, eda_mock, capsys):
     path = f"/studies/{eda_mock.STUDY}/entities/{eda_mock.SAMPLE}/count"
     eda_mock.routes[("POST", path)] = lambda r: httpx.Response(200, json={"count": 6000})

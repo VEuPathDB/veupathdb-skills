@@ -227,6 +227,15 @@ def test_load_contrast_rejects_bad_shapes(obj, needle):
     assert needle in str(e.value)
 
 
+def test_enumerate_rejects_unknown_only_vars():
+    from _contrasts import ContrastError, enumerate_contrasts
+
+    rows = [{"sampleId": f"s{i}", "cond": "ab"[i % 2]} for i in range(6)]
+    with pytest.raises(ContrastError) as e:
+        enumerate_contrasts(rows, {"cond": meta("cond", "condition")}, only_vars={"cnd"})
+    assert "'cnd'" in str(e.value) and "cond" in str(e.value)
+
+
 def _binned_rows():
     # 8 distinct values; bins of width 10 anchored at 0: [0,10) x3, [10,20) x2, [20,30) x3
     vals = [1.0, 2.0, 9.0, 11.0, 19.0, 21.0, 25.0, 29.0]

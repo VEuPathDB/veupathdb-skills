@@ -404,10 +404,28 @@ def _label(v):
     return _fmt(v) if isinstance(v, float) else str(v)
 
 
+def _check_only_vars(only_vars, var_meta):
+    unknown = sorted(v for v in only_vars if v not in var_meta)
+    if not unknown:
+        return
+    by_name = {m.get("displayName", vid): vid for vid, m in var_meta.items()}
+    hints = {}
+    for v in unknown:
+        ids = difflib.get_close_matches(v, list(var_meta), n=3, cutoff=0.6)
+        names = difflib.get_close_matches(v, list(by_name), n=3, cutoff=0.6)
+        hints[v] = ids + [f"{by_name[n]} ({n})" for n in names if by_name[n] not in ids]
+    raise ContrastError(
+        f"--vars: unknown variable id(s) {unknown}; did you mean {hints}? "
+        "--vars takes variable ids (see 'eda.py study')"
+    )
+
+
 def enumerate_contrasts(rows, var_meta, base_filters=(), only_vars=None, max_candidates=MAX_CANDIDATES):
     """Deterministic candidates; the agent ranks them. Order: fewest levels first,
     categorical before numeric, featured first, then display name. At most
     max_candidates are returned (None = no cap); `truncated` says how many exist."""
+    if only_vars:
+        _check_only_vars(only_vars, var_meta)
     base = canonical_filters(base_filters)
     prof = {vid: _profile(rows, m) for vid, m in var_meta.items()}
 

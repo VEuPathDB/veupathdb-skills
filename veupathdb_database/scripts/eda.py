@@ -256,7 +256,9 @@ def contrast_setup(args, t, filters):
 
 
 def _only_vars(args):
-    return set(args.vars.split(",")) if getattr(args, "vars", None) else None
+    if not getattr(args, "vars", None):
+        return None
+    return {v.strip() for v in args.vars.split(",") if v.strip()} or None
 
 
 def cmd_contrasts(args) -> None:
