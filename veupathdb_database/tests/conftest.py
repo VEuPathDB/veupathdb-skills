@@ -22,3 +22,13 @@ def live_client(token):
     from _client import Client
 
     return Client("plasmodb", token=token)
+
+
+@pytest.fixture
+def eda_cache(tmp_path, monkeypatch):
+    """Point the EDA disk cache at a temp dir so tests never read ~/.cache."""
+    import _client
+
+    path = tmp_path / "eda-cache"
+    monkeypatch.setattr(_client, "EDA_CACHE_DIR", path)
+    return path

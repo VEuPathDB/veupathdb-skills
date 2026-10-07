@@ -1,0 +1,1208 @@
+{
+ "effectSizeLabel": "log2(Fold Change)",
+ "pValueFloor": "1e-200",
+ "adjustedPValueFloor": null,
+ "statistics": [
+  {
+   "effectSize": "-0.218035922112735",
+   "pValue": "0.350285751849808",
+   "adjustedPValue": "0.46960449943855",
+   "pointID": "PF3D7_0100100"
+  },
+  {
+   "effectSize": "3.94437533216012",
+   "pValue": "1.95781599815607e-05",
+   "adjustedPValue": "0.000137772236907279",
+   "pointID": "PF3D7_0100200"
+  },
+  {
+   "effectSize": "-1.20601675783009",
+   "pValue": "0.312848540438527",
+   "adjustedPValue": "0.428804840252807",
+   "pointID": "PF3D7_0100300"
+  },
+  {
+   "effectSize": "2.78815070709988",
+   "pValue": "0.0384233901688125",
+   "adjustedPValue": "0.0779215604822072",
+   "pointID": "PF3D7_0100400"
+  },
+  {
+   "effectSize": "2.31389569322091",
+   "pValue": "0.08729745287705",
+   "adjustedPValue": "0.152944027139124",
+   "pointID": "PF3D7_0100600"
+  },
+  {
+   "effectSize": "1.50255396213851",
+   "pValue": "0.599130983858725",
+   "adjustedPValue": "0.706773188725752",
+   "pointID": "PF3D7_0100800"
+  },
+  {
+   "effectSize": "1.59293626237069",
+   "pValue": "0.177711569286971",
+   "adjustedPValue": "0.272983202333764",
+   "pointID": "PF3D7_0100900"
+  },
+  {
+   "effectSize": "1.98529772483444",
+   "pValue": "0.18878683291755",
+   "adjustedPValue": "0.286087857364054",
+   "pointID": "PF3D7_0101000"
+  },
+  {
+   "effectSize": "-0.793414577137981",
+   "pValue": "0.445597624274552",
+   "adjustedPValue": "0.564164271542459",
+   "pointID": "PF3D7_0101100"
+  },
+  {
+   "effectSize": "-0.383708225063916",
+   "pValue": "0.902012108782209",
+   "adjustedPValue": "0.934339069936089",
+   "pointID": "PF3D7_0101200"
+  },
+  {
+   "effectSize": "3.55265083324168",
+   "pValue": "6.99309601171888e-05",
+   "adjustedPValue": "0.000388035841133646",
+   "pointID": "PF3D7_0101300"
+  },
+  {
+   "effectSize": "3.4597748240704",
+   "pValue": "0.000500921383416672",
+   "adjustedPValue": "0.00206438057040079",
+   "pointID": "PF3D7_0101600"
+  },
+  {
+   "effectSize": "-0.403047877957506",
+   "pValue": "0.835413694998331",
+   "adjustedPValue": "0.897821232580613",
+   "pointID": "PF3D7_0101700"
+  },
+  {
+   "effectSize": "1.78102973742649",
+   "pValue": "0.181446321005918",
+   "adjustedPValue": "0.277328496183802",
+   "pointID": "PF3D7_0101800"
+  },
+  {
+   "effectSize": "0.0971927324288576",
+   "pValue": "0.961117937933916",
+   "adjustedPValue": "0.976536942285797",
+   "pointID": "PF3D7_0101900"
+  },
+  {
+   "effectSize": "-1.03529417515688",
+   "pValue": "0.353834381691439",
+   "adjustedPValue": "0.473304204219788",
+   "pointID": "PF3D7_0102000"
+  },
+  {
+   "effectSize": "0.0640643605152161",
+   "pValue": "0.949194372071896",
+   "adjustedPValue": "0.968977674352625",
+   "pointID": "PF3D7_0102100"
+  },
+  {
+   "effectSize": "-2.25637976106001",
+   "pValue": "5.52287354783149e-07",
+   "adjustedPValue": "8.6843380371495e-06",
+   "pointID": "PF3D7_0102200"
+  },
+  {
+   "effectSize": "0.333144851342392",
+   "pValue": "0.47698986509853",
+   "adjustedPValue": "0.594618587487082",
+   "pointID": "PF3D7_0102300"
+  },
+  {
+   "effectSize": "-0.779245946093136",
+   "pValue": "0.0395220402070768",
+   "adjustedPValue": "0.0797387189824216",
+   "pointID": "PF3D7_0102400"
+  },
+  {
+   "effectSize": "-2.60773030051741",
+   "pValue": "5.53212822330213e-07",
+   "adjustedPValue": "8.6843380371495e-06",
+   "pointID": "PF3D7_0102500"
+  },
+  {
+   "effectSize": "0.853177202278977",
+   "pValue": "0.0223318629493133",
+   "adjustedPValue": "0.0494170943175567",
+   "pointID": "PF3D7_0102600"
+  },
+  {
+   "effectSize": "-1.68833436841783",
+   "pValue": "6.14221210068189e-07",
+   "adjustedPValue": "9.40099685409922e-06",
+   "pointID": "PF3D7_0102700"
+  },
+  {
+   "effectSize": "0.404358746887035",
+   "pValue": "0.33245183838867",
+   "adjustedPValue": "0.450962488803932",
+   "pointID": "PF3D7_0102800"
+  },
+  {
+   "effectSize": "1.03082787200033",
+   "pValue": "3.71276242000765e-07",
+   "adjustedPValue": "6.5991357852394e-06",
+   "pointID": "PF3D7_0102900"
+  },
+  {
+   "effectSize": "-1.29861928238592",
+   "pValue": "0.000511846390562785",
+   "adjustedPValue": "0.00209998035145268",
+   "pointID": "PF3D7_0103000"
+  },
+  {
+   "effectSize": "-0.488489412821588",
+   "pValue": "0.0678621125188277",
+   "adjustedPValue": "0.123855660807798",
+   "pointID": "PF3D7_0103100"
+  },
+  {
+   "effectSize": "1.02757089306688",
+   "pValue": "2.15690819787162e-08",
+   "adjustedPValue": "7.62997723379355e-07",
+   "pointID": "PF3D7_0103200"
+  },
+  {
+   "effectSize": "0.027445395701523",
+   "pValue": "0.874479424538735",
+   "adjustedPValue": "0.919583327227305",
+   "pointID": "PF3D7_0103300"
+  },
+  {
+   "effectSize": "-0.398134858630608",
+   "pValue": "0.134184390278155",
+   "adjustedPValue": "0.217842071429768",
+   "pointID": "PF3D7_0103400"
+  },
+  {
+   "effectSize": "-0.402963017157746",
+   "pValue": "0.151622077300781",
+   "adjustedPValue": "0.239867951957613",
+   "pointID": "PF3D7_0103500"
+  },
+  {
+   "effectSize": "0.595075576744737",
+   "pValue": "0.011759911163268",
+   "adjustedPValue": "0.028991995753739",
+   "pointID": "PF3D7_0103600"
+  },
+  {
+   "effectSize": "0.0144155474665072",
+   "pValue": "0.953285915418499",
+   "adjustedPValue": "0.971984713907463",
+   "pointID": "PF3D7_0103700"
+  },
+  {
+   "effectSize": "-1.21582635893366",
+   "pValue": "0.00193955938769647",
+   "adjustedPValue": "0.006492692725521",
+   "pointID": "PF3D7_0103800"
+  },
+  {
+   "effectSize": "0.593970561601958",
+   "pValue": "0.019843170190652",
+   "adjustedPValue": "0.0448833611455225",
+   "pointID": "PF3D7_0103900"
+  },
+  {
+   "effectSize": "-0.0264563406858188",
+   "pValue": "0.974297607717785",
+   "adjustedPValue": "0.982612956198603",
+   "pointID": "PF3D7_0104000"
+  },
+  {
+   "effectSize": "-2.09346382110492",
+   "pValue": "2.77159266892726e-05",
+   "adjustedPValue": "0.000183331039685344",
+   "pointID": "PF3D7_0104100"
+  },
+  {
+   "effectSize": "-1.31238872342632",
+   "pValue": "0.000225731004005566",
+   "adjustedPValue": "0.00105226550936605",
+   "pointID": "PF3D7_0104200"
+  },
+  {
+   "effectSize": "-1.20529719448487",
+   "pValue": "4.73878909092391e-05",
+   "adjustedPValue": "0.000281669125037657",
+   "pointID": "PF3D7_0104300"
+  },
+  {
+   "effectSize": "-0.3581632149332",
+   "pValue": "0.120791369756105",
+   "adjustedPValue": "0.199628208565129",
+   "pointID": "PF3D7_0104400"
+  },
+  {
+   "effectSize": "1.40936635591209",
+   "pValue": "5.27850950440654e-07",
+   "adjustedPValue": "8.43031517950146e-06",
+   "pointID": "PF3D7_0104500"
+  },
+  {
+   "effectSize": "0.601902715118902",
+   "pValue": "0.0967231174832319",
+   "adjustedPValue": "0.16654511791644",
+   "pointID": "PF3D7_0104600"
+  },
+  {
+   "effectSize": "-0.96070029711263",
+   "pValue": "0.186394414349681",
+   "adjustedPValue": "0.283135230803354",
+   "pointID": "PF3D7_0104700"
+  },
+  {
+   "effectSize": "-1.86722727925111",
+   "pValue": "3.18572905907339e-05",
+   "adjustedPValue": "0.000204823420250809",
+   "pointID": "PF3D7_0104800"
+  },
+  {
+   "effectSize": "0.240590250950664",
+   "pValue": "0.573371004925753",
+   "adjustedPValue": "0.685157080510403",
+   "pointID": "PF3D7_0104900"
+  },
+  {
+   "effectSize": "-0.379814633662253",
+   "pValue": "0.271685522168997",
+   "adjustedPValue": "0.384434316166197",
+   "pointID": "PF3D7_0105000"
+  },
+  {
+   "effectSize": "0.328462622879741",
+   "pValue": "0.404533919628327",
+   "adjustedPValue": "0.524466328741666",
+   "pointID": "PF3D7_0105100"
+  },
+  {
+   "effectSize": "1.03859492823275",
+   "pValue": "4.91146080173229e-07",
+   "adjustedPValue": "8.00655296377068e-06",
+   "pointID": "PF3D7_0105200"
+  },
+  {
+   "effectSize": "-1.91930294320583",
+   "pValue": "5.99643495830379e-06",
+   "adjustedPValue": "5.3550010729747e-05",
+   "pointID": "PF3D7_0105300"
+  },
+  {
+   "effectSize": "-2.00657541391677",
+   "pValue": "3.09016312969474e-05",
+   "adjustedPValue": "0.000199845056861714",
+   "pointID": "PF3D7_0105400"
+  },
+  {
+   "effectSize": "0.716119171797464",
+   "pValue": "0.227191718979813",
+   "adjustedPValue": "0.33355352293599",
+   "pointID": "PF3D7_0105500"
+  },
+  {
+   "effectSize": "0.0915352675652597",
+   "pValue": "0.758630959499827",
+   "adjustedPValue": "0.841565650663186",
+   "pointID": "PF3D7_0105600"
+  },
+  {
+   "effectSize": "-1.02535621326272",
+   "pValue": "3.18187609581032e-05",
+   "adjustedPValue": "0.00020481468794293",
+   "pointID": "PF3D7_0105700"
+  },
+  {
+   "effectSize": "-1.2759082080302",
+   "pValue": "6.86179302316857e-05",
+   "adjustedPValue": "0.000382676918599785",
+   "pointID": "PF3D7_0105800"
+  },
+  {
+   "effectSize": "-0.241052658611281",
+   "pValue": "0.516202964511183",
+   "adjustedPValue": "0.631781060519018",
+   "pointID": "PF3D7_0105900"
+  },
+  {
+   "effectSize": "-1.66710740667561",
+   "pValue": "7.50507707565787e-06",
+   "adjustedPValue": "6.32813088721931e-05",
+   "pointID": "PF3D7_0106000"
+  },
+  {
+   "effectSize": "0.568564285717964",
+   "pValue": "0.00264016181601933",
+   "adjustedPValue": "0.00841348073210333",
+   "pointID": "PF3D7_0106100"
+  },
+  {
+   "effectSize": "-1.10525353123921",
+   "pValue": "0.00840726078629199",
+   "adjustedPValue": "0.0218612585806837",
+   "pointID": "PF3D7_0106200"
+  },
+  {
+   "effectSize": "-0.0436864744836438",
+   "pValue": "0.768277873723033",
+   "adjustedPValue": "0.848849224827334",
+   "pointID": "PF3D7_0106300"
+  },
+  {
+   "effectSize": "1.05110327553288",
+   "pValue": "0.00216470688030871",
+   "adjustedPValue": "0.00712091636447821",
+   "pointID": "PF3D7_0106400"
+  },
+  {
+   "effectSize": "-0.909957125741328",
+   "pValue": "0.000128126403896663",
+   "adjustedPValue": "0.000650669571862315",
+   "pointID": "PF3D7_0106500"
+  },
+  {
+   "effectSize": "-1.57072201554565",
+   "pValue": "0.0162969015520054",
+   "adjustedPValue": "0.0382067040120015",
+   "pointID": "PF3D7_0106600"
+  },
+  {
+   "effectSize": "0.671774216128075",
+   "pValue": "0.000775313174697182",
+   "adjustedPValue": "0.0029978776088291",
+   "pointID": "PF3D7_0106700"
+  },
+  {
+   "effectSize": "-0.278012336076745",
+   "pValue": "0.361107366243504",
+   "adjustedPValue": "0.480836536491471",
+   "pointID": "PF3D7_0106800"
+  },
+  {
+   "effectSize": "-0.762119193052066",
+   "pValue": "0.07565438228595",
+   "adjustedPValue": "0.136061247223464",
+   "pointID": "PF3D7_0106900"
+  },
+  {
+   "effectSize": "-0.720251389856756",
+   "pValue": "0.00530404841356947",
+   "adjustedPValue": "0.0149566564783868",
+   "pointID": "PF3D7_0107000"
+  },
+  {
+   "effectSize": "0.38876311476022",
+   "pValue": "0.357285517707262",
+   "adjustedPValue": "0.476900000621854",
+   "pointID": "PF3D7_0107100"
+  },
+  {
+   "effectSize": "0.364413904240966",
+   "pValue": "0.148500453100601",
+   "adjustedPValue": "0.23599348810687",
+   "pointID": "PF3D7_0107200"
+  },
+  {
+   "effectSize": "-0.615705773878294",
+   "pValue": "0.121348789262549",
+   "adjustedPValue": "0.200309115888749",
+   "pointID": "PF3D7_0107300"
+  },
+  {
+   "effectSize": "-0.684243800746218",
+   "pValue": "0.0321450971243777",
+   "adjustedPValue": "0.0669622238066468",
+   "pointID": "PF3D7_0107400"
+  },
+  {
+   "effectSize": "0.16804626255407",
+   "pValue": "0.456112077928937",
+   "adjustedPValue": "0.574703304227863",
+   "pointID": "PF3D7_0107500"
+  },
+  {
+   "effectSize": "-0.587560399110899",
+   "pValue": "0.17805795983913",
+   "adjustedPValue": "0.273286729446687",
+   "pointID": "PF3D7_0107600"
+  },
+  {
+   "effectSize": "-1.10389348149717",
+   "pValue": "0.344252421418552",
+   "adjustedPValue": "0.463319697610216",
+   "pointID": "PF3D7_0107700"
+  },
+  {
+   "effectSize": "0.798625877951178",
+   "pValue": "0.000949736182523771",
+   "adjustedPValue": "0.00354302394428299",
+   "pointID": "PF3D7_0107800"
+  },
+  {
+   "effectSize": "0.928692542237105",
+   "pValue": "0.000502190436881895",
+   "adjustedPValue": "0.00206782967533407",
+   "pointID": "PF3D7_0107900"
+  },
+  {
+   "effectSize": "0.527266116784639",
+   "pValue": "0.0511233521380557",
+   "adjustedPValue": "0.0983210018431718",
+   "pointID": "PF3D7_0108000"
+  },
+  {
+   "effectSize": "-0.169265093924161",
+   "pValue": "0.57788184823404",
+   "adjustedPValue": "0.68965323451799",
+   "pointID": "PF3D7_0108100"
+  },
+  {
+   "effectSize": "0.783862240710402",
+   "pValue": "0.000179251025669794",
+   "adjustedPValue": "0.000865620641052202",
+   "pointID": "PF3D7_0108300"
+  },
+  {
+   "effectSize": "-0.0887892574043111",
+   "pValue": "0.68216527400429",
+   "adjustedPValue": "0.781278457651972",
+   "pointID": "PF3D7_0108400"
+  },
+  {
+   "effectSize": "-1.15320956682891",
+   "pValue": "0.0107934534724702",
+   "adjustedPValue": "0.0269713962055832",
+   "pointID": "PF3D7_0108500"
+  },
+  {
+   "effectSize": "-0.36308166806882",
+   "pValue": "0.321798559254938",
+   "adjustedPValue": "0.438997291778834",
+   "pointID": "PF3D7_0108600"
+  },
+  {
+   "effectSize": "0.598721453913671",
+   "pValue": "9.46582497720267e-05",
+   "adjustedPValue": "0.000500064195823458",
+   "pointID": "PF3D7_0108700"
+  },
+  {
+   "effectSize": "0.111369138118004",
+   "pValue": "0.582924782249",
+   "adjustedPValue": "0.694168046291763",
+   "pointID": "PF3D7_0108800"
+  },
+  {
+   "effectSize": "-3.59969988527347",
+   "pValue": "0.000377219239464728",
+   "adjustedPValue": "0.00162508053905446",
+   "pointID": "PF3D7_0108900"
+  },
+  {
+   "effectSize": "-2.15796519465541",
+   "pValue": "4.59130577896432e-06",
+   "adjustedPValue": "4.28781268510058e-05",
+   "pointID": "PF3D7_0109000"
+  },
+  {
+   "effectSize": "-2.3904458181102",
+   "pValue": "1.70152214048991e-07",
+   "adjustedPValue": "3.69109724177142e-06",
+   "pointID": "PF3D7_0109100"
+  },
+  {
+   "effectSize": "0.595682246896003",
+   "pValue": "0.0121280994893202",
+   "adjustedPValue": "0.0297267918977556",
+   "pointID": "PF3D7_0109200"
+  },
+  {
+   "effectSize": "-0.682031372227151",
+   "pValue": "0.266370551947936",
+   "adjustedPValue": "0.37885950986916",
+   "pointID": "PF3D7_0109300"
+  },
+  {
+   "effectSize": "0.142872633849199",
+   "pValue": "0.59695271835586",
+   "adjustedPValue": "0.705593894572671",
+   "pointID": "PF3D7_0109400"
+  },
+  {
+   "effectSize": "0.957288291275777",
+   "pValue": "0.00162501777575708",
+   "adjustedPValue": "0.0056101804163042",
+   "pointID": "PF3D7_0109500"
+  },
+  {
+   "effectSize": "0.804040020294884",
+   "pValue": "0.00390919824988711",
+   "adjustedPValue": "0.0116999904165551",
+   "pointID": "PF3D7_0109600"
+  },
+  {
+   "effectSize": "0.386698531361234",
+   "pValue": "0.239457037619034",
+   "adjustedPValue": "0.347985957410139",
+   "pointID": "PF3D7_0109700"
+  },
+  {
+   "effectSize": "0.487885484392232",
+   "pValue": "0.0090060835196714",
+   "adjustedPValue": "0.0232537582911853",
+   "pointID": "PF3D7_0109800"
+  },
+  {
+   "effectSize": "-1.91112084994925",
+   "pValue": "0.000545975513387168",
+   "adjustedPValue": "0.00222180581887983",
+   "pointID": "PF3D7_0109850"
+  },
+  {
+   "effectSize": "-0.0863765192774142",
+   "pValue": "0.749440074472815",
+   "adjustedPValue": "0.834056717904506",
+   "pointID": "PF3D7_0109950"
+  },
+  {
+   "effectSize": "-1.0078045810369",
+   "pValue": "0.00931959007973946",
+   "adjustedPValue": "0.0239286772317635",
+   "pointID": "PF3D7_0110000"
+  },
+  {
+   "effectSize": "0.367397647410566",
+   "pValue": "0.156012873344732",
+   "adjustedPValue": "0.244978892028918",
+   "pointID": "PF3D7_0110100"
+  },
+  {
+   "effectSize": "0.358230090745745",
+   "pValue": "0.0923282610323692",
+   "adjustedPValue": "0.160128649130738",
+   "pointID": "PF3D7_0110200"
+  },
+  {
+   "effectSize": "-0.286400261492121",
+   "pValue": "0.858222998123915",
+   "adjustedPValue": "0.908830953277059",
+   "pointID": "PF3D7_0110300"
+  },
+  {
+   "effectSize": "0.2896377498698",
+   "pValue": "0.0858439350195502",
+   "adjustedPValue": "0.150833293557252",
+   "pointID": "PF3D7_0110400"
+  },
+  {
+   "effectSize": "0.573554292119072",
+   "pValue": "5.64886055537755e-05",
+   "adjustedPValue": "0.000323547002704057",
+   "pointID": "PF3D7_0110500"
+  },
+  {
+   "effectSize": "0.133629003834219",
+   "pValue": "0.468225251326602",
+   "adjustedPValue": "0.58675830432147",
+   "pointID": "PF3D7_0110600"
+  },
+  {
+   "effectSize": "0.835145864832676",
+   "pValue": "0.0141023731563281",
+   "adjustedPValue": "0.0338285050463074",
+   "pointID": "PF3D7_0110700"
+  },
+  {
+   "effectSize": "0.402386108947069",
+   "pValue": "0.0058434712754562",
+   "adjustedPValue": "0.0162367759595379",
+   "pointID": "PF3D7_0110800"
+  },
+  {
+   "effectSize": "1.45232931476866",
+   "pValue": "6.83677234879897e-08",
+   "adjustedPValue": "1.86488196246942e-06",
+   "pointID": "PF3D7_0110900"
+  },
+  {
+   "effectSize": "-1.18576658665908",
+   "pValue": "4.18190075193261e-05",
+   "adjustedPValue": "0.000253211792781854",
+   "pointID": "PF3D7_0111000"
+  },
+  {
+   "effectSize": "-0.265553412846753",
+   "pValue": "0.635092934382011",
+   "adjustedPValue": "0.740605728771403",
+   "pointID": "PF3D7_0111200"
+  },
+  {
+   "effectSize": "-0.391499837249314",
+   "pValue": "0.173179201656558",
+   "adjustedPValue": "0.267451501044701",
+   "pointID": "PF3D7_0111300"
+  },
+  {
+   "effectSize": "-0.140722767047038",
+   "pValue": "0.59941036495743",
+   "adjustedPValue": "0.706773188725752",
+   "pointID": "PF3D7_0111400"
+  },
+  {
+   "effectSize": "-0.421688517000001",
+   "pValue": "0.262159948028231",
+   "adjustedPValue": "0.374029340661718",
+   "pointID": "PF3D7_0111500"
+  },
+  {
+   "effectSize": "0.336299046681758",
+   "pValue": "0.560247113296139",
+   "adjustedPValue": "0.673420941156571",
+   "pointID": "PF3D7_0111600"
+  },
+  {
+   "effectSize": "0.578076791528981",
+   "pValue": "0.852847276797368",
+   "adjustedPValue": "0.904354561404061",
+   "pointID": "PF3D7_0111700"
+  },
+  {
+   "effectSize": "1.06095645618187",
+   "pValue": "2.00011097376501e-07",
+   "adjustedPValue": "4.22245650017058e-06",
+   "pointID": "PF3D7_0111800"
+  },
+  {
+   "effectSize": "-0.150672135568943",
+   "pValue": "0.492427977374577",
+   "adjustedPValue": "0.607490127528599",
+   "pointID": "PF3D7_0111900"
+  },
+  {
+   "effectSize": "-0.0504447536668989",
+   "pValue": "0.854875120598362",
+   "adjustedPValue": "0.905838829710957",
+   "pointID": "PF3D7_0112000"
+  },
+  {
+   "effectSize": "-0.740140206155748",
+   "pValue": "0.27539489111032",
+   "adjustedPValue": "0.388287064999454",
+   "pointID": "PF3D7_0112100"
+  },
+  {
+   "effectSize": "1.61703384203574",
+   "pValue": "4.04241711982346e-05",
+   "adjustedPValue": "0.000246663547400081",
+   "pointID": "PF3D7_0112200"
+  },
+  {
+   "effectSize": "-2.3584827565512",
+   "pValue": "0.109802584556912",
+   "adjustedPValue": "0.185132264659911",
+   "pointID": "PF3D7_0112300"
+  },
+  {
+   "effectSize": "-1.75483356215465",
+   "pValue": "0.432338697415627",
+   "adjustedPValue": "0.55232697026666",
+   "pointID": "PF3D7_0112500"
+  },
+  {
+   "effectSize": "-0.699714870241754",
+   "pValue": "0.234215917993478",
+   "adjustedPValue": "0.341681151216327",
+   "pointID": "PF3D7_0112700"
+  },
+  {
+   "effectSize": "-0.943419650925519",
+   "pValue": "0.0250920643033398",
+   "adjustedPValue": "0.0545178526464521",
+   "pointID": "PF3D7_0112800"
+  },
+  {
+   "effectSize": "-1.12065259045242",
+   "pValue": "0.0448171036651197",
+   "adjustedPValue": "0.0882882521254235",
+   "pointID": "PF3D7_0112900"
+  },
+  {
+   "effectSize": "2.50719349533787",
+   "pValue": "5.87285372212082e-09",
+   "adjustedPValue": "2.48918646222198e-07",
+   "pointID": "PF3D7_0113000"
+  },
+  {
+   "effectSize": "1.31164374968331",
+   "pValue": "5.39190351316422e-06",
+   "adjustedPValue": "4.88641255880507e-05",
+   "pointID": "PF3D7_0113100"
+  },
+  {
+   "effectSize": "2.06527476551757",
+   "pValue": "2.98674546666388e-11",
+   "adjustedPValue": "3.10508821156943e-09",
+   "pointID": "PF3D7_0113200"
+  },
+  {
+   "effectSize": "-0.44619677512036",
+   "pValue": "0.290977937654146",
+   "adjustedPValue": "0.404768602997815",
+   "pointID": "PF3D7_0113300"
+  },
+  {
+   "effectSize": "0.653414561715593",
+   "pValue": "0.148765327295041",
+   "adjustedPValue": "0.236223905877717",
+   "pointID": "PF3D7_0113400"
+  },
+  {
+   "effectSize": "-1.18279120961905",
+   "pValue": "0.0307874243890353",
+   "adjustedPValue": "0.0645750698072267",
+   "pointID": "PF3D7_0113600"
+  },
+  {
+   "effectSize": "0.0552159966647029",
+   "pValue": "0.884889904565975",
+   "adjustedPValue": "0.926595092010361",
+   "pointID": "PF3D7_0113700"
+  },
+  {
+   "effectSize": "-0.516622122966109",
+   "pValue": "0.228642910605755",
+   "adjustedPValue": "0.335237476699763",
+   "pointID": "PF3D7_0113800"
+  },
+  {
+   "effectSize": "-0.0343577885347365",
+   "pValue": "0.939762281950452",
+   "adjustedPValue": "0.963353151880212",
+   "pointID": "PF3D7_0113900"
+  },
+  {
+   "effectSize": "-0.586152637422307",
+   "pValue": "0.138527734647433",
+   "adjustedPValue": "0.22370686339606",
+   "pointID": "PF3D7_0114000"
+  },
+  {
+   "effectSize": "3.5555384562221",
+   "pValue": "0.0190258236849179",
+   "adjustedPValue": "0.0433908478906862",
+   "pointID": "PF3D7_0114100"
+  },
+  {
+   "effectSize": "3.56987306167389",
+   "pValue": "0.00936529303245751",
+   "adjustedPValue": "0.0240149734468671",
+   "pointID": "PF3D7_0114200"
+  },
+  {
+   "effectSize": "1.89625381771902",
+   "pValue": "0.0383937739344694",
+   "adjustedPValue": "0.077890167297101",
+   "pointID": "PF3D7_0114300"
+  },
+  {
+   "effectSize": "2.41575434845773",
+   "pValue": "0.0404127267984613",
+   "adjustedPValue": "0.0811794218304903",
+   "pointID": "PF3D7_0114400"
+  },
+  {
+   "effectSize": "3.84502898974704",
+   "pValue": "6.16132743791048e-12",
+   "adjustedPValue": "9.17538221159102e-10",
+   "pointID": "PF3D7_0114500"
+  },
+  {
+   "effectSize": "2.99022217526142",
+   "pValue": "0.0171575865234193",
+   "adjustedPValue": "0.0399429048815124",
+   "pointID": "PF3D7_0114600"
+  },
+  {
+   "effectSize": "1.50278677723795",
+   "pValue": "0.590938563079424",
+   "adjustedPValue": "0.700833293708056",
+   "pointID": "PF3D7_0114700"
+  },
+  {
+   "effectSize": "3.36141794741045",
+   "pValue": "0.0633651672663849",
+   "adjustedPValue": "0.117319244501942",
+   "pointID": "PF3D7_0114800"
+  },
+  {
+   "effectSize": "-0.383708225063916",
+   "pValue": "0.902012108782209",
+   "adjustedPValue": "0.934339069936089",
+   "pointID": "PF3D7_0114900"
+  },
+  {
+   "effectSize": "1.22840289657829",
+   "pValue": "0.0750730222326842",
+   "adjustedPValue": "0.135136345149327",
+   "pointID": "PF3D7_0115000"
+  },
+  {
+   "effectSize": "-0.383708225063916",
+   "pValue": "0.902012108782209",
+   "adjustedPValue": "0.934339069936089",
+   "pointID": "PF3D7_0115050"
+  },
+  {
+   "effectSize": "-0.793400429024384",
+   "pValue": "0.423530119198954",
+   "adjustedPValue": "0.54372109897163",
+   "pointID": "PF3D7_0115100"
+  },
+  {
+   "effectSize": "0.0971854509635721",
+   "pValue": "0.975122984481663",
+   "adjustedPValue": "0.982612956198603",
+   "pointID": "PF3D7_0115200"
+  },
+  {
+   "effectSize": "0.578076791528981",
+   "pValue": "0.852847276797369",
+   "adjustedPValue": "0.904354561404061",
+   "pointID": "PF3D7_0115300"
+  },
+  {
+   "effectSize": "4.99836339797547",
+   "pValue": "1.20336462397173e-06",
+   "adjustedPValue": "1.55281945622582e-05",
+   "pointID": "PF3D7_0115400"
+  },
+  {
+   "effectSize": "1.05897046755647",
+   "pValue": "0.734014326399385",
+   "adjustedPValue": "0.821535433365957",
+   "pointID": "PF3D7_0115500"
+  },
+  {
+   "effectSize": "3.95578069132825",
+   "pValue": "9.11501838957434e-07",
+   "adjustedPValue": "1.25246262659737e-05",
+   "pointID": "PF3D7_0115600"
+  },
+  {
+   "effectSize": "-0.535355847125316",
+   "pValue": "0.0562245038948599",
+   "adjustedPValue": "0.106240403450164",
+   "pointID": "PF3D7_0115700"
+  },
+  {
+   "effectSize": "-0.251420474013664",
+   "pValue": "0.645759734140422",
+   "adjustedPValue": "0.751295636637188",
+   "pointID": "PF3D7_0200100"
+  },
+  {
+   "effectSize": "1.62162328130711",
+   "pValue": "0.268373355126563",
+   "adjustedPValue": "0.380921480357383",
+   "pointID": "PF3D7_0200200"
+  },
+  {
+   "effectSize": "1.01776314114217",
+   "pValue": "0.505278922691642",
+   "adjustedPValue": "0.620949825615835",
+   "pointID": "PF3D7_0200300"
+  },
+  {
+   "effectSize": "1.77454393375981",
+   "pValue": "0.143552895966157",
+   "adjustedPValue": "0.230068777421037",
+   "pointID": "PF3D7_0200400"
+  },
+  {
+   "effectSize": "1.54153418601557",
+   "pValue": "0.513094690957518",
+   "adjustedPValue": "0.629094736799271",
+   "pointID": "PF3D7_0200600"
+  },
+  {
+   "effectSize": "4.91473163732667",
+   "pValue": "6.87269623200326e-05",
+   "adjustedPValue": "0.00038289743415913",
+   "pointID": "PF3D7_0200700"
+  },
+  {
+   "effectSize": "2.42103007410721",
+   "pValue": "0.149256553580332",
+   "adjustedPValue": "0.236799196725491",
+   "pointID": "PF3D7_0200900"
+  },
+  {
+   "effectSize": "2.67421512604581",
+   "pValue": "0.0510962956504244",
+   "adjustedPValue": "0.0983210018431718",
+   "pointID": "PF3D7_0201200"
+  },
+  {
+   "effectSize": "3.97844401113962",
+   "pValue": "0.00342004911701313",
+   "adjustedPValue": "0.0104749697802904",
+   "pointID": "PF3D7_0201300"
+  },
+  {
+   "effectSize": "1.01548228813079",
+   "pValue": "0.650478131816254",
+   "adjustedPValue": "0.755508960014241",
+   "pointID": "PF3D7_0201400"
+  },
+  {
+   "effectSize": "1.92113363351671",
+   "pValue": "1.10567909412019e-11",
+   "adjustedPValue": "1.45054566871482e-09",
+   "pointID": "PF3D7_0201500"
+  },
+  {
+   "effectSize": "2.26583964146694",
+   "pValue": "2.24773323693468e-08",
+   "adjustedPValue": "7.78931455063529e-07",
+   "pointID": "PF3D7_0201600"
+  },
+  {
+   "effectSize": "-1.2732265624267",
+   "pValue": "0.00477315432284162",
+   "adjustedPValue": "0.0136908278598945",
+   "pointID": "PF3D7_0201700"
+  },
+  {
+   "effectSize": "1.09741653178608",
+   "pValue": "0.00385302990184504",
+   "adjustedPValue": "0.0115758968152487",
+   "pointID": "PF3D7_0201800"
+  },
+  {
+   "effectSize": "2.90512480871925",
+   "pValue": "1.77411269086866e-11",
+   "adjustedPValue": "2.17230242815252e-09",
+   "pointID": "PF3D7_0201900"
+  },
+  {
+   "effectSize": "1.96029267287883",
+   "pValue": "8.92293353555763e-05",
+   "adjustedPValue": "0.000477797510018683",
+   "pointID": "PF3D7_0202000"
+  },
+  {
+   "effectSize": "-2.09391616960411",
+   "pValue": "2.23093687405627e-06",
+   "adjustedPValue": "2.45358526468065e-05",
+   "pointID": "PF3D7_0202100"
+  },
+  {
+   "effectSize": "-1.42815153759222",
+   "pValue": "0.000463488435769414",
+   "adjustedPValue": "0.00193311543070182",
+   "pointID": "PF3D7_0202200"
+  },
+  {
+   "effectSize": "2.28572382154438",
+   "pValue": "6.77452487576662e-07",
+   "adjustedPValue": "1.02267485110888e-05",
+   "pointID": "PF3D7_0202300"
+  },
+  {
+   "effectSize": "1.60210611345352",
+   "pValue": "1.07304575544099e-06",
+   "adjustedPValue": "1.4246944849349e-05",
+   "pointID": "PF3D7_0202400"
+  },
+  {
+   "effectSize": "-0.645749552081037",
+   "pValue": "0.0936435893032587",
+   "adjustedPValue": "0.162103731404636",
+   "pointID": "PF3D7_0202500"
+  },
+  {
+   "effectSize": "0.240032782116145",
+   "pValue": "0.252222851374231",
+   "adjustedPValue": "0.362953228276837",
+   "pointID": "PF3D7_0202600"
+  },
+  {
+   "effectSize": "0.0810879130163506",
+   "pValue": "0.80074962759677",
+   "adjustedPValue": "0.875249047422773",
+   "pointID": "PF3D7_0202700"
+  },
+  {
+   "effectSize": "-1.24965205445842",
+   "pValue": "0.00221818224730319",
+   "adjustedPValue": "0.00727944263409207",
+   "pointID": "PF3D7_0202800"
+  },
+  {
+   "effectSize": "-0.813861015636483",
+   "pValue": "0.0686024659433273",
+   "adjustedPValue": "0.12512399448783",
+   "pointID": "PF3D7_0202900"
+  },
+  {
+   "effectSize": "-2.20866571740079",
+   "pValue": "1.28901503001863e-07",
+   "adjustedPValue": "2.93490612206721e-06",
+   "pointID": "PF3D7_0203000"
+  },
+  {
+   "effectSize": "-1.96453349245011",
+   "pValue": "7.33137390762324e-06",
+   "adjustedPValue": "6.22432515115625e-05",
+   "pointID": "PF3D7_0203100"
+  },
+  {
+   "effectSize": "0.518986331964701",
+   "pValue": "0.153129461940134",
+   "adjustedPValue": "0.24148349607617",
+   "pointID": "PF3D7_0203200"
+  },
+  {
+   "effectSize": "0.237917541351377",
+   "pValue": "0.473174276016969",
+   "adjustedPValue": "0.590788194434241",
+   "pointID": "PF3D7_0203300"
+  },
+  {
+   "effectSize": "-0.580518565169574",
+   "pValue": "0.0441959209320963",
+   "adjustedPValue": "0.0874560693100658",
+   "pointID": "PF3D7_0203400"
+  },
+  {
+   "effectSize": "-1.23080096261289",
+   "pValue": "0.00684195890243104",
+   "adjustedPValue": "0.0184806201924047",
+   "pointID": "PF3D7_0203600"
+  },
+  {
+   "effectSize": "0.683434777993094",
+   "pValue": "0.0100285401243965",
+   "adjustedPValue": "0.0254407256378567",
+   "pointID": "PF3D7_0203700"
+  },
+  {
+   "effectSize": "-0.399177712449616",
+   "pValue": "0.186251615773366",
+   "adjustedPValue": "0.283024380284404",
+   "pointID": "PF3D7_0203800"
+  },
+  {
+   "effectSize": "0.407892058320922",
+   "pValue": "0.121976882540319",
+   "adjustedPValue": "0.201104914062585",
+   "pointID": "PF3D7_0203900"
+  },
+  {
+   "effectSize": "0.599255732395264",
+   "pValue": "0.0606516987801118",
+   "adjustedPValue": "0.113016861778294",
+   "pointID": "PF3D7_0204000"
+  },
+  {
+   "effectSize": "-1.77120292176788",
+   "pValue": "1.17607213605353e-06",
+   "adjustedPValue": "1.52566315855087e-05",
+   "pointID": "PF3D7_0204100"
+  },
+  {
+   "effectSize": "-0.0311043775476357",
+   "pValue": "0.89965327685328",
+   "adjustedPValue": "0.934339069936089",
+   "pointID": "PF3D7_0204200"
+  },
+  {
+   "effectSize": "0.776309428949652",
+   "pValue": "0.00400008354021175",
+   "adjustedPValue": "0.0118816497609524",
+   "pointID": "PF3D7_0204300"
+  },
+  {
+   "effectSize": "0.837233337858216",
+   "pValue": "0.00917869766431041",
+   "adjustedPValue": "0.0236219636293089",
+   "pointID": "PF3D7_0204400"
+  },
+  {
+   "effectSize": "0.89744810430445",
+   "pValue": "8.59751289335757e-05",
+   "adjustedPValue": "0.000462168741877075",
+   "pointID": "PF3D7_0204500"
+  },
+  {
+   "effectSize": "1.34203466511852",
+   "pValue": "7.69654108571831e-10",
+   "adjustedPValue": "4.7119934869231e-08",
+   "pointID": "PF3D7_0204600"
+  },
+  {
+   "effectSize": "0.674098247221209",
+   "pValue": "0.000495604653779392",
+   "adjustedPValue": "0.00204859838133867",
+   "pointID": "PF3D7_0204700"
+  },
+  {
+   "effectSize": "0.271174282476135",
+   "pValue": "0.441491355131927",
+   "adjustedPValue": "0.560252733020939",
+   "pointID": "PF3D7_0204800"
+  },
+  {
+   "effectSize": "-0.0498506723745027",
+   "pValue": "0.858957176876579",
+   "adjustedPValue": "0.908923579811898",
+   "pointID": "PF3D7_0204900"
+  },
+  {
+   "effectSize": "-0.812950042320899",
+   "pValue": "0.0646182751349617",
+   "adjustedPValue": "0.119278625123497",
+   "pointID": "PF3D7_0205000"
+  },
+  {
+   "effectSize": "-1.09557098030388",
+   "pValue": "0.000923707051048285",
+   "adjustedPValue": "0.00346233051107214",
+   "pointID": "PF3D7_0205100"
+  },
+  {
+   "effectSize": "-0.693228483322047",
+   "pValue": "0.174023035176691",
+   "adjustedPValue": "0.268364658220981",
+   "pointID": "PF3D7_0205200"
+  },
+  {
+   "effectSize": "-0.431170455830059",
+   "pValue": "0.333823649037939",
+   "adjustedPValue": "0.452377842154216",
+   "pointID": "PF3D7_0205300"
+  },
+  {
+   "effectSize": "0.222257258353489",
+   "pValue": "0.408332739592473",
+   "adjustedPValue": "0.528673912195156",
+   "pointID": "PF3D7_0205400"
+  },
+  {
+   "effectSize": "0.513974422025002",
+   "pValue": "0.0168535220664624",
+   "adjustedPValue": "0.0393320231199525",
+   "pointID": "PF3D7_0205500"
+  }
+ ],
+ "totalStatistics": 5511
+}

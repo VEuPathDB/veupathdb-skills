@@ -1,0 +1,119 @@
+[
+ [
+  "sample_stable_id",
+  "VAR_081ab087",
+  "VAR_26d10fbf",
+  "VAR_64c65374",
+  "VAR_7033e90f",
+  "VAR_84f17484",
+  "VAR_ebaebced"
+ ],
+ [
+  "PB31_37C_Rep1",
+  "normal",
+  "PB31",
+  "delta-LRR5-37C",
+  "37",
+  "delta-LRR5 mutant",
+  "[\"SRR14793982\",\"SRR14793981\"]"
+ ],
+ [
+  "PB31_37C_Rep2",
+  "normal",
+  "PB31",
+  "delta-LRR5-37C",
+  "37",
+  "delta-LRR5 mutant",
+  "[\"SRR14793993\",\"SRR14793994\"]"
+ ],
+ [
+  "PB31_41C_Rep1",
+  "febrile",
+  "PB31",
+  "delta-LRR5-41C",
+  "41",
+  "delta-LRR5 mutant",
+  "[\"SRR14793983\",\"SRR14793984\"]"
+ ],
+ [
+  "PB31_41C_Rep2",
+  "febrile",
+  "PB31",
+  "delta-LRR5-41C",
+  "41",
+  "delta-LRR5 mutant",
+  "[\"SRR14793996\",\"SRR14793995\"]"
+ ],
+ [
+  "PB4_37C_Rep1",
+  "normal",
+  "PB4",
+  "delta-DHC-37C",
+  "37",
+  "delta-DHC mutant",
+  "[\"SRR14793985\",\"SRR14793986\"]"
+ ],
+ [
+  "PB4_37C_Rep2",
+  "normal",
+  "PB4",
+  "delta-DHC-37C",
+  "37",
+  "delta-DHC mutant",
+  "[\"SRR14793997\",\"SRR14793998\"]"
+ ],
+ [
+  "PB4_41C_Rep1",
+  "febrile",
+  "PB4",
+  "delta-DHC-41C",
+  "41",
+  "delta-DHC mutant",
+  "[\"SRR14793988\",\"SRR14793987\"]"
+ ],
+ [
+  "PB4_41C_Rep2",
+  "febrile",
+  "PB4",
+  "delta-DHC-41C",
+  "41",
+  "delta-DHC mutant",
+  "[\"SRR14793999\",\"SRR14794000\"]"
+ ],
+ [
+  "WT_37C_Rep1",
+  "normal",
+  "NF54",
+  "WT 37C",
+  "37",
+  "wildtype",
+  "[\"SRR14793977\",\"SRR14793978\"]"
+ ],
+ [
+  "WT_37C_Rep2",
+  "normal",
+  "NF54",
+  "WT 37C",
+  "37",
+  "wildtype",
+  "[\"SRR14793989\",\"SRR14793990\"]"
+ ],
+ [
+  "WT_41C_Rep1",
+  "febrile",
+  "NF54",
+  "WT 41C",
+  "41",
+  "wildtype",
+  "[\"SRR14793980\",\"SRR14793979\"]"
+ ],
+ [
+  "WT_41C_Rep2",
+  "febrile",
+  "NF54",
+  "WT 41C",
+  "41",
+  "wildtype",
+  "[\"SRR14793991\",\"SRR14793992\"]"
+ ]
+]
