@@ -307,8 +307,10 @@ def _resolve_or_fail(cat, name, site, client_inst=None):
             raw_rt, _ = resolve_search(raw_cat, name)
             if raw_rt is not None:
                 fail(
-                    f"search '{name}' on {site} is unavailable: it uses excluded "
-                    "parameter prefix(es) (e.g. 'eda_') which are not supported via WDK directly."
+                    f"search '{name}' on {site} is hidden from the default catalog: it uses "
+                    "excluded parameter prefix(es) (e.g. 'eda_'), and it is not an EDA notebook "
+                    "search that eda.py supports (differential-expression and antibody-array "
+                    "notebooks only)."
                 )
         fail(
             f"unknown search '{name}' on {site}. Did you mean: "
@@ -325,7 +327,14 @@ def cmd_inspect(args) -> None:
     c = client(args.site)
     cat = fetch_catalog(c)
     rt = _resolve_or_fail(cat, args.search, args.site, client_inst=c)
-    emit(build_sheet(get_search_detail(c, rt, args.search), query=args.query))
+    sheet = build_sheet(get_search_detail(c, rt, args.search), query=args.query)
+    nb = next((s.get("edaNotebookType") for s in cat["searches"].get(rt, []) if s["name"] == args.search), None)
+    if nb:
+        sheet["eda_note"] = (
+            f"EDA notebook search ({nb}): build eda_analysis_spec with scripts/eda.py "
+            "(references/eda.md), then pass it with --params @file"
+        )
+    emit(sheet)
 
 
 def cmd_inspect_record_type(args) -> None:
@@ -397,11 +406,21 @@ def cmd_param_options(args) -> None:
     emit(out)
 
 
-def _load_params(raw):
+def _load_json_arg(raw, flag):
+    """JSON from an inline string, or from a file when the value is @path."""
+    if raw.startswith("@"):
+        path = pathlib.Path(raw[1:]).expanduser()
+        if not path.is_file():
+            fail(f"{flag} file not found: {path}")
+        raw = path.read_text(encoding="utf-8")
     try:
-        params = json.loads(raw)
+        return json.loads(raw)
     except json.JSONDecodeError as e:
-        fail(f"--params is not valid JSON: {e}")
+        fail(f"{flag} is not valid JSON: {e}")
+
+
+def _load_params(raw):
+    params = _load_json_arg(raw, "--params")
     if not isinstance(params, dict):
         fail("--params must be a JSON object of {param: value}")
     return params
@@ -469,10 +488,7 @@ def cmd_create_strategy(args) -> None:
     from _strategy import SpecError, build_strategy
 
     c = client(args.site)
-    try:
-        spec = json.loads(args.spec)
-    except json.JSONDecodeError as e:
-        fail(f"--spec is not valid JSON: {e}")
+    spec = _load_json_arg(args.spec, "--spec")
     try:
         emit(build_strategy(c, fetch_catalog(c), spec, args.name))
     except (SpecError, ParamError) as e:
@@ -719,7 +735,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument(
         "--exclude-param-prefix",
         action="append",
-        help="exclude searches with params starting with prefix (default: eda_; pass '' to disable)",
+        help="exclude searches with params starting with prefix (default: eda_, except supported EDA notebooks; pass '' to disable)",
     )
     sp.set_defaults(func=cmd_searches)
 
@@ -733,7 +749,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument(
         "--exclude-param-prefix",
         action="append",
-        help="exclude searches with params starting with prefix (default: eda_; pass '' to disable)",
+        help="exclude searches with params starting with prefix (default: eda_, except supported EDA notebooks; pass '' to disable)",
     )
     sp.set_defaults(func=cmd_catalog)
 
@@ -744,7 +760,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument(
         "--exclude-param-prefix",
         action="append",
-        help="exclude searches with params starting with prefix (default: eda_; pass '' to disable)",
+        help="exclude searches with params starting with prefix (default: eda_, except supported EDA notebooks; pass '' to disable)",
     )
     sp.set_defaults(func=cmd_find_searches)
 
@@ -814,20 +830,20 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("count", help="result count without creating anything (anonymous report)")
     sp.add_argument("site")
     sp.add_argument("search")
-    sp.add_argument("--params", required=True, help='JSON object, e.g. \'{"organism": ["Plasmodium"]}\'')
+    sp.add_argument("--params", required=True, help='JSON object or @file, e.g. \'{"organism": ["Plasmodium"]}\'')
     sp.set_defaults(func=cmd_count)
 
     sp = sub.add_parser("preview", help="sample records without creating anything")
     sp.add_argument("site")
     sp.add_argument("search")
-    sp.add_argument("--params", required=True)
+    sp.add_argument("--params", required=True, help="JSON object or @file")
     sp.add_argument("--limit", type=int, default=5)
     sp.add_argument("--attributes", help="comma-separated attribute names")
     sp.set_defaults(func=cmd_preview)
 
     sp = sub.add_parser("create-strategy", help="create steps + strategy from a declarative JSON spec")
     sp.add_argument("site")
-    sp.add_argument("--spec", required=True, help="JSON node tree; see references/strategies.md")
+    sp.add_argument("--spec", required=True, help="JSON node tree or @file; see references/strategies.md")
     sp.add_argument("--name", default="wdk.py strategy")
     sp.set_defaults(func=cmd_create_strategy)
 

@@ -274,6 +274,14 @@ def stash_json(kind, data):
 
 
 DEFAULT_EXCLUDED_PARAM_PREFIXES = ("eda_",)
+# EDA notebook searches eda.py supports; other eda_ searches stay hidden
+SUPPORTED_EDA_NOTEBOOKS = ("differentialExpressionNotebook", "antibodyArrayNotebook")
+CATALOG_SCHEMA = 2  # 2 = entries carry edaNotebookType and queryName
+
+
+def _notebook_type(search):
+    values = (search.get("properties") or {}).get("edaNotebookType") or []
+    return values[0] if values else None
 
 
 def get_excluded_param_prefixes() -> tuple[str, ...]:
@@ -297,7 +305,8 @@ def filter_catalog_searches(catalog: dict, excluded_prefixes: tuple[str, ...] | 
         filtered_searches[rt] = [
             s
             for s in searches
-            if not any(
+            if s.get("edaNotebookType") in SUPPORTED_EDA_NOTEBOOKS
+            or not any(
                 isinstance(p, str)
                 and any(p.startswith(prefix) for prefix in excluded_prefixes)
                 for p in s.get("paramNames", [])
@@ -311,17 +320,17 @@ def filter_catalog_searches(catalog: dict, excluded_prefixes: tuple[str, ...] | 
 
 def fetch_catalog(client, refresh=False, excluded_param_prefixes=None):
     """Record types + compact search listings. Disk-cached 7 days per site.
-    Filters out searches with excluded_param_prefixes (default: ('eda_',)).
+    Filters out searches with excluded_param_prefixes (default: ('eda_',)) except the
+    EDA notebook searches eda.py supports.
     """
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cache = CACHE_DIR / f"{client.site_id}.json"
-    if (
-        not refresh
-        and cache.is_file()
-        and time.time() - cache.stat().st_mtime < CACHE_TTL_S
-    ):
-        raw_catalog = json.loads(cache.read_text())
-    else:
+    raw_catalog = None
+    if not refresh and cache.is_file() and time.time() - cache.stat().st_mtime < CACHE_TTL_S:
+        cached = json.loads(cache.read_text())
+        if cached.get("schema") == CATALOG_SCHEMA:  # older caches lack edaNotebookType
+            raw_catalog = cached
+    if raw_catalog is None:
         record_types = client.get("/record-types")
         searches = {}
         for rt in record_types:
@@ -336,10 +345,13 @@ def fetch_catalog(client, refresh=False, excluded_param_prefixes=None):
                     "description": s.get("description") or s.get("summary") or "",
                     "paramNames": s.get("paramNames", []),
                     "outputRecordClassName": s.get("outputRecordClassName", ""),
+                    "edaNotebookType": _notebook_type(s),
+                    "queryName": s.get("queryName", ""),
                 }
                 for s in listing
             ]
         raw_catalog = {
+            "schema": CATALOG_SCHEMA,
             "cached_at": time.time(),
             "record_types": record_types,
             "searches": searches,

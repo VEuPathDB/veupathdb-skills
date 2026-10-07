@@ -6,6 +6,9 @@ Spec nodes (exactly one key each):
   {"transform": {"search": name, "params": {...}, "input": node}}
 OP: UNION | INTERSECT | MINUS | RMINUS | LONLY | RONLY
 """
+import json
+import pathlib
+
 from _shaping import (
     all_search_names,
     encode_params,
@@ -19,6 +22,23 @@ OPERATORS = {"UNION", "INTERSECT", "MINUS", "RMINUS", "LONLY", "RONLY"}
 
 class SpecError(Exception):
     pass
+
+
+def resolve_params(value):
+    """A node's params: an object, or "@path" naming a JSON file that holds one
+    (e.g. the output of eda.py de-spec --save)."""
+    if isinstance(value, str) and value.startswith("@"):
+        path = pathlib.Path(value[1:]).expanduser()
+        try:
+            loaded = json.loads(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            raise SpecError(f"params file not found: {path}") from None
+        except json.JSONDecodeError as e:
+            raise SpecError(f"params file {path} is not valid JSON: {e}") from None
+        if not isinstance(loaded, dict):
+            raise SpecError(f"params file {path} must hold a JSON object")
+        return loaded
+    return value
 
 
 def _kind(node):
@@ -36,8 +56,8 @@ def validate_spec(node):
     """Returns the search name of the leftmost leaf (used to resolve record type)."""
     kind, body = _kind(node)
     if kind == "leaf":
-        if "search" not in body or not isinstance(body.get("params", {}), dict):
-            raise SpecError(f"leaf needs 'search' and object 'params': {body!r:.120}")
+        if "search" not in body or not isinstance(resolve_params(body.get("params", {})), dict):
+            raise SpecError(f"leaf needs 'search' and object 'params' (or \"@file\"): {body!r:.120}")
         return body["search"]
     if kind == "combine":
         if body.get("operator") not in OPERATORS:
@@ -79,7 +99,7 @@ def build_strategy(client, catalog, spec, name):
     def create(node):
         kind, body = _kind(node)
         if kind == "leaf":
-            params = body.get("params", {})
+            params = resolve_params(body.get("params", {}))
             detail = get_search_detail_for_params(client, rt, body["search"], params)
             wire = encode_params(detail, params, client=client)
             step = client.post(
@@ -90,7 +110,7 @@ def build_strategy(client, catalog, spec, name):
             return {"stepId": step["id"]}
         if kind == "transform":
             child = create(body["input"])
-            params = body.get("params", {})
+            params = resolve_params(body.get("params", {}))
             detail = get_search_detail_for_params(client, rt, body["search"], params)
             wire = encode_params(detail, params, client=client)  # input-step -> ""
             step = client.post(

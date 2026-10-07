@@ -90,23 +90,13 @@ def test_filter_catalog_searches_offline():
     assert custom_names == ["EdaSearch", "MixedSearch", "CleanSearch"]
 
 
-def test_live_catalog_excludes_eda_searches(token):
-    from _client import Client, fetch_catalog
+def test_live_catalog_keeps_only_supported_eda_searches(token):
+    from _client import SUPPORTED_EDA_NOTEBOOKS, Client, fetch_catalog
 
     c = Client("vectorbase", token=token)
-    cat_filtered = fetch_catalog(c)
-    transcript_searches = cat_filtered["searches"]["transcript"]
-    # No search should have an eda_ param
-    assert not any(
-        any(p.startswith("eda_") for p in s.get("paramNames", []))
-        for s in transcript_searches
-    )
-
-    # When excluded_param_prefixes=(), eda_ searches are present
-    cat_raw = fetch_catalog(c, excluded_param_prefixes=())
-    raw_transcript_searches = cat_raw["searches"]["transcript"]
-    assert len(raw_transcript_searches) > len(transcript_searches) + 100
-    assert any(
-        any(p.startswith("eda_") for p in s.get("paramNames", []))
-        for s in raw_transcript_searches
-    )
+    transcript = fetch_catalog(c, refresh=True)["searches"]["transcript"]
+    eda = [s for s in transcript if any(p.startswith("eda_") for p in s.get("paramNames", []))]
+    assert eda, "DE notebook searches should now be listed"
+    assert all(s["edaNotebookType"] in SUPPORTED_EDA_NOTEBOOKS for s in eda)
+    raw = fetch_catalog(c, excluded_param_prefixes=())["searches"]["transcript"]
+    assert len(raw) > len(transcript)

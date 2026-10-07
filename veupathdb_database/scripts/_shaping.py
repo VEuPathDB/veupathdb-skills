@@ -20,6 +20,17 @@ def _is_boolean(name):
     return name.startswith("boolean_question_")
 
 
+def _camel_words(name):
+    return re.sub(r"(?<!^)(?=[A-Z])", " ", name).lower()
+
+
+def display_name(search):
+    nb = search.get("edaNotebookType")
+    if nb:
+        return f"{search['displayName']} [EDA notebook: {nb.removesuffix('Notebook')} — use eda.py]"
+    return search["displayName"]
+
+
 def catalog_lines(catalog, record_type=None):
     lines = []
     for rt, searches in catalog["searches"].items():
@@ -29,7 +40,7 @@ def catalog_lines(catalog, record_type=None):
             if _is_boolean(s["name"]):
                 continue
             desc = strip_html(s["description"])[:250]
-            lines.append(f"{rt}\t{s['name']}\t{s['displayName']}\t{desc}")
+            lines.append(f"{rt}\t{s['name']}\t{display_name(s)}\t{desc}")
     return lines
 
 
@@ -54,6 +65,8 @@ def score_searches(catalog, query, limit=20):
             name = s["name"].lower()
             disp = s["displayName"].lower()
             desc = strip_html(s["description"]).lower()
+            if s.get("edaNotebookType"):
+                desc += " " + _camel_words(s["edaNotebookType"])
             score = sum(
                 (3 if w in name else 0)
                 + (2 if w in disp else 0)
@@ -70,7 +83,7 @@ def score_searches(catalog, query, limit=20):
         {
             "record_type": rt,
             "name": s["name"],
-            "displayName": s["displayName"],
+            "displayName": display_name(s),
             "relevance": round(score / top, 2),
         }
         for score, rt, s in scored[:limit]
@@ -439,7 +452,11 @@ def encode_params(search_data, user_params, client=None):
                     raise ParamError(f"unknown value(s) for '{name}': {hints}")
             wire[name] = json.dumps(items)
         else:
-            sval = str(value)
+            if isinstance(value, (dict, list)) and not isinstance(vocab, (list, dict)):
+                # e.g. eda_analysis_spec given as an object: WDK wants the JSON text
+                sval = json.dumps(value, separators=(",", ":"), ensure_ascii=False)
+            else:
+                sval = str(value)
             if (
                 ptype == "single-pick-vocabulary"
                 and isinstance(vocab, list)

@@ -135,3 +135,46 @@ class EdaMock:
                 "histogram": [{"binLabel": "febrile", "value": 6}, {"binLabel": "normal", "value": 6}],
                 "statistics": {"numVarValues": 12, "numDistinctValues": 2, "numMissingCases": 0}})
         return httpx.Response(404, json={"status": "not-found", "path": path})
+
+
+def _search(name, notebook, params=("eda_dataset_id", "eda_analysis_spec"), display=None):
+    props = {"edaNotebookType": [notebook]} if notebook else {}
+    return {"urlSegment": name, "displayName": display or name, "description": "",
+            "paramNames": list(params), "properties": props,
+            "queryName": "GenesByEdaVizWithCompute", "outputRecordClassName": "transcript"}
+
+
+class FakeWdk:
+    """Just enough WDK for the catalog and search details."""
+
+    site_id = "plasmodb"
+    DATASETS = {
+        "GenesByRNASeqHS_DESeq": "DS_e973eadd57",
+        "GenesByAntibodyArrayEdaSubset_X": "DS_24d441b301",
+        "GenesByDESeqUserDataset": "",
+        "GenesByRNASeqXWGCNAModules": "DS_w",
+    }
+    LISTING = [
+        _search("GenesByRNASeqHS_DESeq", "differentialExpressionNotebook", display="Heat shock (DESeq2)"),
+        _search("GenesByAntibodyArrayEdaSubset_X", "antibodyArrayNotebook", display="Mali antibody array"),
+        _search("GenesByRNASeqXWGCNAModules", "wgcnaCorrelationNotebook"),
+        _search("GenesByDESeqUserDataset", "differentialExpressionNotebook"),
+        _search("GenesByEdaSubset", None),
+        _search("GenesByTaxon", None, params=("organism",), display="Organism"),
+    ]
+
+    def __init__(self):
+        self.calls = []
+
+    def get(self, path, params=None):
+        self.calls.append(path)
+        if path == "/record-types":
+            return ["transcript"]
+        if path == "/record-types/transcript/searches":
+            return self.LISTING
+        name = path.rsplit("/", 1)[1]
+        return {"searchData": {"urlSegment": name, "parameters": [
+            {"name": "eda_dataset_id", "type": "string", "isVisible": False,
+             "initialDisplayValue": self.DATASETS.get(name, "")},
+            {"name": "eda_analysis_spec", "type": "string", "allowEmptyValue": True},
+        ]}}
