@@ -148,6 +148,51 @@ def other_entities(t, view, filters):
     ]
 
 
+def contrast_setup(args, t, filters):
+    """Shared by contrasts/de/de-spec: sample view, value variable, method, notes."""
+    from _contrasts import choose_method, choose_value_var
+    from _eda import EdaError
+    from _samples import MAX_TABULAR_ROWS
+
+    view = sample_view(t, filters)
+    if view["table"] is None:
+        raise EdaError(
+            f"{', '.join(view['too_big'])} has more than {MAX_TABULAR_ROWS} records; contrasts need "
+            "the joint sample table. Narrow it with --filters."
+        )
+    value_var, vnote = choose_value_var(t["expr"], getattr(args, "value_var", None))
+    method, mnote = choose_method(t["notebook"], value_var, getattr(args, "method", "auto"))
+    return view, value_var, method, [n for n in (vnote, mnote) if n]
+
+
+def _only_vars(args):
+    return set(args.vars.split(",")) if getattr(args, "vars", None) else None
+
+
+def cmd_contrasts(args) -> None:
+    import _contrasts
+    from _contrasts import PLUGIN_DE, compute_body, de_config, enumerate_contrasts, job_id, render_contrasts
+    from _eda import compute_status
+
+    t = load_target(args)
+    filters = read_filters(args, t)
+    view, value_var, method, notes = contrast_setup(args, t, filters)
+    result = enumerate_contrasts(view["table"]["rows"], view["meta"], filters, _only_vars(args))
+    for cand in result["candidates"]:
+        cfg = de_config(t["expr"]["entityId"], value_var, cand["comparator"], cand["groupA"], cand["groupB"], method)
+        body = compute_body(t["dataset"]["studyId"], cfg, cand["filters"])
+        if cand["index"] <= _contrasts.MAX_CACHE_CHECKS:
+            st = compute_status(t["client"], PLUGIN_DE, body, start=False)
+            cand["cache"] = {"status": st["status"], "jobId": st["jobID"]}
+        else:
+            cand["cache"] = {"status": "not checked", "jobId": job_id(PLUGIN_DE, body)}
+    out = {"datasetId": t["dataset"]["datasetId"], "valueVariable": value_var, "method": method, "notes": notes, **result}
+    if args.json:
+        emit(out)
+    else:
+        print("\n".join(render_contrasts(out)))
+
+
 def cmd_study(args) -> None:
     from _samples import render_study, study_json
 
@@ -169,6 +214,13 @@ def _target_args(sp):
     sp.add_argument("--refresh", action="store_true", help="bypass the 7-day study metadata cache")
 
 
+def _contrast_args(sp):
+    sp.add_argument("--value-var", help="expression value variable (default: unstranded counts, else sense, else intensity)")
+    sp.add_argument("--method", default="auto", choices=["auto", "DESeq", "limma"],
+                    help="auto = the website's method for this search family")
+    sp.add_argument("--vars", help="comma-separated comparator variable ids to consider")
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="eda.py", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -179,6 +231,12 @@ def build_parser() -> argparse.ArgumentParser:
     _target_args(sp)
     sp.add_argument("--json", action="store_true", help="pruned structure plus the sample table")
     sp.set_defaults(func=cmd_study)
+
+    sp = sub.add_parser("contrasts", help="canonical candidate contrasts with replicate counts and cache status")
+    _target_args(sp)
+    _contrast_args(sp)
+    sp.add_argument("--json", action="store_true")
+    sp.set_defaults(func=cmd_contrasts)
 
     return p
 

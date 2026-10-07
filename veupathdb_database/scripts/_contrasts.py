@@ -487,3 +487,41 @@ def load_contrast(obj, var_meta, var_entities, chain, base_filters=()):
         "notes": [],
         "stratum": None,
     }
+
+
+def _labels(group):
+    return "+".join(g["label"] for g in group)
+
+
+def render_contrasts(out):
+    lines = [
+        f"{out['datasetId']}  value={out['valueVariable']}  method={out['method']}  "
+        f"{len(out['candidates'])} candidates (groupA is the reference: positive log2FC = higher in groupB; "
+        "the suggested reference is a hint, and you decide)"
+    ]
+    if out.get("truncated"):
+        tr = out["truncated"]
+        lines.append(f"note: showing the first {tr['shown']} of {tr['total']} candidates; narrow with --vars")
+    lines += [f"note: {n}" for n in out["notes"]]
+    for c in out["candidates"]:
+        where = f"  | {c['stratum']['displayName']} = {c['stratum']['label']}" if c.get("stratum") else ""
+        cache = (c.get("cache") or {}).get("status", "")
+        lines.append(
+            f"{c['index']:>3}  {c['comparator']['displayName']}: {_labels(c['groupA'])} (n={c['nA']}) → "
+            f"{_labels(c['groupB'])} (n={c['nB']}){where}  [{cache}]"
+        )
+        lines += [f"       - {n}" for n in c["notes"]]
+    for a in out["aliases"]:
+        lines.append(f"aliased: {a['displayName']} ({a['variableId']}) groups samples exactly like {a['sameAsName']} ({a['sameAs']})")
+    for n in out.get("nested", []):
+        lines.append(f"nested: each {n['displayName']} ({n['variableId']}) level lies within one {n['withinName']} level")
+    for s in out["skipped"]:
+        levels = ""
+        if s.get("levels"):
+            levels = ": " + ", ".join(f"{label} ({n})" for label, n in s["levels"][:12])
+        lines.append(f"skipped {s['displayName']} ({s['variableId']}): {s['reason']}{levels}")
+    lines.append(
+        "[complete] = already computed (free, and a hint that website users ran it). "
+        "Next: eda.py de SITE DS --contrast N with the same --filters/--vars/--value-var."
+    )
+    return lines
