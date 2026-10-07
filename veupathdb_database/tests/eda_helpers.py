@@ -24,6 +24,52 @@ def _matches(cell, f):
     return True
 
 
+def synthetic_study():
+    """Participant -> Sample -> counts. Exercises hidden variables, categories,
+    ordering, long definitions, and an ancestor join."""
+    return {
+        "id": "STUDY_x",
+        "rootEntity": {
+            "id": "ENT_p",
+            "displayName": "Participant",
+            "variables": [
+                {"id": "VAR_sex", "parentId": "ENT_p", "displayName": "sex", "type": "string",
+                 "dataShape": "categorical", "vocabulary": ["female", "male"], "displayOrder": 1},
+                {"id": "VAR_hide", "parentId": "ENT_p", "displayName": "internal", "type": "string",
+                 "dataShape": "categorical", "hideFrom": ["everywhere"]},
+            ],
+            "children": [
+                {
+                    "id": "ENT_s",
+                    "displayName": "Sample",
+                    "variables": [
+                        {"id": "VAR_cat", "parentId": "ENT_s", "displayName": "Condition group", "type": "category"},
+                        {"id": "VAR_cond", "parentId": "VAR_cat", "displayName": "condition", "type": "string",
+                         "dataShape": "categorical", "isFeatured": True, "vocabulary": ["control", "treated"],
+                         "displayOrder": 2, "definition": "x" * 200},
+                        {"id": "VAR_dose", "parentId": "VAR_cat", "displayName": "dose", "type": "number",
+                         "dataShape": "continuous", "units": "mg", "displayOrder": 1, "definition": "",
+                         "distributionDefaults": {"rangeMin": 0, "rangeMax": 10, "binWidth": 1}},
+                        {"id": "VAR_emptycat", "parentId": "ENT_s", "displayName": "Nothing here", "type": "category"},
+                    ],
+                    "children": [
+                        {
+                            "id": "ENT_g",
+                            "displayName": "counts",
+                            "variables": [
+                                {"id": "VEUPATHDB_GENE_ID", "parentId": "ENT_g", "type": "string",
+                                 "dataShape": "categorical", "distinctValuesCount": 100},
+                                {"id": "SEQUENCE_READ_COUNT", "parentId": "ENT_g", "type": "integer",
+                                 "dataShape": "continuous"},
+                            ],
+                        }
+                    ],
+                }
+            ],
+        },
+    }
+
+
 class EdaMock:
     """Fake EDA service for the heat-shock study, served from captured fixtures.
 
