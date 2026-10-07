@@ -34,3 +34,17 @@ def test_study_rejects_non_dataset_argument(run_eda, capsys):
     with pytest.raises(SystemExit):
         run_eda("study", "plasmodb", "STUDY_e973eadd57")
     assert "DS_" in capsys.readouterr().err
+
+
+def test_study_falls_back_to_distribution_when_too_many_records(run_eda, eda_mock):
+    import httpx
+
+    count_path = f"/studies/{eda_mock.STUDY}/entities/{eda_mock.SAMPLE}/count"
+    eda_mock.routes[("POST", count_path)] = lambda r: httpx.Response(200, json={"count": 6000})
+    out = run_eda("study", "plasmodb", "DS_e973eadd57")
+    assert "6000 records" in out
+    assert "/distribution" in out
+    paths = [p for m, p, q, b in eda_mock.requests]
+    assert not any(p.endswith("/tabular") for p in paths)
+    assert any(p.endswith("/distribution") for p in paths)
+    assert "febrile 6 · normal 6" in out

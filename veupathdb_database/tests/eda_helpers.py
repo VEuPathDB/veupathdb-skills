@@ -126,4 +126,12 @@ class EdaMock:
             return httpx.Response(200, text=eda_fixture("pca_heatshock_tabular.tsv"), headers=text)
         if path == "/computes/dimensionalityreduction/meta":
             return httpx.Response(200, text=json.dumps(eda_fixture("pca_heatshock_meta.json")), headers=text)
+        if path.endswith("/distribution"):
+            if "binSpec" in body:
+                return httpx.Response(200, json={"histogram": [], "statistics": {
+                    "subsetSize": 12, "subsetMin": 37, "subsetMax": 41, "subsetMean": 39,
+                    "numVarValues": 12, "numDistinctValues": 2, "numMissingCases": 0}})
+            return httpx.Response(200, json={
+                "histogram": [{"binLabel": "febrile", "value": 6}, {"binLabel": "normal", "value": 6}],
+                "statistics": {"numVarValues": 12, "numDistinctValues": 2, "numMissingCases": 0}})
         return httpx.Response(404, json={"status": "not-found", "path": path})

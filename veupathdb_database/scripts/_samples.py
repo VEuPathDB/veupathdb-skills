@@ -1,4 +1,5 @@
 """EDA study metadata pruning and sample-table assembly (pure functions; no I/O)."""
+import math
 from collections import Counter, defaultdict
 
 from _eda import EdaError
@@ -179,9 +180,10 @@ def convert_value(meta, raw):
         return None
     if meta.get("type") in NUMERIC_TYPES:
         try:
-            return float(raw)
+            value = float(raw)
         except ValueError:
             return None
+        return value if math.isfinite(value) else None
     return raw
 
 
@@ -330,3 +332,23 @@ def study_json(dataset, expr, sections, others, table, filters):
         "otherEntities": others,
         "samples": table["rows"] if table else None,
     }
+
+
+def summarise_from_distribution(meta, dist):
+    """Per-variable summary from /distribution when the joint table is unavailable."""
+    stats = dist.get("statistics") or {}
+    out = {"n": stats.get("numVarValues", 0), "missing": stats.get("numMissingCases", 0), "source": "distribution"}
+    distinct = stats.get("numDistinctValues", 0)
+    if meta.get("type") in NUMERIC_TYPES:
+        out.update(kind="continuous", distinct=distinct)
+        if out["n"]:
+            out.update(min=stats.get("subsetMin"), max=stats.get("subsetMax"), mean=stats.get("subsetMean"))
+        return out
+    out["distinct"] = distinct
+    if distinct > IDENT_MIN_DISTINCT and distinct >= IDENT_COVERAGE * out["n"]:
+        out["kind"] = "identifier"
+        return out
+    levels = [[b["binLabel"], b["value"]] for b in dist.get("histogram", []) if b.get("value")]
+    out["kind"] = "categorical"
+    out["levels"] = sorted(levels, key=lambda kv: (-kv[1], str(kv[0])))
+    return out

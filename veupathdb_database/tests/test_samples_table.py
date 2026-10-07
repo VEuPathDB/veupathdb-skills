@@ -72,3 +72,11 @@ def test_summarise_variable_all_distinct_is_identifier():
     assert s["kind"] == "identifier" and s["distinct"] == 12 and s["n"] == 12
     assert summarise_variable({"type": "string"}, ["a", "b"])["kind"] == "categorical"
     assert summarise_variable({"type": "string"}, ["a", "a", "b", "b", "c", "c"])["kind"] == "categorical"
+
+
+def test_convert_value_treats_non_finite_numbers_as_missing():
+    from _samples import convert_value
+
+    meta = {"type": "number"}
+    assert [convert_value(meta, v) for v in ("NaN", "inf", "-inf", "Infinity")] == [None] * 4
+    assert convert_value(meta, "2.5") == 2.5

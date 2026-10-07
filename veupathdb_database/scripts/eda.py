@@ -93,18 +93,33 @@ def sample_view(t, filters):
 
 
 def study_sections(t, view, filters):
-    from _samples import prune_entity, summarise_variable
+    from _eda import distribution
+    from _samples import MAX_TABULAR_ROWS, NUMERIC_TYPES, prune_entity, summarise_from_distribution, summarise_variable
 
     sections = []
     for eid in reversed(view["chain"]):
         entity = t["index"][eid]["entity"]
-        rows = view["table"]["byEntity"][eid]
+        rows = view["table"]["byEntity"][eid] if view["table"] else None
         items = []
         for item in prune_entity(entity):
             if item["kind"] == "category":
                 items.append((item, None))
-            else:
+            elif rows is not None:
                 items.append((item, summarise_variable(item, [r.get(item["id"]) for r in rows])))
+            elif item.get("type") in NUMERIC_TYPES and not item.get("_binSpec"):
+                items.append((item, {"kind": "continuous", "n": 0, "missing": 0, "unavailable": "no bin defaults"}))
+            else:
+                dist = distribution(
+                    t["client"], t["dataset"]["studyId"], eid, item["id"], filters,
+                    item.get("_binSpec") if item.get("type") in NUMERIC_TYPES else None,
+                )
+                items.append((item, summarise_from_distribution(item, dist)))
+        note = None
+        if rows is None:
+            note = (
+                f"{view['counts'][eid]} records > {MAX_TABULAR_ROWS}: per-variable /distribution "
+                "summaries, no joint sample table (contrasts and pca need it: narrow with --filters)"
+            )
         sections.append(
             {
                 "entityId": eid,
@@ -112,7 +127,7 @@ def study_sections(t, view, filters):
                 "records": view["counts"][eid],
                 "total": view["totals"][eid],
                 "items": items,
-                "note": None,
+                "note": note,
             }
         )
     return sections
