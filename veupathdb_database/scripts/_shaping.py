@@ -4,6 +4,8 @@ import html
 import json
 import re
 
+from _client import WDKError
+
 _TAG = re.compile(r"<[^>]+>")
 _WS = re.compile(r"\s+")
 
@@ -519,7 +521,15 @@ def run_report(client, rt, search, wire_params, num_records=1, attributes=None):
     }
     if attributes:
         body["reportConfig"]["attributes"] = attributes
-    return client.post(f"/record-types/{rt}/searches/{search}/reports/standard", body)
+    resp = client.post(f"/record-types/{rt}/searches/{search}/reports/standard", body)
+    if not isinstance(resp, dict) or "meta" not in resp:
+        # An EDA-backed search answers HTTP 202 with no JSON while its compute job starts or runs.
+        raise WDKError(
+            f"no report returned for {search}: if this is an EDA search, the job behind it has been started "
+            "or is still running; retry in a few minutes",
+            endpoint=f"/record-types/{rt}/searches/{search}/reports/standard",
+        )
+    return resp
 
 
 def shape_record_type(raw, query=None, name_only=False, exclude=None):

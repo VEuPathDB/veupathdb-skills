@@ -107,11 +107,35 @@ def test_live_wdk_step_drives_the_same_job(live_eda, contrast_path, token):
     params = json.loads(live_eda(*argv, "--format", "params"))
     try:
         _wdk_count(token, params)  # the WSF plugin starts the job and answers 202
-    except (WDKError, TypeError):  # 202/no-JSON answer: run_report cannot read a "meta" from it
+    except WDKError:  # 202, no JSON body: the job is started
         pass
     after = compute_status(p["t"]["client"], PLUGIN_DE, p["body"], start=False)
     assert after["jobID"] == before["jobID"]
     assert after["status"] in ("queued", "in-progress", "complete")
+
+
+def test_live_mirror_job_has_negated_effects(live_eda, contrast_path):
+    """The basis of mirror reuse: swapping groups negates effectSize and leaves p and
+    padj unchanged, row for row. Runs the febrile-reference job once (about 2 min);
+    later runs hit the cache."""
+    import eda as eda_cli
+    from _de import java_double
+    from _eda import volcano, wait_for_job
+    from _contrasts import PLUGIN_DE
+
+    argv = ["de", "plasmodb", HS, "--contrast", contrast_path(TEMP)]
+    p = eda_cli.prepare_de(eda_cli.build_parser().parse_args(argv))
+    c, mbody = p["t"]["client"], eda_cli.mirror_body(p)
+    assert wait_for_job(c, PLUGIN_DE, mbody, timeout_s=1800)["status"] == "complete"
+    fwd, rev = volcano(c, p["body"])["statistics"], volcano(c, mbody)["statistics"]
+    assert [s["pointID"] for s in fwd] == [s["pointID"] for s in rev]  # same row order: WDK row-0 drop agrees
+    # observed max deviations: effectSize 7.4e-4 rel / 2.9e-5 abs; p and padj 3.6e-5 rel (DESeq2 fitting is iterative)
+    for f, r in zip(fwd, rev):
+        for key, sign in (("effectSize", -1), ("pValue", 1), ("adjustedPValue", 1)):
+            a, b = java_double(f.get(key)), java_double(r.get(key))
+            assert (a is None) == (b is None), (f["pointID"], key)
+            if a is not None:
+                assert b == pytest.approx(sign * a, rel=1e-3, abs=1e-4), (f["pointID"], key)
 
 
 def test_live_de_datasets_plasmodb(live_eda):

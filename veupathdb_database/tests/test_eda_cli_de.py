@@ -139,6 +139,7 @@ def test_de_reuses_cached_mirror_with_negated_effects(run_eda, eda_mock, contras
     assert out["provenance"]["jobId"] == "a" * 32
     assert out["provenance"]["statisticsFrom"] == {"jobId": "b" * 32, "negated": True}
     assert any("mirror" in n and "WDK step" in n for n in out["context"]["notes"])
+    assert any("--no-mirror" in n and "1e-3" in n for n in out["context"]["notes"])
     computes = [q for m, p, q, b in eda_mock.requests if p == "/computes/differentialexpression"]
     assert computes and all(q == {"autostart": "false"} for q in computes)  # nothing started
     vol = [b for m, p, q, b in eda_mock.requests if p.endswith("/volcanoplot")]

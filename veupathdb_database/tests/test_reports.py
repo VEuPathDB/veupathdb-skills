@@ -62,3 +62,15 @@ def test_live_count_dependent_params(token):
     assert field == "displayViewTotalCount"
     assert 1400 <= count <= 2200  # 1753 on 2026-09-10
 
+
+
+def test_run_report_raises_clean_error_on_non_json_202():
+    import httpx
+    import pytest
+
+    from _client import Client, WDKError
+    from _shaping import run_report
+
+    c = Client("plasmodb", token="t", transport=httpx.MockTransport(lambda r: httpx.Response(202, text="started")), backoff=0)
+    with pytest.raises(WDKError, match="retry in a few minutes"):
+        run_report(c, "transcript", "SomeEdaSearch", {})

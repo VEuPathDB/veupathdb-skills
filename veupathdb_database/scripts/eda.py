@@ -379,7 +379,9 @@ def cmd_de(args) -> None:
         stats = negate_effects(volcano(c, mbody)["statistics"])
         p["notes"].append(
             f"statistics reused from the cached mirror job {mirror['jobId']} (groups swapped), effect sizes "
-            "negated; p-values are unchanged by the swap. The WDK step for this orientation is not cached: "
+            "negated; p-values are unchanged by the swap. Reused values agree with this orientation only to about "
+            "1e-3 (relative), so passing-gene counts near the thresholds may differ by a gene or two from what the "
+            "WDK step returns; --no-mirror gives exact parity. The WDK step for this orientation is not cached: "
             "creating it starts its own job (the first answer is HTTP 202)"
         )
     else:
