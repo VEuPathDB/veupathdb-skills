@@ -89,3 +89,19 @@ def test_pca_npcs_is_a_separate_job(run_eda, eda_mock):
     rep = json.loads(run_eda("pca", "plasmodb", "DS_e973eadd57", "--npcs", "5", "--json"))
     assert eda_mock.compute_bodies("dimensionalityreduction")[-1]["config"]["nPCs"] == 5
     assert any("separate job" in n for n in rep["notes"])
+
+
+@pytest.mark.parametrize("argv, needle", [(["--npcs", "0"], "--npcs"), (["--npcs", "-3"], "--npcs"), (["--top", "-1"], "--top"), (["--top", "0"], "--top")])
+def test_pca_rejects_bad_counts_before_any_job(run_eda, eda_mock, capsys, argv, needle):
+    with pytest.raises(SystemExit) as e:
+        run_eda("pca", "plasmodb", "DS_e973eadd57", *argv)
+    assert e.value.code == 1
+    assert capsys.readouterr().err.startswith(f"error: {needle}")
+    assert not eda_mock.compute_bodies("dimensionalityreduction")
+
+
+def test_pca_explicit_npcs_2_is_still_noted(run_eda, eda_mock):
+    rep = json.loads(run_eda("pca", "plasmodb", "DS_e973eadd57", "--npcs", "2", "--json"))
+    assert eda_mock.compute_bodies("dimensionalityreduction")[-1]["config"]["nPCs"] == 2
+    assert any("separate job" in n for n in rep["notes"])
+

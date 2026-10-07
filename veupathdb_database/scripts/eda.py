@@ -124,6 +124,10 @@ def cmd_pca(args) -> None:
     from _eda import EdaError, compute_file, wait_for_job
     from _pca import parse_scores, parse_variance, pca_report, render_pca
 
+    if args.npcs is not None and args.npcs < 1:
+        raise EdaError(f"--npcs must be an integer >= 1, got {args.npcs}")
+    if args.top < 1:
+        raise EdaError(f"--top must be an integer >= 1 (variables listed per PC), got {args.top}")
     t = load_target(args)
     filters = read_filters(args, t)
     view = sample_view(t, filters)
@@ -139,7 +143,7 @@ def cmd_pca(args) -> None:
     variance = parse_variance(json.loads(compute_file(c, PLUGIN_PCA, body, "meta")))
     report = pca_report(pcs, scores, variance, view["table"]["rows"], view["meta"])
     notes = [n for n in (vnote,) if n]
-    if args.npcs:
+    if args.npcs is not None:
         notes.append(f"--npcs {args.npcs}: an explicit nPCs is a separate job from the website's PCA")
     if any(v is None for v in variance.values()):
         notes.append("variance explained could not be parsed from the PC labels")
