@@ -130,12 +130,15 @@ def test_live_mirror_job_has_negated_effects(live_eda, contrast_path):
     fwd, rev = volcano(c, p["body"])["statistics"], volcano(c, mbody)["statistics"]
     assert [s["pointID"] for s in fwd] == [s["pointID"] for s in rev]  # same row order: WDK row-0 drop agrees
     # observed max deviations: effectSize 7.4e-4 rel / 2.9e-5 abs; p and padj 3.6e-5 rel (DESeq2 fitting is iterative)
+    # p-values span hundreds of orders of magnitude: compare them relatively, with no
+    # meaningful absolute floor (abs=1e-4 would make every p below ~1e-4 compare equal)
+    tol = {"effectSize": (-1, 1e-4), "pValue": (1, 1e-300), "adjustedPValue": (1, 1e-300)}
     for f, r in zip(fwd, rev):
-        for key, sign in (("effectSize", -1), ("pValue", 1), ("adjustedPValue", 1)):
+        for key, (sign, abs_tol) in tol.items():
             a, b = java_double(f.get(key)), java_double(r.get(key))
             assert (a is None) == (b is None), (f["pointID"], key)
             if a is not None:
-                assert b == pytest.approx(sign * a, rel=1e-3, abs=1e-4), (f["pointID"], key)
+                assert b == pytest.approx(sign * a, rel=1e-3, abs=abs_tol), (f["pointID"], key)
 
 
 def test_live_de_datasets_plasmodb(live_eda):
