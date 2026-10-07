@@ -1,5 +1,6 @@
 """WDK transport. Auth is a COOKIE (Authorization=<token>), exactly one pair."""
 import difflib
+import hashlib
 import json
 import os
 import pathlib
@@ -257,6 +258,19 @@ def cached_json(name, fetch, refresh=False, ttl_s=CACHE_TTL_S):
     write_atomic(path, json.dumps(data))
     prune_stale(EDA_CACHE_DIR)
     return data
+
+
+def stash_json(kind, data):
+    """Content-addressed glue file in the skill's cache: EDA_CACHE_DIR/{kind}/{hash}.json.
+    Same content, same path; temp file + os.replace, so parallel writers never see a
+    partial file; files older than CACHE_TTL_S are pruned. Never the user's directory."""
+    text = json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    root = EDA_CACHE_DIR / kind
+    root.mkdir(parents=True, exist_ok=True)
+    path = root / f"{hashlib.sha256(text.encode('utf-8')).hexdigest()[:16]}.json"
+    write_atomic(path, text)  # refreshes the mtime, so a re-saved file is not pruned
+    prune_stale(root)
+    return path.resolve()
 
 
 DEFAULT_EXCLUDED_PARAM_PREFIXES = ("eda_",)

@@ -382,6 +382,33 @@ def cmd_de(args) -> None:
     print("\n".join(lines))
 
 
+def cmd_de_spec(args) -> None:
+    from _client import stash_json
+    from _contrasts import PLUGIN_DE, job_id, pca_config
+    from _de import build_spec, parse_thresholds, validate_spec, wdk_params
+
+    thresholds = parse_thresholds(args.thresholds)
+    p = prepare_de(args)
+    t, c = p["t"], p["contrast"]
+    ds = t["dataset"]
+    name = (
+        f"{ds['shortDisplayName'] or ds['displayName']}: "
+        f"{'+'.join(g['label'] for g in c['groupB'])} vs {'+'.join(g['label'] for g in c['groupA'])}"
+    )[:200]
+    spec = build_spec(ds["datasetId"], name, c["filters"], p["config"],
+                      pca_config(t["expr"]["entityId"], p["valueVar"]), thresholds)
+    validate_spec(spec, ds["datasetId"])
+    log(f"DE job id {job_id(PLUGIN_DE, p['body'])} (same body as 'eda.py de'; run de first so the WDK step answers at once)")
+    if args.save:
+        path = str(stash_json("params", wdk_params(spec)))
+        out = {"paramsFile": path, "leaf": {"search": t["search"], "params": "@" + path}}
+        if not t["search"]:
+            out["note"] = "no search name known for this dataset: find it with 'eda.py de-datasets SITE'"
+        emit(out)
+        return
+    emit(wdk_params(spec) if args.format == "params" else spec)
+
+
 def cmd_study(args) -> None:
     from _samples import render_study, study_json
 
@@ -452,6 +479,17 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--no-mirror", action="store_true",
                     help="never reuse the cached swapped-groups job; always run this orientation")
     sp.set_defaults(func=cmd_de)
+
+    sp = sub.add_parser("de-spec", help="print the eda_analysis_spec (or WDK params) for a contrast")
+    _target_args(sp)
+    _contrast_args(sp)
+    _de_args(sp)
+    sp.add_argument("--format", choices=["spec", "params"], default="spec",
+                    help="spec = the analysis JSON; params = {eda_dataset_id, eda_analysis_spec} for wdk.py --params @file")
+    sp.add_argument("--save", action="store_true",
+                    help="write the WDK params to the skill cache (content-addressed) and print the path and a "
+                         "ready-made strategy leaf; nothing is written to the working directory")
+    sp.set_defaults(func=cmd_de_spec)
 
     return p
 

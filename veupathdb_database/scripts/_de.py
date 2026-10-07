@@ -1,9 +1,10 @@
-"""DE result shaping and the WSF plugin's threshold logic (pure functions; no I/O)."""
+"""DE result shaping, the WSF plugin's threshold logic and the eda_analysis_spec builder (pure functions; no I/O)."""
 import difflib
 import json
 import math
 import re
 
+from _contrasts import METHODS, PLUGIN_DE, PLUGIN_PCA, canonical_filters
 from _eda import EdaError
 
 DIRECTIONS = ("upAndDown", "upOnly", "downOnly")
@@ -239,3 +240,94 @@ def render_de(context, provenance, summary, gene_count=None, genes=None, next_hi
     if next_hint:
         lines.append(next_hint)
     return lines
+
+
+def build_spec(dataset_id, display_name, filters, de_cfg, pca_cfg, thresholds):
+    """The eda_analysis_spec the website notebook saves: subset filters, pca_1 and de_1
+    computations, and a volcano visualization carrying the thresholds."""
+    fc, p, direction = thresholds
+    return {
+        "displayName": display_name,
+        "description": "",
+        "studyId": dataset_id,
+        "studyVersion": "",
+        "apiVersion": "",
+        "isPublic": False,
+        "descriptor": {
+            "subset": {"descriptor": canonical_filters(filters), "uiSettings": {}},
+            "computations": [
+                {
+                    "computationId": "pca_1",
+                    "descriptor": {"type": PLUGIN_PCA, "configuration": pca_cfg},
+                    "visualizations": [
+                        {"visualizationId": "pca_1", "displayName": "PCA Plot",
+                         "descriptor": {"type": "scatterplot", "configuration": {}}}
+                    ],
+                },
+                {
+                    "computationId": "de_1",
+                    "descriptor": {"type": PLUGIN_DE, "configuration": de_cfg},
+                    "visualizations": [
+                        {"visualizationId": "volcano_1", "displayName": "Volcano Plot",
+                         "descriptor": {"type": "volcanoplot", "configuration": {
+                             "effectSizeThreshold": fc, "significanceThreshold": p, "effectDirection": direction}}}
+                    ],
+                },
+            ],
+            "starredVariables": [],
+            "dataTableConfig": {},
+            "derivedVariables": [],
+        },
+    }
+
+
+def find_volcano_computation(computations):
+    """Port of the plugin's findVolcanoComputation: first computation with a volcanoplot
+    visualization whose configuration has both thresholds."""
+    for comp in computations or []:
+        for viz in comp.get("visualizations") or []:
+            desc = viz.get("descriptor") or {}
+            cfg = desc.get("configuration")
+            if desc.get("type") == "volcanoplot" and isinstance(cfg, dict) and \
+                    "effectSizeThreshold" in cfg and "significanceThreshold" in cfg:
+                return comp
+    return None
+
+
+def validate_spec(spec, dataset_id):
+    """The rules GeneEdaVizWithComputePlugin and the DE compute apply, checked before printing."""
+    if spec.get("studyId") != dataset_id:
+        raise SpecError(
+            f"spec studyId {spec.get('studyId')!r} must equal eda_dataset_id {dataset_id!r} "
+            "(a DS_ dataset id, not a STUDY_ id)"
+        )
+    try:
+        filters = spec["descriptor"]["subset"]["descriptor"]
+        computations = spec["descriptor"]["computations"]
+    except (KeyError, TypeError):
+        raise SpecError("spec needs descriptor.subset.descriptor and descriptor.computations") from None
+    if not isinstance(filters, list):
+        raise SpecError("descriptor.subset.descriptor must be a list of filters")
+    comp = find_volcano_computation(computations)
+    if comp is None:
+        raise SpecError("no computation has a volcanoplot visualization with effectSizeThreshold and significanceThreshold")
+    if comp["visualizations"][0].get("descriptor", {}).get("type") != "volcanoplot":
+        raise SpecError("the plugin reads thresholds from the first visualization of the volcano computation; put the volcano plot first")
+    if comp["descriptor"].get("type") != PLUGIN_DE:
+        raise SpecError(f"the volcano computation must be {PLUGIN_DE}, got {comp['descriptor'].get('type')!r}")
+    cfg = comp["descriptor"].get("configuration") or {}
+    for key in ("identifierVariable", "valueVariable", "comparator"):
+        if not cfg.get(key):
+            raise SpecError(f"differentialexpression configuration is missing {key}")
+    for key in ("groupA", "groupB"):
+        if not cfg["comparator"].get(key):
+            raise SpecError(f"comparator {key} is empty")
+    if cfg["identifierVariable"].get("entityId") != cfg["valueVariable"].get("entityId"):
+        raise SpecError("identifier and value variables must be on the same entity")
+    if cfg.get("differentialExpressionMethod") not in METHODS:
+        raise SpecError(f"differentialExpressionMethod must be one of {METHODS}")
+
+
+def wdk_params(spec):
+    """WDK params for the DE/antibody-array search; the spec travels as a JSON string."""
+    return {"eda_dataset_id": spec["studyId"], "eda_analysis_spec": json.dumps(spec, separators=(",", ":"), ensure_ascii=False)}
