@@ -64,3 +64,17 @@ def run_eda(eda_mock, capsys):
         return captured.out
 
     return run
+
+
+@pytest.fixture
+def fake_wdk(monkeypatch, tmp_path):
+    """eda.py's WDK client is a FakeWdk (catalog and search details) with a temp cache."""
+    import _client
+    import eda as eda_cli
+    from eda_helpers import FakeWdk
+
+    monkeypatch.setattr(_client, "CACHE_DIR", tmp_path / "wdk-cache")
+    monkeypatch.setattr(_client, "EDA_CACHE_DIR", tmp_path / "eda-cache")
+    fake = FakeWdk()
+    monkeypatch.setattr(eda_cli, "wdk_client_for", lambda site: fake)
+    return fake

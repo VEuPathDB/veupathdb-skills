@@ -40,18 +40,56 @@ def wdk_client_for(site):
     return Client(site, token=load_token())
 
 
-def resolve_target_arg(site, arg):
-    """DS_ id -> (dataset id, notebook type or None, search name or None)."""
-    if not arg.startswith("DS_"):
-        fail(f"'{arg}' is not a DS_ dataset id (STUDY_ ids are EDA-internal; eda.py takes the DS_ id)")
-    return arg, None, None
+def resolve_target_arg(site, arg, lookup_search=False):
+    """DS_ id or supported search name -> (dataset id, notebook type or None, search or None).
+
+    A DS_ id is matched against the cached search listing only (no network). With
+    lookup_search, a miss fetches the listing once (cached 7 days). Several searches on
+    one DS_ id: the first by name is used."""
+    import difflib
+
+    from _eda import cached_eda_searches, eda_searches
+
+    if arg.startswith("DS_"):
+        def find(rows):
+            return next((s for s in rows or [] if s["datasetId"] == arg), None)
+
+        hit = find(cached_eda_searches(site))
+        if hit is None and lookup_search:
+            hit = find(eda_searches(wdk_client_for(site), log=log))
+        return arg, (hit or {}).get("notebook"), (hit or {}).get("search")
+    if arg.startswith("STUDY_"):
+        fail(f"'{arg}' is an EDA-internal study id; eda.py takes the DS_ dataset id")
+    searches = eda_searches(wdk_client_for(site), log=log)
+    hit = next((s for s in searches if s["search"] == arg), None)
+    if hit is None:
+        close = difflib.get_close_matches(arg, [s["search"] for s in searches], n=3, cutoff=0.6)
+        fail(f"'{arg}' is neither a DS_ id nor a DE/antibody-array search on {site}; did you mean {close}? "
+             f"List them with: eda.py de-datasets {site}")
+    if not hit["datasetId"]:
+        fail(f"{arg} runs on your own uploaded (VDI) datasets: pass that dataset's DS_ id instead")
+    return hit["datasetId"], hit["notebook"], hit["search"]
+
+
+def cmd_de_datasets(args) -> None:
+    from _eda import eda_searches
+
+    rows = eda_searches(wdk_client_for(args.site), refresh=args.refresh, log=log)
+    if args.json:
+        emit(rows)
+        return
+    print("# datasetId\tmethod\tnotebook\tsearch\tdisplayName")
+    for r in rows:
+        ds = r["datasetId"] or "(user dataset: pass your DS_ id)"
+        print(f"{ds}\t{r['method']}\t{r['notebook']}\t{r['search']}\t{r['displayName']}")
 
 
 def load_target(args):
     from _eda import resolve_dataset, study_metadata
     from _samples import index_entities, pick_expression_entity
 
-    ds_id, notebook, search = resolve_target_arg(args.site, args.dataset)
+    ds_id, notebook, search = resolve_target_arg(
+        args.site, args.dataset, lookup_search=getattr(args, "save", False))
     c = eda_client_for(args.site)
     ds = resolve_dataset(c, ds_id)
     study = study_metadata(c, ds["studyId"], refresh=getattr(args, "refresh", False))
@@ -425,7 +463,7 @@ def cmd_study(args) -> None:
 
 def _target_args(sp):
     sp.add_argument("site")
-    sp.add_argument("dataset", help="DS_ dataset id")
+    sp.add_argument("dataset", help="DS_ dataset id, or a DE/antibody-array search name (see de-datasets)")
     sp.add_argument("--entity", help="expression entity id, when the study has several")
     sp.add_argument("--refresh", action="store_true", help="bypass the 7-day study metadata cache")
 
@@ -491,6 +529,11 @@ def build_parser() -> argparse.ArgumentParser:
                          "ready-made strategy leaf; nothing is written to the working directory")
     sp.set_defaults(func=cmd_de_spec)
 
+    sp = sub.add_parser("de-datasets", help="DE and antibody-array searches with their DS_ ids and methods")
+    sp.add_argument("site")
+    sp.add_argument("--json", action="store_true")
+    sp.add_argument("--refresh", action="store_true", help="re-read the WDK catalog and search details")
+    sp.set_defaults(func=cmd_de_datasets)
     return p
 
 

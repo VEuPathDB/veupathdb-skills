@@ -87,7 +87,7 @@ def test_de_spec_cli_matches_de_body(run_eda, eda_mock, tmp_path):
 TEMP = {"comparator": {"variableId": "VAR_081ab087"}, "groupA": [{"label": "normal"}], "groupB": [{"label": "febrile"}]}
 
 
-def test_de_spec_save_is_content_addressed(run_eda, eda_cache, monkeypatch, tmp_path):
+def test_de_spec_save_is_content_addressed(run_eda, fake_wdk, eda_cache, monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)  # nothing may be written to the working directory
     args = ("de-spec", "plasmodb", "DS_e973eadd57", "--contrast", json.dumps(TEMP), "--save")
     a = json.loads(run_eda(*args))
@@ -96,12 +96,22 @@ def test_de_spec_save_is_content_addressed(run_eda, eda_cache, monkeypatch, tmp_
     assert a == b and a["paramsFile"] != c["paramsFile"]
     path = a["paramsFile"]
     assert path.startswith(str((eda_cache / "params").resolve())) and path.endswith(".json")
-    # resolve_target_arg does not look the search up yet (Task 13 adds the positive case)
-    assert a["leaf"]["params"] == "@" + path and a["leaf"]["search"] is None
-    assert "search" in a["note"]
+    # no cache beforehand: --save fetched the EDA search listing once and found the DE search
+    assert a["leaf"] == {"search": "GenesByRNASeqHS_DESeq", "params": "@" + path} and "note" not in a
     stdout_params = json.loads(run_eda("de-spec", "plasmodb", "DS_e973eadd57", "--contrast", json.dumps(TEMP), "--format", "params"))
     assert json.loads(open(path, encoding="utf-8").read()) == stdout_params
     assert not [f for f in tmp_path.iterdir() if f.is_file()]  # the working directory stays clean
+
+
+def test_de_spec_save_without_known_search_notes_it(run_eda, fake_wdk, monkeypatch):
+    monkeypatch.setitem(fake_wdk.DATASETS, "GenesByRNASeqHS_DESeq", "DS_someone_else")  # DS_e973eadd57 in no search
+    a = json.loads(run_eda("de-spec", "plasmodb", "DS_e973eadd57", "--contrast", json.dumps(TEMP), "--save"))
+    assert a["leaf"]["search"] is None and "de-datasets" in a["note"]
+
+
+def test_de_spec_without_save_makes_no_wdk_call(run_eda, fake_wdk):
+    run_eda("de-spec", "plasmodb", "DS_e973eadd57", "--contrast", json.dumps(TEMP))
+    assert fake_wdk.calls == []
 
 
 def test_stash_json_is_atomic_parallel_and_pruned(eda_cache):

@@ -113,3 +113,41 @@ def volcano(c, body):
 def compute_file(c, plugin, body, name):
     """Job output as text. These endpoints answer 406 to Accept: application/json."""
     return c.post(f"/computes/{plugin}/{name}", body, headers={"Accept": "*/*"})
+
+
+def eda_searches(wdk_client, refresh=False, log=None):
+    """DE and antibody-array notebook searches with their DS_ ids (from each search's
+    hidden eda_dataset_id default). One search-detail call per search, cached 7 days."""
+    import _client
+    from _contrasts import NOTEBOOK_METHODS
+    from _shaping import get_search_detail
+
+    def fetch():
+        cat = _client.fetch_catalog(wdk_client, refresh=refresh, excluded_param_prefixes=())
+        out, seen = [], set()
+        for rt, searches in cat["searches"].items():
+            for s in searches:
+                nb = s.get("edaNotebookType")
+                if nb not in _client.SUPPORTED_EDA_NOTEBOOKS or s["name"] in seen:
+                    continue
+                seen.add(s["name"])
+                if log:
+                    log(f"reading {s['name']}")
+                detail = get_search_detail(wdk_client, rt, s["name"])
+                ds = next((p.get("initialDisplayValue") for p in detail.get("parameters", [])
+                           if p["name"] == "eda_dataset_id"), None)
+                out.append({"search": s["name"], "recordType": rt, "displayName": s.get("displayName", ""),
+                            "datasetId": ds or None, "notebook": nb, "method": NOTEBOOK_METHODS[nb]})
+        return sorted(out, key=lambda r: r["search"])
+
+    return cached_json(f"{wdk_client.site_id}_eda_searches", fetch, refresh=refresh)
+
+
+def cached_eda_searches(site_id):
+    """The cached eda_searches listing, or None; never touches the network."""
+    import json
+
+    import _client
+
+    path = _client.EDA_CACHE_DIR / f"{site_id}_eda_searches.json"
+    return json.loads(path.read_text()) if path.is_file() else None
