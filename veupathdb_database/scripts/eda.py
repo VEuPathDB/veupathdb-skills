@@ -50,7 +50,7 @@ def resolve_target_arg(site, arg, lookup_search=False):
 
     from _eda import cached_eda_searches, eda_searches
 
-    if arg.startswith("DS_"):
+    if arg.startswith(("DS_", "EDAUD_")):
         def find(rows):
             return next((s for s in rows or [] if s["datasetId"] == arg), None)
 
