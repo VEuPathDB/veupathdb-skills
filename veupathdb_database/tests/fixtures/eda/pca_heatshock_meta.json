@@ -1,0 +1,36 @@
+{
+ "variables": [
+  {
+   "variableClass": "computed",
+   "variableSpec": {
+    "variableId": "PC1",
+    "entityId": "ENT_8151325d"
+   },
+   "plotReference": "xAxis",
+   "displayName": "PC 1 (54.35% variance)",
+   "displayRangeMin": "-61.4351512946123",
+   "displayRangeMax": "63.5443711576177",
+   "dataType": "number",
+   "dataShape": "continuous",
+   "isCollection": false,
+   "imputeZero": false,
+   "hasStudyDependentVocabulary": false
+  },
+  {
+   "variableClass": "computed",
+   "variableSpec": {
+    "variableId": "PC2",
+    "entityId": "ENT_8151325d"
+   },
+   "plotReference": "yAxis",
+   "displayName": "PC 2 (12.79% variance)",
+   "displayRangeMin": "-23.4888748407649",
+   "displayRangeMax": "43.0792816268799",
+   "dataType": "number",
+   "dataShape": "continuous",
+   "isCollection": false,
+   "imputeZero": false,
+   "hasStudyDependentVocabulary": false
+  }
+ ]
+}

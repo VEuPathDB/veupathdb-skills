@@ -80,3 +80,29 @@ there (docs/knowledge/wdk/rules). The CLI guards the starred ones.
     or comma-separated lists), `encode_params` automatically creates the dataset on the fly and
     substitutes the numeric ID. However, for a single gene lookup, `fetch-record <site> <gene_id>`
     is much simpler and faster.
+
+
+## EDA differential expression (eda.py)
+
+1. ★ Thresholds use the **raw** p-value (plugin and website volcano). padj is reported
+   by `de` for judgement; the WDK step never uses it.
+2. ★ groupA is the reference: positive log2FC = higher in groupB. The agent chooses
+   it; the control-label match in `contrasts` is a hint, not a rule. Swapping groups
+   makes a different job id with the same statistics sign-flipped (`de` reuses a cached
+   mirror; effect sizes agree to ~1e-3, so near-threshold gene counts can differ by a
+   gene or two from the WDK step, and `--no-mirror` gives exact parity). Changing label order outside eda.py also makes
+   a different job.
+3. Fold changes are unshrunk log2 ratios: large values for low-count genes are noise.
+4. padj NA = removed by independent filtering; absent gene = not tested (all zero).
+5. One comparator, no covariates, no paired design: crossed or repeated-measures
+   designs (e.g. one subject sampled twice) are analysed as if independent. Use the
+   stratified contrasts, and say so when the design is paired.
+6. ★ `studyId` in an `eda_analysis_spec` is the **DS_** id; compute bodies use the
+   STUDY_ id. eda.py resolves this; hand-built specs get it wrong.
+7. ★ The first WDK request for an uncomputed contrast starts the job (HTTP 202 from EDA);
+   `wdk.py count`/reports then return a clean error saying the job has been started or
+   is running. Retry in a few minutes, or run `eda.py de` first so the step answers at once.
+8. Jobs are shared across users and never belong to you: `--retry` deletes only a
+   failed job.
+9. ★ The WDK step drops the first volcano statistics row (plugin header-skip quirk):
+   its gene count can be one less than the raw-p count. `de` reports both.

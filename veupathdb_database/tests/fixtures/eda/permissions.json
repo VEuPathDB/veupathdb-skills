@@ -1,0 +1,40 @@
+{
+ "perDataset": {
+  "DS_e973eadd57": {
+   "studyId": "STUDY_e973eadd57",
+   "sha1Hash": "e973eadd57ef67979316bdbdae3ee5188c9f9c33",
+   "isUserStudy": false,
+   "displayName": "Heat shock response in sensitive mutants (LRR5, DHC)",
+   "shortDisplayName": "Pfal3D7 HS-LRR5-DHC RNASeq",
+   "description": "General Description: To determine genes that may underlie the HS-response, HS-Sensitive mutants were compared to wild-type. Two individual HS-Sensitive mutant clonal lines were profiled via RNAseq to identify dysregulated genes responsible for this sensitivity: &Delta;DHC and &Delta;LRR5 (dynein heavy-chain gene PF3D7_1122900 and leucine-rich repeat protein PF3D7_1432400)<br><br>\nMethodology used: Synchronized cultures of wild-type NF54 and HS-Sensitive mutants &Delta;DHC and &Delta;LRR5 were grown at normal human body temperature (37&#8451;) or cycled three times at 41&#8451;.  After the third round of heat shock, RNA was harvested simultaneously from both conditions for RNAseq. RNAseq was performed on an Illumina MiSeq using a 300-cycle V2 MiSeq reagent kit.",
+   "type": "end-user",
+   "actionAuthorization": {
+    "studyMetadata": true,
+    "subsetting": true,
+    "visualizations": true,
+    "resultsFirstPage": true,
+    "resultsAll": true
+   },
+   "isManager": false,
+   "accessRequestStatus": "unrequested"
+  },
+  "DS_24d441b301": {
+   "studyId": "STUDY_24d441b301",
+   "sha1Hash": "24d441b301b806fddefd2ffee2704e333acf2cc5",
+   "isUserStudy": false,
+   "displayName": "Protein targets of serum antibodies in response to infection",
+   "shortDisplayName": "Serum Ab Response",
+   "description": "Plasma collected from human subjects before and after the 6-month\n    Mali malaria season (220 individuals) was hybridized to protein microarrays containing\n    ~23% of the <i>P. falciparum</i> proteome, negative and positive controls and an IgG\n    standard curve. Antibody binding to the protein microarray was detected by\n    streptavidin-conjugated SureLight P-3. Antibody profiles for each patient were generated\n    and significant differential antibody reactivity was calculated.",
+   "type": "end-user",
+   "actionAuthorization": {
+    "studyMetadata": true,
+    "subsetting": true,
+    "visualizations": true,
+    "resultsFirstPage": true,
+    "resultsAll": true
+   },
+   "isManager": false,
+   "accessRequestStatus": "unrequested"
+  }
+ }
+}

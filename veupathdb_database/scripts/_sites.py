@@ -61,6 +61,12 @@ def strategy_url(site_id: str, strategy_id, step_id=None) -> str:
     return f"{url}/{step_id}" if step_id is not None else url
 
 
+def eda_url(site_id: str) -> str:
+    """EDA service root, e.g. https://plasmodb.org/eda (host of the WDK service + /eda)."""
+    scheme, _, host = service_url(site_id).split("/", 3)[:3]
+    return f"{scheme}//{host}/eda"
+
+
 COMMUNITY_KEYWORDS: dict[str, tuple[str, ...]] = {
     "plasmodb": (
         "plasmodium", "malaria", "falciparum", "vivax", "berghei", "knowlesi",

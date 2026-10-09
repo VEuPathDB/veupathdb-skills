@@ -1,0 +1,59 @@
+{
+ "de_heatshock": {
+  "body": {
+   "studyId": "STUDY_e973eadd57",
+   "filters": [],
+   "derivedVariables": [],
+   "config": {
+    "identifierVariable": {
+     "entityId": "ENT_fd574cd6",
+     "variableId": "VEUPATHDB_GENE_ID"
+    },
+    "valueVariable": {
+     "entityId": "ENT_fd574cd6",
+     "variableId": "SEQUENCE_READ_COUNT_SENSE"
+    },
+    "comparator": {
+     "variable": {
+      "entityId": "ENT_8151325d",
+      "variableId": "VAR_081ab087"
+     },
+     "groupA": [
+      {
+       "label": "normal"
+      }
+     ],
+     "groupB": [
+      {
+       "label": "febrile"
+      }
+     ]
+    },
+    "differentialExpressionMethod": "DESeq",
+    "pValueFloor": "1e-200"
+   }
+  },
+  "jobID": "db04204e5386396e1ca2cb78469ab6fb",
+  "status": "complete"
+ },
+ "pca_heatshock": {
+  "body": {
+   "studyId": "STUDY_e973eadd57",
+   "filters": [],
+   "derivedVariables": [],
+   "config": {
+    "identifierVariable": {
+     "entityId": "ENT_fd574cd6",
+     "variableId": "VEUPATHDB_GENE_ID"
+    },
+    "valueVariable": {
+     "entityId": "ENT_fd574cd6",
+     "variableId": "SEQUENCE_READ_COUNT_SENSE"
+    },
+    "dataFormat": "rawCounts"
+   }
+  },
+  "jobID": "2679abb0e5c81b345a21b8f211db6a9b",
+  "status": "complete"
+ }
+}
