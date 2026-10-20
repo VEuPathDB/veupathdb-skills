@@ -17,6 +17,13 @@ antibody-array (limma) contrasts on EDA-backed datasets.
 2. Unzip it into your agent's skills directory, e.g. `~/.claude/skills/` for Claude Code.
    The skill is the `veupathdb_database/` folder containing `SKILL.md`.
 3. Install [uv](https://docs.astral.sh/uv/); the scripts run through `uv run`.
+4. Recommended supply-chain protection: make uv ignore package versions published in
+   the last week, so a freshly compromised release is never installed. Put this in
+   `~/.config/uv/uv.toml`:
+
+   ```toml
+   exclude-newer = "1 week"
+   ```
 
 ### Use
 
