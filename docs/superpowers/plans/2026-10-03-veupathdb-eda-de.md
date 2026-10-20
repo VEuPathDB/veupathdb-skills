@@ -114,7 +114,9 @@ Stages (each independently testable and committed): **Stage 1** = Tasks 1–15, 
   - `Client.request(method, path, body=None, params=None, retries=3, headers=None)`, `Client.post(path, body, idempotent=True, params=None, headers=None)`
   - `_client.eda_client(site_id, token=None, transport=None, backoff=2.0) -> Client` (base URL `eda_url(site)`, 120 s timeout)
   - `_client.EDA_CACHE_DIR: pathlib.Path` (module global, monkeypatched in tests)
-  - `_client.cached_json(name: str, fetch: Callable[[], Any], refresh=False, ttl_s=CACHE_TTL_S) -> Any`
+  - `_client.cached_json(name: str, fetch: Callable[[], Any], refresh=False, ttl_s=CACHE_TTL_S) -> Any`: after each fresh fetch it writes atomically and prunes stale `*.json` in `EDA_CACHE_DIR` (not subdirectories)
+  - `_client.write_atomic(path, text) -> None` (temp file in the same directory + `os.replace`; parallel sessions never read a partial file)
+  - `_client.prune_stale(root, ttl_s=CACHE_TTL_S) -> None` (deletes `root/*.json` older than ttl_s; tolerates files vanishing under a parallel prune). Cleanup happens on cache writes only: no cron, nothing on reads.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -190,6 +192,29 @@ def test_cached_json_reuses_until_refresh(tmp_path, monkeypatch):
     assert _client.cached_json("k", fetch) == {"n": 1}
     assert _client.cached_json("k", fetch, refresh=True) == {"n": 2}
     assert (tmp_path / "k.json").is_file()
+
+
+def test_cached_json_write_prunes_stale_files_only(tmp_path, monkeypatch):
+    import os
+    import time
+
+    import _client
+
+    monkeypatch.setattr(_client, "EDA_CACHE_DIR", tmp_path)
+    old = time.time() - _client.CACHE_TTL_S - 60
+    stale, fresh = tmp_path / "plasmodb_study_STUDY_old.json", tmp_path / "plasmodb_permissions.json"
+    sub = tmp_path / "params" / "abc.json"
+    sub.parent.mkdir()
+    for f in (stale, fresh, sub):
+        f.write_text("{}")
+    os.utime(stale, (old, old))
+    os.utime(sub, (old, old))
+    assert _client.cached_json("plasmodb_permissions", lambda: {"x": 1}) == {}  # fresh hit: read only
+    assert stale.exists()  # reads never prune
+    _client.cached_json("plasmodb_study_STUDY_new", lambda: {"x": 2})  # a fetch writes, then prunes
+    assert not stale.exists() and fresh.exists()
+    assert sub.exists()  # subdirectories (params/) are stash_json's to prune
+    assert not [f for f in tmp_path.iterdir() if f.name.startswith(".tmp-")]
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
@@ -289,6 +314,31 @@ def eda_client(site_id, token=None, transport=None, backoff=2.0):
     )
 
 
+def write_atomic(path, text):
+    """Write via a temp file in the same directory and os.replace: a parallel session
+    sees the old file or the new one, never a partial one. Also refreshes the mtime."""
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=".tmp-", suffix=".json")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        os.replace(tmp, path)
+    except BaseException:
+        pathlib.Path(tmp).unlink(missing_ok=True)
+        raise
+
+
+def prune_stale(root, ttl_s=CACHE_TTL_S):
+    """Delete root/*.json older than ttl_s. Called after cache writes (no cron job): a
+    stale file would be refetched on its next read anyway, so deleting it loses nothing."""
+    cutoff = time.time() - ttl_s
+    for old in root.glob("*.json"):
+        try:
+            if old.stat().st_mtime < cutoff:
+                old.unlink()
+        except FileNotFoundError:  # a parallel session pruned it first
+            pass
+
+
 def cached_json(name, fetch, refresh=False, ttl_s=CACHE_TTL_S):
     """Disk-cache fetch() as EDA_CACHE_DIR/{name}.json for ttl_s seconds."""
     EDA_CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -296,9 +346,12 @@ def cached_json(name, fetch, refresh=False, ttl_s=CACHE_TTL_S):
     if not refresh and path.is_file() and time.time() - path.stat().st_mtime < ttl_s:
         return json.loads(path.read_text())
     data = fetch()
-    path.write_text(json.dumps(data))
+    write_atomic(path, json.dumps(data))
+    prune_stale(EDA_CACHE_DIR)
     return data
 ```
+
+Add `import tempfile` to `_client.py`'s imports (`os`, `pathlib`, `time` and `json` are already there).
 
 - [ ] **Step 4: Run the new and existing tests**
 
@@ -4233,7 +4286,7 @@ def cmd_de_spec(args) -> None:
     emit(wdk_params(spec) if args.format == "params" else spec)
 ```
 
-Append to `_client.py` (add `import hashlib`, `import os` and `import tempfile` to its imports if missing):
+Append to `_client.py` (add `import hashlib` to its imports; `write_atomic` and `prune_stale` are from Task 1):
 
 ```python
 def stash_json(kind, data):
@@ -4244,21 +4297,8 @@ def stash_json(kind, data):
     root = EDA_CACHE_DIR / kind
     root.mkdir(parents=True, exist_ok=True)
     path = root / f"{hashlib.sha256(text.encode('utf-8')).hexdigest()[:16]}.json"
-    fd, tmp = tempfile.mkstemp(dir=root, prefix=".tmp-", suffix=".json")
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as fh:
-            fh.write(text)
-        os.replace(tmp, path)  # also refreshes the mtime, so a file in use is not pruned
-    except BaseException:
-        pathlib.Path(tmp).unlink(missing_ok=True)
-        raise
-    cutoff = time.time() - CACHE_TTL_S
-    for old in root.glob("*.json"):
-        try:
-            if old.stat().st_mtime < cutoff:
-                old.unlink()
-        except FileNotFoundError:  # a parallel process pruned it first
-            pass
+    write_atomic(path, text)  # refreshes the mtime, so a re-saved file is not pruned
+    prune_stale(root)
     return path.resolve()
 ```
 
