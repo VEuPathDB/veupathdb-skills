@@ -124,4 +124,3 @@ to the user's directory only when they ask to keep them.
 Out of scope: semantic search, site-search, enrichment, step analyses, result filters,
 phyletic patterns, basket uploads, EDA searches other than the DE and antibody-array
 notebooks, general EDA exploration, and the web UI's `ai_expression` summaries.
-Tests and gold standards: TESTS.md.

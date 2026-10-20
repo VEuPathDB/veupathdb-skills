@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build skill zip
-        run: zip -r veupathdb_database.zip veupathdb_database -x '*/__pycache__/*' '*.pyc' '*/.pytest_cache/*'
+        run: zip -r veupathdb_database.zip veupathdb_database -x '*/__pycache__/*' '*.pyc' '*/.pytest_cache/*' 'veupathdb_database/tests/*' veupathdb_database/TESTS.md
       - name: Attach to release
         env:
           GH_TOKEN: ${{ github.token }}
