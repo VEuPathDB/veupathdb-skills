@@ -1,7 +1,7 @@
 # Mode 2: validate and fix in a container
 
 Mode 2 loads the STF directory with study-wrangler itself, in its pinned
-container image (`veupathdb/study-wrangler:1.0.54`). It validates the study the
+container image (`veupathdb/study-wrangler:1.0.56`). It validates the study the
 way VEuPathDB EDA does, then fixes what the validator reports. It runs after
 mode 1, or on its own on an existing STF directory.
 
@@ -19,9 +19,9 @@ mode 1, or on its own on an existing STF directory.
   and let them decide. It is a download of about 6 GB.
 
   ```bash
-  docker pull veupathdb/study-wrangler:1.0.54
+  docker pull veupathdb/study-wrangler:1.0.56
   # or, with podman:
-  podman pull docker.io/veupathdb/study-wrangler:1.0.54
+  podman pull docker.io/veupathdb/study-wrangler:1.0.56
   ```
 
 - The STF directory is mounted read-only. The container cannot change your

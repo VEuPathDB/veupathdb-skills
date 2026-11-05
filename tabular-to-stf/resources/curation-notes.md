@@ -34,10 +34,6 @@ age_censored." A typical data change line reads:
 - `participant.Age (years)`: "80+" → "80" (row P012). Reason: …
 ```
 
-See `tests/fixtures/tabular/clinical-epi/expected/curation-notes.md` and
-`tests/fixtures/tabular/mosquito/expected/curation-notes.md` in this
-skill for complete examples.
-
 ## What to put in `notes`
 
 Each entry is one Markdown string, a sentence or two. Name things as
@@ -60,7 +56,7 @@ Each entry is one Markdown string, a sentence or two. Name things as
 
   Do not repeat what the transforms already say.
 - **`notes.validation`** (mode 2): one entry per container run, giving:
-  - the study-wrangler version (`1.0.54`);
+  - the study-wrangler version (`1.0.56`);
   - what was run: `validate(study, profiles = c("baseline", "eda"))` after
     `map_entities(study, infer_geo_variables_for_eda)`;
   - the result (`pass`, `fail`, `error` or `load-error`);

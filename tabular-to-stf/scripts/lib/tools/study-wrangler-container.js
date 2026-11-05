@@ -3,7 +3,7 @@ import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defaultExec, failureOutput } from './exec.js';
 
-export const STUDY_WRANGLER_VERSION = '1.0.54';
+export const STUDY_WRANGLER_VERSION = '1.0.56';
 export const STUDY_WRANGLER_IMAGE = `veupathdb/study-wrangler:${STUDY_WRANGLER_VERSION}`;
 
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), 'study-wrangler-validate-study.R');

@@ -10,9 +10,6 @@ metadata, the category tree, and every change to the data, as an ordered list
 of transforms. Loaders ignore the saved copy, and `study.yaml` does not refer
 to it.
 
-For complete examples, see `clinical-epi/spec.json`, `mosquito/spec.json` and
-`coffee-shops/spec.json` in the worked examples (see SKILL.md).
-
 ## Schema
 
 ```jsonc

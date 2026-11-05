@@ -169,8 +169,7 @@ should make both in the same spec edit, so one render pass fixes it:
    (`Established market`). Renaming alone leaves the old header as the
    label.
 
-The `village` entity of `tests/fixtures/tabular/clinical-epi/spec.json` shows
-both. The renderer refuses a stray look-alike on an entity with `geo`, naming
+The renderer refuses a stray look-alike on an entity with `geo`, naming
 the fix. The renderer also refuses two or more look-alikes on an entity
 without `geo`. `check-stf.js` warns about a lone look-alike, and about a name
 that only the inference rule matches. Record each such decision in

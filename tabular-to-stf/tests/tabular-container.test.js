@@ -19,8 +19,8 @@ after(() => { for (const d of temps) rmSync(d, { recursive: true, force: true })
 const failing = (props) => Object.assign(new Error('Command failed'), props);
 
 test('the image is pinned to one version constant', () => {
-  assert.equal(STUDY_WRANGLER_VERSION, '1.0.54');
-  assert.equal(STUDY_WRANGLER_IMAGE, 'veupathdb/study-wrangler:1.0.54');
+  assert.equal(STUDY_WRANGLER_VERSION, '1.0.56');
+  assert.equal(STUDY_WRANGLER_IMAGE, 'veupathdb/study-wrangler:1.0.56');
 });
 
 test('containerArgs mounts read-only, never pulls, and docker refuses a missing source', () => {

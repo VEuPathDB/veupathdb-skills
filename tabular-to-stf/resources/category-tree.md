@@ -65,6 +65,3 @@ then write the tree, and record any choices they made in `notes.decisions`.
 - Every `parentCategory` must name a category in the **same** entity, and the
   categories must not form a cycle. The spec validator and `check-stf.js`
   both check this.
-
-The `participant` entity in `tests/fixtures/tabular/clinical-epi/spec.json`
-holds the tree above.

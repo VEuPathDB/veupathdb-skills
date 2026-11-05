@@ -65,10 +65,10 @@ Run `node scripts/validate-stf-in-container.js --detect` first.
 
 **Containers.** Always validate through `validate-stf-in-container.js`. Never
 run `docker` or `podman` yourself, and never pull an image without asking.
-The script uses the pinned image `veupathdb/study-wrangler:1.0.54` and never
+The script uses the pinned image `veupathdb/study-wrangler:1.0.56` and never
 downloads it. If the image is missing, give the user the exact command,
-`docker pull veupathdb/study-wrangler:1.0.54` (or `podman pull
-docker.io/veupathdb/study-wrangler:1.0.54`), say it is about a 6 GB download,
+`docker pull veupathdb/study-wrangler:1.0.56` (or `podman pull
+docker.io/veupathdb/study-wrangler:1.0.56`), say it is about a 6 GB download,
 and let them decide.
 
 ## The rule
@@ -203,13 +203,3 @@ exact home coordinates or free-text addresses, mention it once, gently, and
 ask whether to keep it, drop it with `drop-column` (approved by the user) or
 leave it to the provider. Record it in `notes.pii` either way. If it is
 dropped, note that `raw-data/` still holds it.
-
-## Worked examples
-
-Three complete examples are in this skill's `tests/fixtures/tabular/`
-directory: `clinical-epi` (village, household, participant,
-blood sample), `mosquito` (collection site, collection, mosquito pool,
-assay) and `coffee-shops` (a messy hand-typed dataset curated in a real
-session). Each has `inputs/`, a `description.md`, the `spec.json` a curator
-would write, and the rendered `expected/` STF directory. If that directory
-does not exist, the examples are not installed. Do not search for them.
