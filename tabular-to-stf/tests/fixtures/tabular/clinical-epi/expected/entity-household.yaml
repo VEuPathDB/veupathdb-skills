@@ -1,0 +1,39 @@
+name: household
+display_name: Household
+display_name_plural: Households
+
+id_columns:
+  - id_column: village_id
+    entity_name: village
+    entity_level: -1
+    provider_label:
+      - village_id
+  - id_column: household_id
+    entity_name: household
+    provider_label:
+      - household_id
+
+variables:
+  - variable: construction_material
+    provider_label:
+      - construction material
+    display_name: Wall material
+    definition: Main material of the household's walls.
+    data_type: string
+    data_shape: categorical
+  - variable: sleeping_rooms
+    provider_label:
+      - number of rooms
+    display_name: Sleeping rooms
+    definition: Number of rooms used for sleeping.
+    data_type: integer
+    data_shape: continuous
+  - variable: roof_type
+    provider_label:
+      - roof type
+    display_name: Roof material
+    definition: Main material of the household's roof.
+    data_type: string
+    data_shape: categorical
+
+categories: []

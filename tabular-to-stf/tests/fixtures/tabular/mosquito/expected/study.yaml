@@ -1,0 +1,6 @@
+name: Vallée du Kou Anopheles insecticide resistance survey
+entities:
+  - site
+  - collection
+  - sample
+  - assay

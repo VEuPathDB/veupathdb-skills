@@ -1,0 +1,17 @@
+participant_id,household_id,Participant name,Sex,Age (years),Bednet use,Enrolment date,Weight (kg),Height (cm),Education level,Occupation,Fever last 14 days
+P001,H001,Akinyi Odhiambo,Female,34,Yes,03/04/2023,61.2,162,primary,farmer,No
+P002,H001,"Otieno, James",Male,41,y,03/04/2023,72.5,175,secondary,trader,Yes
+P003,H002,Achieng Ouma,Female,9,yes ,05/04/2023,27.0,131,primary,student,Yes
+P004,H003,Omondi Were,Male,62,No,05/04/2023,66.8,170,none,farmer,No
+P005,H004,Atieno Okoth,Female,27,Yes,11/04/2023,58.4,160,tertiary,trader,No
+P006,H005,Ochieng Onyango,Male,15,y,11/04/2023,49.9,158,secondary,student,No
+P007,H006,Adhiambo Juma,Feamle,52,No,18/04/2023,70.1,165,primary,farmer,Yes
+P008,H007,Odera Otieno,Male,38,Yes,18/04/2023,80.3,178,tertiary,N/A,No
+P009,H008,Awino Akoth,Female,45,yes ,24/04/2023,250,163,secondary,trader,No
+P010,H009,Owino Ouma,Male,7,No,24/04/2023,22.6,122,none,student,Yes
+P011,H010,Anyango Achieng,Female,30,Yes,02/05/2023,63.0,166,primary,farmer,No
+P012,H010,Okello Odongo,Male,80+,No,02/05/2023,59.7,168,none,N/A,No
+P013,H011,Aoko Nyambura,Female,22,y,09/05/2023,55.2,159,tertiary,student,Yes
+P014,H011,Oduor Wafula,Male,56,Yes,09/05/2023,77.0,174,secondary,farmer,No
+P015,H012,Awuor Kerubo,Female,12,No,16/05/2023,38.5,147,primary,student,No
+P016,H012,Ouma Kiprop,Male,47,Yes,16/05/2023,74.4,172,primary,trader,Yes

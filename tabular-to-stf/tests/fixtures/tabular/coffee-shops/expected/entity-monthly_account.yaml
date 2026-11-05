@@ -1,0 +1,155 @@
+name: monthly_account
+display_name: Monthly account
+display_name_plural: Monthly accounts
+
+id_columns:
+  - id_column: shop_id
+    entity_name: coffee_shop
+    entity_level: -1
+    provider_label:
+      - shop_id
+  - id_column: account_id
+    entity_name: monthly_account
+    provider_label:
+      - account_id
+
+variables:
+  - variable: reporting_month
+    provider_label:
+      - period
+    display_name: Reporting month
+    definition: The month the return covers, given as the first day of the month.
+    data_type: date
+    data_shape: continuous
+  - variable: monthly_sales
+    provider_label:
+      - sales
+    display_name: Sales
+    definition: Sales for the whole month, with VAT taken off.
+    data_type: number
+    data_shape: continuous
+    unit: GBP
+    parent_category: takings_costs
+  - variable: cost_of_goods
+    provider_label:
+      - cost
+    display_name: Cost of goods
+    definition: What the food, drinks and ingredients sold that month cost.
+    data_type: number
+    data_shape: continuous
+    unit: GBP
+    parent_category: takings_costs
+  - variable: staffing_cost
+    provider_label:
+      - pay
+    display_name: Staffing cost
+    definition: Total staffing costs for the month, including the employer's costs on top of wages.
+    data_type: number
+    data_shape: continuous
+    unit: GBP
+    parent_category: takings_costs
+  - variable: monthly_rent
+    provider_label:
+      - rent
+    display_name: Rent
+    definition: The shop's rent for the month.
+    data_type: number
+    data_shape: continuous
+    unit: GBP
+    parent_category: takings_costs
+  - variable: other_running_costs
+    provider_label:
+      - other
+    display_name: Other running costs
+    definition: Other running costs for the month, separate from stock, staffing and rent.
+    data_type: number
+    data_shape: continuous
+    unit: GBP
+    parent_category: takings_costs
+  - variable: transactions
+    provider_label:
+      - txns
+    display_name: Transactions
+    definition: Number of customer purchases put through the till in the month. One purchase can include several items.
+    data_type: integer
+    data_shape: continuous
+    parent_category: activity
+  - variable: return_status
+    provider_label:
+      - status
+    display_name: Return status
+    definition: How far the checking or finalising of the return has got.
+    data_type: string
+    data_shape: ordinal
+    ordinal_levels:
+      - Draft
+      - Checked
+      - Final
+    parent_category: return_status_group
+  - variable: account_notes
+    provider_label:
+      - notes
+    display_name: Account notes
+    definition: Anything useful to know about the month's figures, such as a repair bill or a supplier credit awaited.
+    data_type: string
+    data_shape: categorical
+    parent_category: return_status_group
+  - variable: monthly_sales_uncertainty
+    display_name: Sales uncertain
+    definition: Yes if the provider marked the sales value with a question mark, meaning they were unsure of it. The value is kept as given.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - 'Yes'
+      - 'No'
+    parent_category: uncertainty_flags
+  - variable: cost_of_goods_uncertainty
+    display_name: Cost of goods uncertain
+    definition: Yes if the provider marked the cost of goods value with a question mark, meaning they were unsure of it. The value is kept as given.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - 'Yes'
+      - 'No'
+    parent_category: uncertainty_flags
+  - variable: monthly_rent_uncertainty
+    display_name: Rent uncertain
+    definition: Yes if the provider marked the rent value with a question mark, meaning they were unsure of it. The value is kept as given.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - 'Yes'
+      - 'No'
+    parent_category: uncertainty_flags
+  - variable: other_running_costs_uncertainty
+    display_name: Other running costs uncertain
+    definition: Yes if the provider marked the other running costs value with a question mark, meaning they were unsure of it. The value is kept as given.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - 'Yes'
+      - 'No'
+    parent_category: uncertainty_flags
+  - variable: transactions_uncertainty
+    display_name: Transactions uncertain
+    definition: Yes if the provider marked the transactions value with a question mark, meaning they were unsure of it. The value is kept as given.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - 'Yes'
+      - 'No'
+    parent_category: uncertainty_flags
+
+categories:
+  - category: takings_costs
+    display_name: Takings and costs
+    definition: Monthly sales and running costs in GBP.
+  - category: activity
+    display_name: Activity
+    definition: Till activity during the month.
+  - category: return_status_group
+    display_name: Return status
+    definition: How far the return has been checked, and notes on it.
+  - category: uncertainty_flags
+    display_name: Provider uncertainty flags
+    definition: Yes where the provider marked a value with a question mark.

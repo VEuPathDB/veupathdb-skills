@@ -1,0 +1,60 @@
+name: assay
+display_name: Assay
+display_name_plural: Assays
+
+id_columns:
+  - id_column: sample_id
+    entity_name: sample
+    entity_level: -1
+    provider_label:
+      - sample_id
+  - id_column: assay_id
+    entity_name: assay
+    provider_label:
+      - assay_id
+
+variables:
+  - variable: assay_type
+    provider_label:
+      - assay type
+    display_name: Bioassay type
+    definition: WHO tube test or CDC bottle bioassay.
+    data_type: string
+    data_shape: categorical
+    parent_category: bioassay
+  - variable: insecticide
+    provider_label:
+      - insecticide
+    display_name: Insecticide
+    definition: Insecticide the mosquitoes were exposed to.
+    data_type: string
+    data_shape: categorical
+    parent_category: bioassay
+  - variable: mortality_pct
+    provider_label:
+      - mortality %
+    display_name: Mortality
+    definition: Percentage of mosquitoes dead 24 hours after exposure.
+    data_type: integer
+    data_shape: continuous
+    unit: '%'
+    parent_category: bioassay
+  - variable: kdr_genotype
+    provider_label:
+      - kdr genotype
+    display_name: kdr genotype
+    definition: 'Knockdown resistance (L1014F) genotype. Coding: R = resistant allele, S = susceptible allele.'
+    data_type: string
+    data_shape: ordinal
+    ordinal_levels:
+      - SS
+      - RS
+      - RR
+    parent_category: molecular
+
+categories:
+  - category: bioassay
+    display_name: Bioassay
+    definition: 'Phenotypic resistance: exposure to a diagnostic dose of insecticide.'
+  - category: molecular
+    display_name: Molecular markers

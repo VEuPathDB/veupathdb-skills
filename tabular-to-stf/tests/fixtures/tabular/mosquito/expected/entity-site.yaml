@@ -1,0 +1,43 @@
+name: site
+display_name: Collection site
+display_name_plural: Collection sites
+
+id_columns:
+  - id_column: site_id
+    entity_name: site
+    provider_label:
+      - site_id
+
+variables:
+  - variable: site_code
+    provider_label:
+      - site code
+    display_name: Site code
+    definition: Code of the site in the national entomological surveillance register.
+    data_type: string
+    data_shape: categorical
+  - variable: latitude
+    provider_label:
+      - Latitude
+    display_name: Latitude
+    data_type: number
+    data_shape: continuous
+    stable_id: OBI_0001620
+    display_type: latitude
+  - variable: longitude
+    provider_label:
+      - Longitude
+    display_name: Longitude
+    data_type: longitude
+    data_shape: continuous
+    stable_id: OBI_0001621
+    display_type: longitude
+  - variable: habitat
+    provider_label:
+      - habitat
+    display_name: Habitat
+    definition: Main habitat around the collection point.
+    data_type: string
+    data_shape: categorical
+
+categories: []

@@ -1,0 +1,83 @@
+{
+  "specVersion": 1,
+  "study": {
+    "name": "Vallée du Kou Anopheles insecticide resistance survey",
+    "description": "Synthetic entomological survey: mosquito collections at ten sites, species identification and insecticide resistance assays on the mosquitoes caught."
+  },
+  "inputDir": "inputs",
+  "entities": [
+    {
+      "name": "site",
+      "displayName": "Collection site",
+      "displayNamePlural": "Collection sites",
+      "file": "collection_sites.tsv",
+      "idColumn": "site_id",
+      "geo": { "latitude": "Latitude", "longitude": "Longitude" },
+      "variables": [
+        { "column": "site code", "displayName": "Site code", "definition": "Code of the site in the national entomological surveillance register." },
+        { "column": "Latitude", "displayName": "Latitude" },
+        { "column": "Longitude", "displayName": "Longitude" },
+        { "column": "habitat", "displayName": "Habitat", "definition": "Main habitat around the collection point." }
+      ]
+    },
+    {
+      "name": "collection",
+      "displayName": "Collection",
+      "displayNamePlural": "Collections",
+      "file": "collections.tsv",
+      "idColumn": "collection_id",
+      "parent": "site",
+      "parentColumn": "site_id",
+      "variables": [
+        { "column": "collection date", "displayName": "Collection date", "definition": "Date the collection started." },
+        { "column": "method", "name": "collection_method", "displayName": "Collection method", "definition": "How the mosquitoes were caught." },
+        { "column": "trap nights", "displayName": "Trap nights", "definition": "Number of nights the trap was set.", "unit": "nights" },
+        { "column": "light", "name": "trap_light", "displayName": "Trap light", "definition": "Whether the light of a CDC light trap was on or off. Empty for other methods.", "vocabularyOrder": ["on", "off"] }
+      ]
+    },
+    {
+      "name": "sample",
+      "displayName": "Mosquito pool",
+      "displayNamePlural": "Mosquito pools",
+      "file": "samples.tsv",
+      "idColumn": "sample_id",
+      "parent": "collection",
+      "parentColumn": "collection_id",
+      "variables": [
+        { "column": "species", "displayName": "Species", "definition": "Species identified morphologically and confirmed by PCR." },
+        { "column": "sex", "displayName": "Sex", "vocabularyOrder": ["F", "M"] },
+        { "column": "blood fed", "displayName": "Blood fed", "definition": "Whether the mosquitoes in the pool were blood fed.", "dataShape": "binary", "vocabularyOrder": ["yes", "no"] },
+        { "column": "count", "name": "mosquito_count", "displayName": "Number of mosquitoes", "definition": "Number of mosquitoes in the pool." }
+      ]
+    },
+    {
+      "name": "assay",
+      "displayName": "Assay",
+      "displayNamePlural": "Assays",
+      "file": "assays.tsv",
+      "idColumn": "assay_id",
+      "parent": "sample",
+      "parentColumn": "sample_id",
+      "variables": [
+        { "column": "assay type", "displayName": "Bioassay type", "definition": "WHO tube test or CDC bottle bioassay.", "parentCategory": "bioassay" },
+        { "column": "insecticide", "displayName": "Insecticide", "definition": "Insecticide the mosquitoes were exposed to.", "parentCategory": "bioassay" },
+        { "column": "mortality %", "name": "mortality_pct", "displayName": "Mortality", "definition": "Percentage of mosquitoes dead 24 hours after exposure.", "unit": "%", "parentCategory": "bioassay" },
+        { "column": "kdr genotype", "displayName": "kdr genotype", "definition": "Knockdown resistance (L1014F) genotype. Coding: R = resistant allele, S = susceptible allele.", "dataShape": "ordinal", "ordinalLevels": ["SS", "RS", "RR"], "parentCategory": "molecular" }
+      ],
+      "categories": [
+        { "category": "bioassay", "displayName": "Bioassay", "definition": "Phenotypic resistance: exposure to a diagnostic dose of insecticide." },
+        { "category": "molecular", "displayName": "Molecular markers" }
+      ]
+    }
+  ],
+  "transforms": [
+    { "op": "rename-column", "entity": "collection", "from": "date", "to": "collection date", "approval": "auto", "reason": "A plain `date` header does not say which date." },
+    { "op": "map-values", "entity": "sample", "column": "species", "map": { "Anopheles gambie": "Anopheles gambiae" }, "approval": "user", "reason": "Misspelling of Anopheles gambiae." },
+    { "op": "replace-cells", "entity": "assay", "column": "mortality %", "cells": [{ "id": "A05", "from": "105", "to": "100" }], "approval": "proposed", "reason": "Mortality above 100% is impossible; probably a corrected-mortality rounding error. Waiting for the provider." }
+  ],
+  "notes": {
+    "flagged": ["`assay.mortality_pct`: A05 is 105%. Left as is until the provider answers (see the proposed change)."],
+    "decisions": ["Each row of samples.tsv is a pool of mosquitoes of one species and sex from one collection, so the entity is called Mosquito pool."],
+    "validation": ["study-wrangler 1.0.54: `validate(study, profiles = c(\"baseline\", \"eda\"))` after `map_entities(study, infer_geo_variables_for_eda)` passed."]
+  }
+}

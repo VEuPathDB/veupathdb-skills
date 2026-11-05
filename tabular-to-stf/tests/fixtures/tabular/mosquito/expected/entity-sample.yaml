@@ -1,0 +1,51 @@
+name: sample
+display_name: Mosquito pool
+display_name_plural: Mosquito pools
+
+id_columns:
+  - id_column: collection_id
+    entity_name: collection
+    entity_level: -1
+    provider_label:
+      - collection_id
+  - id_column: sample_id
+    entity_name: sample
+    provider_label:
+      - sample_id
+
+variables:
+  - variable: species
+    provider_label:
+      - species
+    display_name: Species
+    definition: Species identified morphologically and confirmed by PCR.
+    data_type: string
+    data_shape: categorical
+  - variable: sex
+    provider_label:
+      - sex
+    display_name: Sex
+    data_type: string
+    data_shape: categorical
+    vocabulary_order:
+      - F
+      - M
+  - variable: blood_fed
+    provider_label:
+      - blood fed
+    display_name: Blood fed
+    definition: Whether the mosquitoes in the pool were blood fed.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - 'yes'
+      - 'no'
+  - variable: mosquito_count
+    provider_label:
+      - count
+    display_name: Number of mosquitoes
+    definition: Number of mosquitoes in the pool.
+    data_type: integer
+    data_shape: continuous
+
+categories: []

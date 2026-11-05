@@ -1,0 +1,50 @@
+name: collection
+display_name: Collection
+display_name_plural: Collections
+
+id_columns:
+  - id_column: site_id
+    entity_name: site
+    entity_level: -1
+    provider_label:
+      - site_id
+  - id_column: collection_id
+    entity_name: collection
+    provider_label:
+      - collection_id
+
+variables:
+  - variable: collection_date
+    provider_label:
+      - date
+    display_name: Collection date
+    definition: Date the collection started.
+    data_type: date
+    data_shape: continuous
+  - variable: collection_method
+    provider_label:
+      - method
+    display_name: Collection method
+    definition: How the mosquitoes were caught.
+    data_type: string
+    data_shape: categorical
+  - variable: trap_nights
+    provider_label:
+      - trap nights
+    display_name: Trap nights
+    definition: Number of nights the trap was set.
+    data_type: integer
+    data_shape: continuous
+    unit: nights
+  - variable: trap_light
+    provider_label:
+      - light
+    display_name: Trap light
+    definition: Whether the light of a CDC light trap was on or off. Empty for other methods.
+    data_type: string
+    data_shape: categorical
+    vocabulary_order:
+      - 'on'
+      - 'off'
+
+categories: []

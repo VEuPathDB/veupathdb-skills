@@ -1,0 +1,114 @@
+name: staff_member
+display_name: Staff member
+display_name_plural: Staff members
+
+id_columns:
+  - id_column: team_id
+    entity_name: team
+    entity_level: -1
+    provider_label:
+      - team_id
+  - id_column: staff_id
+    entity_name: staff_member
+    provider_label:
+      - staff_id
+
+variables:
+  - variable: first_name
+    provider_label:
+      - first
+    display_name: First name
+    definition: The person's first name.
+    data_type: string
+    data_shape: categorical
+  - variable: surname_abbreviated
+    provider_label:
+      - surname
+    display_name: Surname (abbreviated)
+    definition: The person's surname, shortened to the first letter or letters that tell apart surnames sharing a first name.
+    data_type: string
+    data_shape: categorical
+  - variable: job_role
+    provider_label:
+      - role
+    display_name: Job role
+    definition: The person's job, such as barista or kitchen assistant.
+    data_type: string
+    data_shape: categorical
+    parent_category: employment
+  - variable: start_date
+    provider_label:
+      - start
+    display_name: Start date
+    definition: The date the person started working for the company.
+    data_type: date
+    data_shape: continuous
+  - variable: contracted_hours
+    provider_label:
+      - hours
+    display_name: Contracted hours
+    definition: Contracted working hours per week.
+    data_type: integer
+    data_shape: continuous
+    unit: hours per week
+    parent_category: employment
+  - variable: hourly_pay_rate
+    provider_label:
+      - rate
+    display_name: Hourly pay rate
+    definition: Hourly pay before deductions.
+    data_type: number
+    data_shape: continuous
+    unit: GBP per hour
+    parent_category: employment
+  - variable: contract_type
+    provider_label:
+      - contract
+    display_name: Contract type
+    definition: Whether the person works full time or part time.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - Full time
+      - Part time
+    parent_category: employment
+  - variable: initial_training
+    provider_label:
+      - trained
+    display_name: Initial training
+    definition: Whether the person has completed the required initial training.
+    data_type: string
+    data_shape: ordinal
+    ordinal_levels:
+      - 'No'
+      - Pending
+      - 'Yes'
+    parent_category: training_availability
+  - variable: staff_notes
+    provider_label:
+      - notes
+    display_name: Staff notes
+    definition: Notes on shifts, availability or training.
+    data_type: string
+    data_shape: categorical
+    parent_category: training_availability
+  - variable: contracted_hours_uncertainty
+    display_name: Contracted hours uncertain
+    definition: Yes if the provider marked the contracted hours value with a question mark, meaning they were unsure of it. The value is kept as given.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - 'Yes'
+      - 'No'
+    parent_category: uncertainty_flags
+
+categories:
+  - category: employment
+    display_name: Employment
+    definition: The person's job and contract.
+  - category: training_availability
+    display_name: Training and availability
+    definition: Initial training and notes on availability and shifts.
+  - category: uncertainty_flags
+    display_name: Provider uncertainty flags
+    definition: Yes where the provider marked a value with a question mark.

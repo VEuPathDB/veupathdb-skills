@@ -1,0 +1,37 @@
+team_id,shop_id,name,shift,ext
+T001,S001,Front of house,Mixed,234
+T002,S001,Bar,Late,260
+T003,S001, Kitchen ,Early,295
+T004,S002,Front of house,Mixed,257
+T005,S002,Bar,Late,286
+T006,S002,Kitchen,Mixed,264
+T007,S003,Front of house,Mixed,260
+T008,S003,Bar,Mixed,298
+T009,S003,Kitchen,Mixed,251
+T010,S004,Front of house,Mixed,256
+T011,S004,Bar,Early,257
+T012,S004,Kitchen,mixed,204
+T013,S005,Front of house,Mixed,296
+T014,S005,Bar,n/a,272
+T015,S005,Kitchen,Late,264
+T016,S006,Front of house,Mixed,221
+T017,S006,Bar,Late,299
+T018,S006,-,Eary,203
+T019,S007,Front of house,Mixed,214
+T020,S007,Bar,Mixed,236
+T021,S007,Kitchen,Early,256
+T022,S008,Front of house,Mixed,203
+T023,S008,Bar,Late,231
+T024,S008,Kitchen,Late,251
+T025,S009,Front of house,Mixed,226
+T026,S009,Bar,Late,251
+T027,S009,Kitchen,Early,214
+T028,S010, Front of house ,Late,260
+T029,S010,Bar,Early,296
+T030,S010,Kitchen,Mixed,229
+T031,S011,Front of house,Mixed,299
+T032,S011,Bar,Late,243
+T033,S011,KITCHEN,-,249
+T034,S012,Front of house,Early,208
+T035,S012,Bar,Early,232
+T036,S012,Kitchen,Early,210

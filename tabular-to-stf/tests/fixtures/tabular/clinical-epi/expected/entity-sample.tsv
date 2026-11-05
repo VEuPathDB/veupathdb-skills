@@ -1,0 +1,19 @@
+participant_id	sample_id \\ Descriptors	collection_date	temperature	hb_g_dl	rdt_result
+P001	SM01	2023-04-03	36.8	12.4	Negative
+P002	SM02	2023-04-03	38.9	13.1	Positive
+P003	SM03	2023-04-05	39.2	10.2	Positive
+P004	SM04	2023-04-05	36.6	13.8	Negative
+P005	SM05	2023-04-11	36.9	12.0	Negative
+P006	SM06	2023-04-11	37.1	13.3	Negative
+P007	SM07	2023-04-18	38.4	11.5	Positive
+P008	SM08	2023-04-18	36.7	14.1	Negative
+P009	SM09	2023-04-24	37.0	12.7	Negative
+P010	SM10	2023-04-24	39.0	9.8	Positive
+P011	SM11	2023-05-02	36.5	12.9	Negative
+P012	SM12	2023-05-02	36.9	11.9	Negative
+P013	SM13	2023-05-09	38.7	11.2	Positive
+P014	SM14	2023-05-09	36.8	14.0	Negative
+P015	SM15	2023-05-16	37.2	11.8	Negative
+P016	SM16	2023-05-16	38.6	13.4	Positive
+P001	SM17	2023-05-16	36.7	12.6	Negative
+P003	SM18	2023-05-16	37.4	10.9	Negative

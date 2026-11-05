@@ -1,0 +1,80 @@
+name: menu_item
+display_name: Menu item
+display_name_plural: Menu items
+
+id_columns:
+  - id_column: menu_id
+    entity_name: menu
+    entity_level: -1
+    provider_label:
+      - menu_id
+  - id_column: item_id
+    entity_name: menu_item
+    provider_label:
+      - item_id
+
+variables:
+  - variable: item_name
+    provider_label:
+      - name
+    display_name: Item name
+    definition: What the food or drink is called.
+    data_type: string
+    data_shape: categorical
+  - variable: item_group
+    provider_label:
+      - group
+    display_name: Menu section
+    definition: The section the item goes under, such as Coffee or Bakery.
+    data_type: string
+    data_shape: categorical
+  - variable: serving_size
+    provider_label:
+      - size
+    display_name: Serving size
+    definition: The serving size, or whether the item is sold by the slice, pot and so on.
+    data_type: string
+    data_shape: categorical
+  - variable: item_price
+    provider_label:
+      - price
+    display_name: Price
+    definition: What the customer pays for one serving, including VAT where applicable.
+    data_type: number
+    data_shape: continuous
+    unit: GBP
+  - variable: item_cost
+    provider_label:
+      - cost
+    display_name: Cost
+    definition: Roughly what one serving costs in ingredients or to buy in, before any VAT that can be claimed back. Excludes staff time and running the shop.
+    data_type: number
+    data_shape: continuous
+    unit: GBP
+  - variable: vegan
+    provider_label:
+      - vegan
+    display_name: Vegan
+    definition: Whether the item is intended to be suitable for vegans.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - 'Yes'
+      - 'No'
+  - variable: item_notes
+    provider_label:
+      - notes
+    display_name: Item notes
+    definition: Extra details about the item, supplier or availability.
+    data_type: string
+    data_shape: categorical
+  - variable: item_price_uncertainty
+    display_name: Price uncertain
+    definition: Yes if the provider marked the price value with a question mark, meaning they were unsure of it. The value is kept as given.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - 'Yes'
+      - 'No'
+
+categories: []

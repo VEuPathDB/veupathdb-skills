@@ -1,0 +1,39 @@
+name: team
+display_name: Team
+display_name_plural: Teams
+
+id_columns:
+  - id_column: shop_id
+    entity_name: coffee_shop
+    entity_level: -1
+    provider_label:
+      - shop_id
+  - id_column: team_id
+    entity_name: team
+    provider_label:
+      - team_id
+
+variables:
+  - variable: team_name
+    provider_label:
+      - name
+    display_name: Team
+    definition: What the team does, such as the bar or kitchen team.
+    data_type: string
+    data_shape: categorical
+  - variable: team_shift
+    provider_label:
+      - shift
+    display_name: Usual shift
+    definition: 'The shifts the team usually covers: early, late or a mixture.'
+    data_type: string
+    data_shape: categorical
+  - variable: team_extension
+    provider_label:
+      - ext
+    display_name: Phone extension
+    definition: The team's internal phone extension. A code, not a quantity.
+    data_type: string
+    data_shape: categorical
+
+categories: []

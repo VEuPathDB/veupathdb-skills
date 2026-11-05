@@ -1,0 +1,60 @@
+name: coffee_shop
+display_name: Coffee shop
+display_name_plural: Coffee shops
+
+id_columns:
+  - id_column: region_id
+    entity_name: region
+    entity_level: -1
+    provider_label:
+      - region_id
+  - id_column: shop_id
+    entity_name: coffee_shop
+    provider_label:
+      - shop_id
+
+variables:
+  - variable: shop_name
+    provider_label:
+      - name
+    display_name: Shop name
+    definition: The shop's name.
+    data_type: string
+    data_shape: categorical
+  - variable: shop_town
+    provider_label:
+      - town
+    display_name: Town
+    definition: The town or city the shop is in.
+    data_type: string
+    data_shape: categorical
+  - variable: shop_address
+    provider_label:
+      - address
+    display_name: Street address
+    definition: The shop's street address.
+    data_type: string
+    data_shape: categorical
+  - variable: date_opened
+    provider_label:
+      - opened
+    display_name: Date opened
+    definition: The date the shop first opened.
+    data_type: date
+    data_shape: continuous
+  - variable: seats
+    provider_label:
+      - seats
+    display_name: Seats
+    definition: The number of customers the shop can seat.
+    data_type: integer
+    data_shape: continuous
+  - variable: shop_status
+    provider_label:
+      - status
+    display_name: Status
+    definition: Whether the shop is open.
+    data_type: string
+    data_shape: categorical
+
+categories: []

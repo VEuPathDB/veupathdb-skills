@@ -1,0 +1,9 @@
+name: Coffee shops 2025
+entities:
+  - region
+  - coffee_shop
+  - team
+  - staff_member
+  - menu
+  - menu_item
+  - monthly_account

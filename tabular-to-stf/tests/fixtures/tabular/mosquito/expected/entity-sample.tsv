@@ -1,0 +1,16 @@
+collection_id	sample_id \\ Descriptors	species	sex	blood_fed	mosquito_count
+C001	S001	Anopheles gambiae	F	yes	12
+C001	S002	Anopheles funestus	F	no	3
+C002	S003	Anopheles gambiae	F	no	7
+C003	S004	Anopheles arabiensis	M	no	2
+C004	S005	Anopheles gambiae	F	yes	15
+C005	S006	Anopheles funestus	F	yes	4
+C006	S007	Anopheles gambiae	F	no	9
+C007	S008	Anopheles gambiae	M	no	5
+C007	S009	Anopheles arabiensis	F	yes	6
+C008	S010	Anopheles gambiae	F	yes	11
+C009	S011	Anopheles funestus	F	no	1
+C010	S012	Anopheles gambiae	F	no	8
+C011	S013	Anopheles arabiensis	F	yes	3
+C012	S014	Anopheles gambiae	F	yes	10
+C012	S015	Anopheles funestus	M	no	2

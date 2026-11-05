@@ -1,0 +1,181 @@
+team_id	staff_id \\ Descriptors	first_name	surname_abbreviated	job_role	start_date	contracted_hours	hourly_pay_rate	contract_type	initial_training	staff_notes	contracted_hours_uncertainty
+T001	P001	Arthur	G	Supervisor	2021-05-15	16	15.30	Part time	Yes		No
+T001	P002	Anika	WH	Cafe assistant	2023-03-21	20	13.24	Part time	Pending	Food hygiene refresher due	No
+T001	P003	Daniel	T	Cafe assistant	2021-11-10	20	12.71	Part time	Yes		No
+T001	P004	Noah	T	Cafe assistant	2023-05-20	40	13.37	Full time	Yes	Prefers early shifts	No
+T001	P005	Amelia	E	Cafe assistant	2021-05-18	35	12.91	Full time	No	Food hygiene refresher due	No
+T002	P006	Sofia	H	Head barista	2024-07-07	30	15.58	Part time	Yes	Prefers early shifts	No
+T002	P007	Ibrahim	C	Barista	2023-11-06	16	12.87	Part time	Yes		No
+T002	P008	George	K	Barista	2024-11-14	30	13.10	Part time	Pending	Cover by agreement	No
+T002	P009	Noah	C	Barista	2023-08-27	40	13.67	Full time	Yes	Available weekends	No
+T002	P010	Olivia	M	Barista	2023-11-27	20	12.39	Part time	Pending	Available weekends	No
+T003	P011	Grace	S	Kitchen lead	2024-12-14	30		Part time	Pending	Prefers early shifts	No
+T003	P012	Mia	S	Kitchen assistant	2021-01-28	40	13.01	Full time	Yes	Food hygiene refresher due	No
+T003	P013	Leo	S	Kitchen assistant	2021-04-25	40	12.87	Full time	No	Available weekends	No
+T003	P014	Sofia	W	Kitchen assistant	2022-01-18	20	12.32	Part time	No	Food hygiene refresher due	No
+T003	P015	Theo	T	Kitchen assistant	2022-05-11	35	12.80	Full time	Yes	Food hygiene refresher due	No
+T004	P016	Finn	TA	Supervisor	2022-03-21	16	15.90	Part time	Yes		No
+T004	P017	Sofia	A	Cafe assistant	2021-11-04	24	12.88	Part time	Yes	Prefers early shifts	No
+T004	P018	Niamh	B	Cafe assistant	2023-12-03	20	13.06	Part time			No
+T004	P019	Finn	R	Cafe assistant	2021-03-27	24		Part time	Yes	Food hygiene refresher due	No
+T004	P020	Noah	WH	Cafe assistant	2023-07-01	16	13.63	Part time	Pending	Cover by agreement	No
+T005	P021	Hugo	T	Head barista	2023-02-14	40	15.92	Full time	Yes		No
+T005	P022	Isla	T	Barista	2024-12-15	16	12.38	Part time	Yes		No
+T005	P023	Arthur	W	Barista	2022-07-22	35	13.12	Full time	Yes		No
+T005	P024	Daniel	R	Barista	2022-11-02	35	13.54		No	Prefers early shifts	No
+T005	P025	Zara	THOMP	Barista	2022-06-19	16	13.05	Part time	Yes		No
+T006	P026	Theo	WR	Kitchen lead	2022-11-26	20	15.85		Yes		No
+T006	P027	Zara	C	Kitchen assistant	2023-06-13	30	13.65	Part time	No	Available weekends	No
+T006	P028	Mia	C	Kitchen assistant	2021-10-17	35	13.74	Full time	Yes	Cover by agreement	No
+T006	P029	Isla	GA	Kitchen assistant	2024-07-23	40	12.41	Full time	Yes		No
+T006	P030	Finn	C	Kitchen assistant	2023-09-13	30	12.36	Part time	Yes	Prefers early shifts	No
+T007	P031	Leo	K	Supervisor	2022-12-02	24		Part time	No	Prefers early shifts	No
+T007	P032	Zara	W	Cafe assistant		20	12.33	Part time	No	Available weekends	No
+T007	P033	Arjun	S	Cafe assistant	2024-02-28	16	13.01	Part time	Yes		No
+T007	P034	Isla	S	Cafe assistant	2022-08-17	20	13.09	Part time	Pending		No
+T007	P035	Zara	J	Cafe assistant	2021-01-09	40	13.26	Full time	Pending	Food hygiene refresher due	No
+T008	P036	Muhammad	WR	Head barista	2021-12-05	20	15.48	Part time	Yes	Prefers early shifts	No
+T008	P037	Ella	T	Barista	2024-09-09	24	13.77	Part time	Yes	Cover by agreement	No
+T008	P038	Sofia	G	Barista	2023-11-16	16	13.44	Part time	No		No
+T008	P039	Ella	B	Barista	2024-12-10	40	12.88	Full time	Yes	Available weekends	No
+T008	P040	Harper	M	Barista	2024-03-15	30	13.65	Part time	No		No
+T009	P041	Noah	WA	Kitchen lead	2023-10-03	40	15.35	Full time	Yes	Available weekends	No
+T009	P042	Grace	G	Kitchen assistant	2022-11-26	20	13.36	Part time	Yes	Prefers early shifts	No
+T009	P043	Olivia	P	Kitchen assistant	2023-06-21	16	13.79	Part time	Yes		No
+T009	P044	Leo	R	Kitchen assistant	2024-05-27	16	12.60	Part time	Yes	Cover by agreement	No
+T009	P045	Daniel	K	Kitchen assistant	2023-01-22	20	13.00	Part time	No		No
+T010	P046	Niamh	S	Supervisor	2024-02-18	24	15.73	Part time	Yes		No
+T010	P047	Harper	R	Cafe assistant	2021-06-16	40	13.38	Full time	Yes		No
+T010	P048	Isla	GR	Cafe assistant	2022-12-06	24	13.52		Yes	Available weekends	No
+T010	P049	Oscar	G	Cafe assistant	2021-01-11	35	12.76	Full time	Yes	Cover by agreement	No
+T010	P050	Rory	E	Cafe assistant	2022-11-20	16	13.18	Part time	Yes	Food hygiene refresher due	No
+T011	P051	Freya	T	Head barista	2021-09-19	30	15.39	Part time	Yes	Available weekends	No
+T011	P052	Arthur	RO	Barista	2022-02-15	20	12.73	Part time	Yes		No
+T011	P053	Oliver	C	Barista	2023-03-07	24	12.58	Part time	Yes	Food hygiene refresher due	No
+T011	P054	Noah	WH	Barista	2021-05-24	16	12.55	Part time	Yes		No
+T011	P055	Sam	R	Barista	2021-06-26	16	12.43	Part time	Pending	Cover by agreement	No
+T012	P056	Oscar	T	Kitchen lead	2021-12-20	20	15.99	Part time	Yes		No
+T012	P057	Theo	K		2021-09-18	30	12.84	Part time	No		No
+T012	P058	Anika	WI	Kitchen assistant	2023-02-08	16	13.24	Part time	Yes	Food hygiene refresher due	No
+T012	P059	Chloe	H	Kitchen assistant	2023-08-01	30	13.42	Part time	Yes		No
+T012	P060	Theo	G	Kitchen assistant	2024-05-24	40	12.31	Full time	Yes	Cover by agreement	No
+T013	P061	Oliver	S	Supervisor	2021-12-10	35	15.07	Full time	Yes	Food hygiene refresher due	No
+T013	P062	Freya	E	Cafe assistant	2022-10-14	40	12.76	Full time	Pending	Cover by agreement	No
+T013	P063	Hugo	K	Cafe assistant	2021-11-16	20	12.35	Part time	Yes		No
+T013	P064	Arthur	RE		2023-10-06	16	13.53	Part time		Food hygiene refresher due	No
+T013	P065	Arthur	RO	Cafe assistant	2021-11-02	30	12.43	Part time	Yes		No
+T014	P066	George	O	Head barista	2021-04-09	24	14.87	Part time	Yes	Cover by agreement	No
+T014	P067	Sam	J	Barista	2022-03-28	30	13.37	Part time	Yes		No
+T014	P068	Theo	R	Barista	2021-01-20	24	12.51	Part time	No		No
+T014	P069	Rory	E	Barista	2022-04-23	24	13.04	Part time	Yes	Available weekends	No
+T014	P070	Muhammad	TH	Barista	2021-10-22	20	13.28	Part time	Pending	Cover by agreement	No
+T015	P071	Harper	H	Kitchen lead	2024-11-24	16	15.44	Part time	Yes		No
+T015	P072	Ibrahim	JON	Kitchen assistant	2022-04-18	20	12.59	Part time	Yes		No
+T015	P073	Daniel	W	Kitchen assistant	2023-10-24	40	12.61	Full time	No	Food hygiene refresher due	No
+T015	P074	Muhammad	C	Kitchen assistant	2021-05-10	24	13.19	Part time	No		No
+T015	P075	Sofia	J	Kitchen assistant	2021-12-21	40	13.21	Full time	Yes		No
+T016	P076	Ava	T	Supervisor	2021-02-27	16	15.39	Part time	No	Prefers early shifts	No
+T016	P077	Ella	S	Cafe assistant	2024-10-16	20	13.20	Part time	Yes	Available weekends	No
+T016	P078	Theo	WH	Cafe assistant	2021-06-21	40	13.33	Full time	Yes		No
+T016	P079	Arjun	T	Cafe assistant	2023-10-02	40	12.62	Full time	Yes	Food hygiene refresher due	No
+T016	P080	Hugo	G	Cafe assistant	2023-07-17	40	13.05	Full time	Yes	Prefers early shifts	No
+T017	P081	Noah	P	Head barista	2024-06-16	40	14.86	Full time	Pending	Cover by agreement	No
+T017	P082	Chloe	WA	Barista	2021-05-28	20	12.50	Part time	No		No
+T017	P083	Ava	R	Barista	2022-12-22	40	13.60	Full time	Pending	Prefers early shifts	No
+T017	P084	Theo	C	Barista	2023-08-01	24	12.66	Part time	Yes	Prefers early shifts	No
+T017	P085	Sam	D	Barista	2024-10-06	40	12.43	Full time	Yes		No
+T018	P086	Muhammad	G	Kitchen lead	2022-08-05	30	15.74	Part time	Yes	Prefers early shifts	No
+T018	P087	Hugo	ED	Kitchen assistant	2024-12-24	40	12.48	Full time	Yes		No
+T018	P088	Chloe	WI	Kitchen assistant	2021-03-04	30	13.13	Part time	No		No
+T018	P089	Harper	H	Kitchen assistant	2022-08-10	30	12.42	Part time	Yes		No
+T018	P090	Arthur	J	Kitchen assistant	2024-04-24	24		Part time	Yes	Food hygiene refresher due	No
+T019	P091	Ella	E	Supervisor	2021-12-22	30	15.02	Part time	Yes		No
+T019	P092	Finn	TH	Cafe assistant	2023-10-02	20	13.52	Part time	No	Prefers early shifts	No
+T019	P093	Finn	W	Cafe assistant	2021-08-17	16	12.63	Part time	Yes	Food hygiene refresher due	No
+T019	P094	Oscar	C	Cafe assistant	2022-12-10	16	12.74	Part time	Yes	Available weekends	No
+T019	P095	George	A	Cafe assistant	2024-05-06	30	13.04	Part time	Pending	Prefers early shifts	No
+T020	P096	Olivia	M	Head barista	2022-03-28	30	14.91	Part time	Yes	Cover by agreement	No
+T020	P097	Oliver	A	Barista	2022-09-12	40	12.44	Full time	Yes		No
+T020	P098	Aisha	S	Barista	2023-01-24	30	12.54	Part time	Yes	Cover by agreement	No
+T020	P099	Arjun	C	Barista	2024-04-04		13.11	Part time	Yes		No
+T020	P100	Isla	J	Barista	2023-05-19	20	12.49	Part time	Pending	Food hygiene refresher due	No
+T021	P101	Isla	H	Kitchen lead	2024-12-04	24	16.08	Part time	No		No
+T021	P102	Harper	W	Kitchen assistant	2022-02-25	40	13.32	Full time	Pending		No
+T021	P103	Finn	J		2021-09-12	35	13.42	Full time	No	Food hygiene refresher due	No
+T021	P104	Ava	H	Kitchen assistant	2022-08-21	35	13.56	Full time	Yes		No
+T021	P105	Olivia	W	Kitchen assistant	2023-06-28	35	13.04	Full time	Yes		No
+T022	P106	Oliver	WA	Supervisor	2023-11-10	30	15.54	Part time	Yes	Available weekends	No
+T022	P107	Muhammad	TA	Cafe assistant	2022-03-17	30	12.55	Part time	Yes		No
+T022	P108	George	S	Cafe assistant	2023-06-24	16	13.77	Part time	Yes	Food hygiene refresher due	No
+T022	P109	Hugo	B	Cafe assistant	2021-04-27	16	12.65	Part time	Yes		No
+T022	P110	Ella	D	Cafe assistant	2024-08-14	20	12.46	Part time	No		No
+T023	P111	Amelia	J	Head barista	2023-07-09	35	15.41	Full time	Pending		No
+T023	P112	Freya	H	Barista	2021-09-10	20	12.66	Part time	Yes	Available weekends	No
+T023	P113	Olivia	D	Barista	2023-05-17	35	13.40	Full time	Pending		No
+T023	P114	Olivia	P	Barista	2021-08-05	20	13.57	Part time	Yes		No
+T023	P115	Harper	GA	Barista	2022-05-08	40	13.32	Full time	Pending		No
+T024	P116	Amelia	W	Kitchen lead	2023-10-18	40	15.90	Full time	Yes		Yes
+T024	P117	Aisha	C	Kitchen assistant	2021-06-10	35	13.50	Full time	Yes		No
+T024	P118	Hugo	C	Kitchen assistant	2022-12-07	30	12.80	Part time	No		No
+T024	P119	Theo	P	Kitchen assistant	2023-06-11	16	12.64	Part time	Pending	Prefers early shifts	No
+T024	P120	Daniel	O	Kitchen assistant	2023-03-01	24	12.58	Part time	Yes		No
+T025	P121	Oliver	WH	Supervisor	2023-06-05	35	16.29	Full time	Yes	Available weekends	Yes
+T025	P122	Sofia	E	Cafe assistant	2023-04-18	24	12.50		Yes	Food hygiene refresher due	No
+T025	P123	George	T	Cafe assistant	2022-07-08	40	13.00	Full time	Yes		No
+T025	P124	Ella	WI	Cafe assistant	2023-02-27	20	13.54	Part time	No	Available weekends	No
+T025	P125	Zara	THOMA	Cafe assistant	2022-01-07	16	12.68	Part time	Yes	Available weekends	No
+T026	P126	Sofia	E	Head barista	2021-05-13	40	16.26	Full time	No	Food hygiene refresher due	No
+T026	P127	Zara	O	Barista	2021-04-10	16	13.08	Part time	No	Prefers early shifts	No
+T026	P128	Rory	S	Barista	2023-06-15	40	12.87	Full time	No	Prefers early shifts	No
+T026	P129	Theo	O	Barista	2022-12-15	16	12.78	Part time	Yes	Food hygiene refresher due	No
+T026	P130	Sam	O	Barista	2022-08-27	16	12.37	Part time	Yes	Cover by agreement	No
+T027	P131	Sofia	R	Kitchen lead	2023-07-26	30	15.06	Part time	Yes	Prefers early shifts	No
+T027	P132	Hugo	WILS	Kitchen assistant	2024-11-19	30	12.46	Part time	Yes		No
+T027	P133	Anika	C	Kitchen assistant	2021-11-24	16	13.57	Part time	Pending	Cover by agreement	No
+T027	P134	Olivia	K	Kitchen assistant	2023-10-19	30	12.89	Part time	Yes		No
+T027	P135	Oliver	T	Kitchen assistant	2021-06-03	30	13.12	Part time	Yes		No
+T028	P136	Noah	E	Supervisor	2021-03-24	30	15.89	Part time	Yes		No
+T028	P137	Ava	S	Cafe assistant	2024-06-14		13.74	Part time	Yes	Available weekends	No
+T028	P138	Noah	M	Cafe assistant	2024-06-25	35	13.40	Full time	No		No
+T028	P139	Grace	H	Cafe assistant	2024-03-12	40	13.56	Full time		Cover by agreement	No
+T028	P140	Mia	W	Cafe assistant	2022-11-02	30	13.37	Part time	Pending	Available weekends	No
+T029	P141	Ella	E	Head barista	2023-09-14	16	15.27	Part time	Yes	Available weekends	No
+T029	P142	Hugo	WILL	Barista	2023-11-17	35	13.00	Full time	No	Cover by agreement	No
+T029	P143	Daniel	S	Barista	2023-07-25	24	12.93	Part time	Pending		No
+T029	P144	Olivia	J	Barista	2022-10-25	40	12.85	Full time	Yes	Food hygiene refresher due	No
+T029	P145	Chloe	D	Barista	2024-07-15	35	12.40	Full time	No	Available weekends	No
+T030	P146	Noah	S	Kitchen lead	2024-08-10	30	16.13	Part time	Yes	Prefers early shifts	No
+T030	P147	Ibrahim	JOH	Kitchen assistant	2021-02-08		13.45	Part time	Yes		No
+T030	P148	Isla	C	Kitchen assistant	2023-07-23	16	12.36	Part time	Yes	Available weekends	No
+T030	P149	Amelia	S	Kitchen assistant	2024-12-17	24	13.42	Part time	Yes	Prefers early shifts	No
+T030	P150	Niamh	R	Kitchen assistant	2022-09-14	40	13.61	Full time	Yes	Prefers early shifts	No
+T031	P151	Hugo	EV	Supervisor	2023-01-28	20	15.43	Part time	Pending	Available weekends	No
+T031	P152	Oscar	E	Cafe assistant	2024-05-11	16	13.44	Part time	Pending	Prefers early shifts	No
+T031	P153	Olivia	M	Cafe assistant	2023-02-23	24	12.72	Part time	No		No
+T031	P154	Oliver	P	Cafe assistant	2023-11-06	20	12.92	Part time	No		No
+T031	P155	Grace	H	Cafe assistant	2021-03-06	40	13.10	Full time			No
+T032	P156	Muhammad	S	Head barista	2022-09-25	24	14.95	Part time	Yes		No
+T032	P157	George	O	Barista	2023-02-03	20	12.86	Part time	Yes	Prefers early shifts	No
+T032	P158	Anika		Barista	2022-10-24	24	12.83	Part time	Yes	Prefers early shifts	Yes
+T032	P159	Ava	D	Barista	2021-11-18	40	13.25	Full time	Yes	Prefers early shifts	No
+T032	P160	Muhammad	WA	Barista	2021-01-01	16	13.17	Part time	Yes	Available weekends	No
+T033	P161	Hugo	ED	Kitchen lead	2024-04-08	20	15.03	Part time	No		No
+T033	P162	Oliver	A	Kitchen assistant	2021-12-16	35	13.65	Full time	Yes	Cover by agreement	No
+T033	P163	Oscar	S	Kitchen assistant	2021-05-03	20	13.52	Part time	Yes	Prefers early shifts	No
+T033	P164	Muhammad	R	Kitchen assistant	2023-05-20	24	12.65	Part time	No	Available weekends	No
+T033	P165	Ibrahim	R	Kitchen assistant	2022-12-05	35	12.89	Full time	Yes	Food hygiene refresher due	No
+T034	P166	Anika	G	Supervisor	2023-08-12	40	15.30	Full time	Yes	Available weekends	No
+T034	P167	Harper	GR	Cafe assistant	2023-10-11	30	12.41	Part time	Yes		No
+T034	P168	Hugo	R	Cafe assistant	2022-12-22	20	12.77	Part time	Pending		No
+T034	P169	Anika	WR	Cafe assistant	2021-04-16	35	12.86	Full time	Pending	Prefers early shifts	No
+T034	P170	Ella	WH	Cafe assistant	2023-10-09	20	13.79	Part time	Pending	Food hygiene refresher due	No
+T035	P171	Daniel	D	Head barista	2023-03-12	20	15.66	Part time	Pending	Prefers early shifts	No
+T035	P172	Arjun	M	Barista	2021-11-06	20	12.49	Part time	No		No
+T035	P173	Anika	WA	Barista	2021-11-12	40	13.10	Full time	Yes	Food hygiene refresher due	No
+T035	P174	Zara	C	Barista	2021-10-20	30	13.36	Part time	No	Cover by agreement	No
+T035	P175	Grace	J	Barista	2021-07-12	35	13.41	Full time	No	Food hygiene refresher due	No
+T036	P176	Noah	K	Kitchen lead	2021-11-05	20	15.29	Part time	Pending	Prefers early shifts	No
+T036	P177	Chloe	R	Kitchen assistant	2024-04-04	20	12.91	Part time	No	Cover by agreement	No
+T036	P178	Aisha	R	Kitchen assistant	2023-04-09	20	13.50	Part time	Yes	Available weekends	No
+T036	P179	Olivia	T	Kitchen assistant	2024-09-27	40	12.87	Full time	No	Cover by agreement	No
+T036	P180	Anika	WA	Kitchen assistant	2022-05-16	35	12.39	Full time	Pending	Prefers early shifts	No

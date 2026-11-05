@@ -1,0 +1,201 @@
+item_id,menu_id,name,group,size,price,cost,vegan,notes
+I001,M001,Cappuccino,Coffee,reular,3.90,0.82,No,Supplier may vary
+I002,M001,Oat latte,Cofefe,large,4.40,1.07,Yes,supplier may vary
+I003,M001,Filter coffee,Coffee,regular,3.10,0.44,Yes,Supplier may vary
+I004,M001,Butter croissant,Bakery,each,3.10,1.16,No,Subject to availability
+I005,M001,Iced latte,COFFEE,large,4.20,"0,95",No,
+I006,M001,Apple juice,Cold drinks,250 ml,3.40,1.04,n/a,Supplier may vary
+I007,M001, Chai latte ,Tea,regular,4.10,1.01,No,
+I008,M001,Espresso,Coffee,single,2.8O,0.49,Yes,Subject to availability
+I009,M001,Breakfast tea,Tea,pot,3.20?,0.36,Yes,Supplier may vary
+I010,M002,Apple juice,Cold drinks,250 ml,3.50,1.08,Yes,Subject to availability
+I011,M002,Vegan brownie,Bakery,slice,3.80,1.25,Yes,
+I012,M002,Americano,COFFEE,regular,3.50,0.49,Yes,Ask about allergens
+I013,M002,Banana loaf,Bakery,SLICE,3.60,1.06,No,Made on site
+I014,M002,n/a,Coffee,regular,4.00,0.83,No,Subject to availability
+I015,M002,Espresso,Coffee,single,2.90,0.50,Yes,
+I016,M002,Iced latte,COFFEE,large,4.30,0.94,No,Supplier may vary
+I017,M002,Capupccino,Coffee,regular,4.00,0.87,No,Supplier  may vary
+I018,M002,Butter croissant,Bakery,each,3.20,1.10,No,Supplier may vary
+I019,M003,Flat wihte,Coffee,regular,3.90,0.78,No,
+I020,M003,Chai latte,Tea,REGULAR,4.10,0.99, No ,Ask about allergens
+I021,M003,Oat latte,Coffee,large,4.40,1.09,Yes,Supplier may vary
+I022,M003,Iced latte,Coffee,large,4.20,0.92,No,Supplier may vary
+I023,M003,CAPPUCCINO,Coffee,regular,3.90,0.82,No,
+I024,M003, Banana loaf ,Bakery,slice,3.50,1.02,NO,Made on site
+I025,M003,Aemricano,Coffee,regular,3.40,0.53,Yes,Subject to availability
+I026,M003,Cheese toastie,Food,ech,6.10, 2.11 ,No,Supplier may vary
+I027,M003,Apple juice,Cold drinks,250 ml,3.40,1.06,Yes,Made o site
+I028,M004,Vegan brownie,Bakery,slice,3.80,1.25,Yes,
+I029,M004,Banana loaf,Bakery,slice,3.60,0.99, No ,
+I030,M004,Chai latte,Tea,regular,4.20,0.97,no,Subject to availability
+I031,M004,Espreso,Coffee,single,2.90,0.46,Yes,Made on site
+I032,M004,Breakfast tea,Tea,pot,3.30,0.35,Yes,
+I033,M004,Cappuccino,Coffee,regular,4.00,0.82,No,
+I034,M004,Americano,Coffee,regular,3.50,0.54,Yes,Made on site
+I035,M004,Oat latte,Coffee,large,4.50,1.08,Yes,Ask about allergens
+I036,M004,Hot chocolate,Chocolate,regular,4.20,1.10,No,
+I037,M005,Apple juice,Cold drinks,250 ml,3.40,1.04,Yes,Subject to availability
+I038,M005,Banana loaf,Bakey,slice,3.50,1.09,No,Made on site
+I039,M005,Butter croissant,Bakery,, 3.10 ,1.09, No ,Subject to availability
+I040,M005,Flat white,Coffee,regular,3.90,0.79,No,Supplier may vary
+I041,M005,Oat latte,Coffee,large,4.40,0.99,Yes,Made on site
+I042,M005,Iced latte,COFFEE,large,4.20,0.98,No,Supplier may vary
+I043,M005,Filter  coffee,Coffee,regular,3.10,0.41,Yes,Supplier may vary
+I044,M005,Espresso,Coffee,single,2.80,0.49,Yes,Supplier may vary
+I045,M005,Vegan brownie,Bakery,slice,3.70,1.17,Yes,
+I046,M006,Chai latte,Tea,regular,4.20?,1.04,No,Supplier may vary
+I047,M006,Butter croissant,Bakery,each,3.20,"1,04",No,Made on site
+I048,M006,Flat white,Coffee,regular,4.00,0.81,No,Made  on site
+I049,M006,Filter coffee,Coffee,regulr,3.20,0.41, Yes ,
+I050,M006,Iced latte,Cofee,large,4.30,0.95,No,
+I051,M006,Breafkast tea,Tea,pot,3.30,0.35,Yes,n/a
+I052,M006,Espresso,Coffee,single,2.90,0.48,Yes,Ask about allergens
+I053,M006,Hot chocolate,Chocolate,reular,4.20,1.07,No,Ask about allergens
+I054,M006,Banana loaf,Bakery,slice,3.60,1.01,No,Ask about allergens
+I055,M007, Hot chocolate ,Chocolate,regular,3.80,1.08,No,Made on site
+I056,M007,Iced latte,Coffee,large,3.90,0.90,No,Subject to availability
+I057,M007,Butter croissant,Bakery,each,2.80,1.14,No,Supplier may vary
+I058,M007,Filter coffee,Coffee,regular,2.80,0.42,Yes,Subject to availability
+I059,M007,Espresso,Coffee,single,2.50,O.47,Yes,Ask about allergens
+I060,M007,Lemon cake,Bakery,slice,3.50,1.20,No,Made on site
+I061,M007,Cappuccino,Cofee,regular,3.60,0.86,No,Subject to availability
+I062,M007,Vegan brownie,Bakery,slice,3.40,1.23,Yes,Ask about allergens
+I063,M007,Cheese toastie,Food,each,5.80,2.16,No,
+I064,M008,,Coffee,regular,3.70,0.80,No,
+I065,M008,Flat white,Coffee,regular,3.70,0.86,No,
+I066,M008,Banana loaf,Bakery,slice,3.30,1.10,No,Made on site
+I067,M008,Buter croissant,Bakery,each,2.90,1.11,No,
+I068,M008,Espresso,Coffee,single,2.60,0.49,Yes,
+I069,M008,Americano,Cofee,regular,3.20,0.53,Yes,
+I070,M008,cheese toastie,Food,each,5.90,2.04,No,Ask about allergens
+I071,M008,Chai latte,Tea,regular,3.90,1.00,No,
+I072,M008,Apple juice,Cold drinks,250 ml,3.20,1.09,Yes,Ask about allergens
+I073,M009,Vegan brownie,Bakery,slice,3.40,1.25,Yes, Supplier may vary 
+I074,M009,Iced latte,Coffee,large,3.90,0.97,No,
+I075,M009,Lemon cake,Bakery,slce,3.50,1.18,No,Ask abou tallergens
+I076,M009,Chai latte,Tea,REGULAR,3.80,0.96,No,Ask about allergens
+I077,M009, Hot chocolate ,Chocolate,regular,3.80,"1,09",No,
+I078,M009,Apple juice,Cold drinks,250 ml,3.10,1.00,Yes,Made on site
+I079,M009,Oat latte,Coffee,large,4.10,1.08,Yes,Made on site
+I080,M009,Butter croissant,Bakery,each,2.80,1.12,No,
+I081,M010,Iced  latte,Coffee,large,4.00,0.98,No,Supplie may vary
+I082,M010,Breakfast tea,Tea,pot,3.00,0.34,Yes,Ask about allergens
+I083,M010,Cappuccino,Coffee,regualr,3.70,0.80,No,
+I084,M010,oat latte,Coffee,large,4.20,1.08,Yes,Made on site
+I085,M010,Filter coffee,Coffee,regular,2.90?,0.43,Yes,Mdae on site
+I086,M010,Espresso,Coffee,single,2.60,0.45,Yes,
+I087,M010,Chai latte,Tea,regular,3.90,O.96,No,Subject to availability
+I088,M010,Americano,Coffee,,"3,20",0.55, Yes ,
+I089,M011,Oat latte,Coffee,large,4.10,1.02,Yes,Supplier may vary
+I090,M011,Breakfast tea,Tea, pot ,2.90,0.37,Yes,Ask about allergens
+I091,M011, Cheese toastie ,Food,each,5.80,2.06,No,
+I092,M011,butter croissant,Bakery,each,2.80?,1.07,No,Made on site
+I093,M011,Chai latte,Tea,regular,3.80,0.94,No,Subject to availability
+I094,M011,cappuccino,n/a,regular,"3,60",0.84,No,Made on site
+I095,M011,Vegan brownie,Bakeyr,slice,3.40,1.22,Yes,Subject to availability
+I096,M011,Iced latte,Coffee,large,n/a,0.93,No,Ask about allergens
+I097,M012,Flat white,Coffee,regular,3.70,0.80,No,Supplier may vary
+I098,M012,Lemon cake,Bakery,slice,3.60,1.25,No,
+I099,M012,Banana loaf,Bakery,slice,3.30,1.08,No,
+I100,M012,Cappuccino,Coffee,regular,3.70,n/a,No, Supplier may vary 
+I101,M012,Iced latte,Coffee,large,4.00,"0,94",No,
+I102,M012,Apple juice,Cold drinks,250 ml,3.20,1.01,Yes,
+I103,M012,Espresso,Coffee,single,2.60,0.48,Yes,Ask abou tallergens
+I104,M012,Breakfast tea,Tea,pot,3.00,0.36,Yes,Subject to availability
+I105,M013,Hot  chocolate,Cohcolate,regular,3.80,1.04,No,Supplier may vary
+I106,M013,Apple juice,Cold drinks,250 ml,3.10,0.99,Yes,
+I107,M013, Oat latte ,Coffee,large,4.10,1.05,Yes,
+I108,M013,Lemon cake,Bakery,slice, 3.50 ,1.24,No,
+I109,M013,Vegan brownie,bakery,slice,3.40,1.26,Yes,
+I110,M013, Filter coffee ,Coffee,regular,2.80,0.39,Yes,Subject to availability
+I111,M013,,Tea,regular,3.80,"0,99",No,
+I112,M013,Breakfast tea,Tea,POT,2.90,O.34,Yes,Ask about allergens
+I113,M014,Apple juice,cold drinks,250 ml,3.20,1.05,Yes,
+I114,M014,Lemon cake,Bakery,slice,3.60,1.14,No,
+I115,M014,Cappuccino,Coffee,regular,3.70,0.80,No,Ask about allergens
+I116,M014,Banana loaf,Bakery,slice,3.30,1.05,No,ask about allergens
+I117,M014,Filter coffee,Coffee,regular,2.90, 0.44 ,Yes,Ask about allergens
+I118,M014,Chai latte,Tea,REGULAR,3.90,0.99,No,Ask about allergens
+I119,M014,Hot chocolate,Chocolate,regular,3.90,1.13,no,Supplier may vary
+I120,M014,Iced latte,Coffee,large,4.00,0.92,No,
+I121,M015,Filter coffee,Coffee,REGULAR,2.80,0.41,Yes,Made on site
+I122,M015,Butter croissant,Bakery,each,2.80,1.04,No,Ask about allergens
+I123,M015,Cheese toastie,Food,each,5.80,2.07,No,Subject to availability
+I124,M015,Hot chocolate,Chocolate,regular,3.80,1.03,No,
+I125,M015,Cappuccino,Cffee,regular,3.60,0.80,No,Subject to availability
+I126,M015,Espresso,Coffee,single,2.50,0.48,Yes,Ask about allergens
+I127,M015,Berakfast tea,Tea,pot,2.90,0.34,Yes,
+I128,M015,Chai latte,Tea,regular,3.80,0.98,No,
+I129,M016,,Coffee,regular,3.70,0.83,No,Ask about allergens
+I130,M016,Lemo ncake,Bakery,slice,3.60,1.17,No,Subject to availability
+I131,M016,oat latte,Coffee,large,4.20,1.08,Yes,
+I132,M016,Vegan brownie,Bakery,slice,3.50,1.16,Yes,
+I133,M016,Iced latte,Coffee,large,4.00,0.98,No,Subject to availability
+I134,M016,Americano,coffee,regular,3.20,0.50,yes,Supplier may vary
+I135,M016,Hot chocolate,Chocolate,regular,3.90,1.06,No,
+I136,M016,Flat white,Coffee,regular,3.70,0.85,No,
+I137,M017,Vegan brownie,Bakery,slice,3.40,1.13,Yes,Supplier may vary
+I138,M017,Cheese toastie,Food,each,5.80,2.12,No,Made on site
+I139,M017,Butter croissant,Bakery,each,2.80?,1.06,No,Supplier may vary
+I140,M017,Chai latte,Tea,regular,3.80,1.03,No,Supplier may vary
+I141,M017,Hot chocolate,Chocolate,regular,3.80,1.09,No,
+I142,M017,Lemon cake,Bakery,SLICE,3.50,1.23,No,Made on site
+I143,M017,Flat white,COFFEE,regular,3.60,"0,86",No,Made on site
+I144,M017,Iced latte,Coffee,large,3.90,0.94,No,
+I145,M018,Vegan brownie,Bakery,slice,3.50,1.26,Yes,Subject to availability
+I146,M018,Filter coffee,coffee,regular,2.90,n/a,Yes,Supplier may vary
+I147,M018,Espresso,Coffee,single,2.60,0.47,-,  
+I148,M018,Berakfast tea,Tea,pot,3.00,0.36,Yes,Subject to availability
+I149,M018,Hot chocolate, Chocolate ,reguar,3.90,1.09,No,Made on site
+I150,M018,americano,COFFEE, regular ,3.20,0.50,Yes,Subject to availability
+I151,M018,Cappuccino,Coffee,regular,3.70,0.84,No,Ask about allergens
+I152,M018,Flatw hite,Coffee,regular, 3.70 ,0.79,No,Supplier may vary
+I153,M019,Oat latte,Coffee,large,4.10,1.05,Yes,
+I154,M019, Chai latte ,Tea,regular,3.80,1.04,No,Subject t availability
+I155,M019, Americano ,Coffee,regular,n/a,0.49,Yes,Ask baout allergens
+I156,M019,HOT CHOCOLATE,Chocolate, regular ,3.80,1.13,No, Ask about allergens 
+I157,M019,Apple juice,Cold drinks,250m l,3.10?,1.07,Yes,Supplier may vary
+I158,M019,Vegan brownie,Bakery,slice,3.40,1.22,Yes,Made on site
+I159,M019,flat white,Coffee,regular,3.60,"0,82",No,Ask about allergens
+I160,M019,Iced latte,Cofefe,large,3.90,0.96,No,Supplier may vary
+I161,M020, Apple juice ,Cold drinks,250 ml,3.20,1.08,Yes,
+I162,M020,Chai latte,Tea,regular,"3,90",1.01,No,
+I163,M020,Americano,Cofee,regular,3.20,0.49,Yes,Supplier may vary
+I164,M020,Filter coffee,Cofefe,regular,2.90,0.40,Yes,Made on site
+I165,M020,Espresso,Coffee,single,2.60,0.44,yes,
+I166,M020, Lemon cake ,Bakery,slice,3.60,1.16,No,
+I167,M020,Cheese toastie,Food,each,5.90,2.14,No,SUPPLIER MAY VARY
+I168,M020,Flat white,Coffee,regular,3.70,0.80,No,Made on site
+I169,M021,Oat atte,Coffee,large,4.10,1.04,Yes,Subject to availability
+I170,M021,Banana loaf,Bakery,slice,3.20,1.06,No,
+I171,M021,Chai latte,Tea,,3.80,0.94,No,
+I172,M021, Flat white , Coffee ,regular,3.60,0.84,No,Supplier may vary
+I173,M021,Iced latte,Coffee,large,3.90,0.98,No,Supplier may vary
+I174,M021,Fiter coffee,Coffee,regular,2.80,0.43,Yes,
+I175,M021,Butter croissant,Bakery,each,2.80,1.13,No,ask about allergens
+I176,M021,Espresso,Coffee,single,2.50,0.44,Yes,Supplier may vary
+I177,M022,Filter coffee,Coffee,regular,2.90,0.44,Yes,Supplier may vary
+I178,M022,Butter croissant,Bakry,each,2.90,1.14,No,
+I179,M022,Vegan brownie,Bakery,sice,3.50,1.20,Yes,
+I180,M022,Espresso,Coffee,single,2.60,0.49,Yes,Made on site
+I181,M022,Apple juice,Cold drinks,250m l,"3,20",1.00,Yes,
+I182,M022,,Bakery,slice,3.30,1.08,No,Ask about allergens
+I183,M022,Americao,Cfofee,regular,3.20,0.53,Yes,Subject to availability
+I184,M022,Lemon cake,Bakery, slice ,3.60,1.16,No,Made on site
+I185,M023,Americano,Coffee,regular,3.10,0.51,Yes,Made on site
+I186,M023,Cappuccino,Coffee,regular,3.60,0.79,No,
+I187,M023,Breakfast tea,tea,pot,2.90,0.34,Yes,
+I188,M023,OAT LATTE,Coffee,large,4.10,1.00,yes,Supplier may vary
+I189,M023,Butter croissant,Bakery,EACH,2.80,1.04,No,Made on site
+I190,M023,Hot chocolate,Chocolate,,3.80,1.06,No,Ask about allergens
+I191,M023,Cheese tostie,Food,each,5.80,2.16,No,Ask about allergens
+I192,M023,Apple juice,Cold drinks,250 ml,3.10?,"1,11",Yes,Supplier may vary
+I193,M024,Filter coffee,Coffee,regular,2.90,0.41,Yes,Supplier may vary
+I194,M024,Oat latte,Coffee,large,4.20,1.03,Yes,Made on site
+I195,M024,Cheese toastie,Food,each,5.90,2.11,No,Made on site
+I196,M024,Americano,Coffee,regular,3.20,0.54,Yes,Made on site
+I197,M024,Breakfast tea,Tea,pot,3.00,0.37,,
+I198,M024,Hot  chocolate,Chocolate,regular,3.90,1.02,No,Subject to availability
+I199,M024,cappuccino,Coffee,regular,3.70,0.85,No,Supplier may vary
+I200,M024,Iced latte, Coffee ,large,4.00,0.89, No ,

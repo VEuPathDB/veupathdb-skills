@@ -1,0 +1,126 @@
+name: participant
+display_name: Participant
+display_name_plural: Participants
+
+id_columns:
+  - id_column: household_id
+    entity_name: household
+    entity_level: -1
+    provider_label:
+      - household_id
+  - id_column: participant_id
+    entity_name: participant
+    provider_label:
+      - participant_id
+
+variables:
+  - variable: sex
+    provider_label:
+      - Sex
+    display_name: Sex
+    data_type: string
+    data_shape: categorical
+    vocabulary_order:
+      - Female
+      - Male
+    parent_category: demographics
+  - variable: age
+    provider_label:
+      - Age (years)
+    display_name: Age
+    definition: Age at enrolment in completed years. Ages of 80 and over are recorded as 80.
+    data_type: integer
+    data_shape: continuous
+    unit: years
+    parent_category: demographics
+  - variable: age_censored
+    display_name: Age 80 or over
+    definition: Yes if the age was recorded as 80 or over, so the age value is a lower bound.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - 'Yes'
+      - 'No'
+    parent_category: demographics
+  - variable: education_level
+    provider_label:
+      - Education level
+    display_name: Education level
+    definition: Highest level of education completed.
+    data_type: string
+    data_shape: ordinal
+    ordinal_levels:
+      - none
+      - primary
+      - secondary
+      - tertiary
+    parent_category: demographics
+  - variable: occupation
+    provider_label:
+      - Occupation
+    display_name: Occupation
+    definition: Main occupation.
+    data_type: string
+    data_shape: categorical
+    parent_category: demographics
+  - variable: enrolment_date
+    provider_label:
+      - Enrolment date
+    display_name: Enrolment date
+    definition: Date the participant was enrolled.
+    data_type: date
+    data_shape: continuous
+  - variable: bednet_use
+    provider_label:
+      - Bednet use
+    display_name: Slept under a bednet
+    definition: Slept under a bednet the night before enrolment.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - 'Yes'
+      - 'No'
+    parent_category: behaviour
+  - variable: recent_fever
+    provider_label:
+      - Fever last 14 days
+    display_name: Fever in the last 14 days
+    definition: Self-reported fever in the 14 days before enrolment.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - 'Yes'
+      - 'No'
+    parent_category: clinical
+  - variable: weight
+    provider_label:
+      - Weight (kg)
+    display_name: Weight
+    definition: Body weight at enrolment.
+    data_type: number
+    data_shape: continuous
+    unit: kg
+    parent_category: anthropometry
+  - variable: height
+    provider_label:
+      - Height (cm)
+    display_name: Height
+    definition: Standing height at enrolment.
+    data_type: number
+    data_shape: continuous
+    unit: cm
+    parent_category: anthropometry
+
+categories:
+  - category: demographics
+    display_name: Demographics
+    definition: Who the participant is.
+  - category: behaviour
+    display_name: Behaviour
+  - category: clinical
+    display_name: Clinical
+    definition: Clinical history and measurements at enrolment.
+  - category: anthropometry
+    display_name: Anthropometry
+    definition: Body measurements.
+    parent_category: clinical

@@ -1,0 +1,13 @@
+region_id	shop_id \\ Descriptors	shop_name	shop_town	shop_address	date_opened	seats	shop_status
+R001	S001	Copper Finch	London	24 Market Lane	2016-12-14	37	Open
+R001	S002	Steam & Bramble	Tring	22 Station Road	2019-12-14	48	Open
+R001	S003	Little Lantern	Oxford	6 High Street	2018-09-14	30	Open
+R002	S004	Moss Yard	Bristol	67 Mill Lane	2019-04-14	39	Open
+R002	S005	The Daily Grind	Bath	62 Orchard Street	2017-12-14	33	Open
+R002	S006	Birch & Bean	Exeter	56 Bridge Road	2015-11-14	24	Open
+R003	S007	Blue Kettle	Birmingham	32 Church Lane	2015-05-14	45	Open
+R003	S008	Ember Cup	Nottingham	19 Park Street	2020-11-14	37	Open
+R003	S009	Paper Crane	Leicester	53  King Street	2020-03-14	48	Open
+R004	S010	North Star	Manchester	38 Victoria Road	2016-02-14	22	Open
+R004	S011	TBC: Totally Brilliant Coffee	Leeds	79 North Street	2019-06-14	50	Open
+R004	S012	Common Ground	York	76 Museum Lane	2015-11-14	25	Open

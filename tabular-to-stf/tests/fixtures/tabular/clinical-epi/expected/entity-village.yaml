@@ -1,0 +1,48 @@
+name: village
+display_name: Village
+display_name_plural: Villages
+
+id_columns:
+  - id_column: village_id
+    entity_name: village
+    provider_label:
+      - village_id
+
+variables:
+  - variable: village_name
+    provider_label:
+      - name
+    display_name: Village name
+    definition: Name of the village.
+    data_type: string
+    data_shape: categorical
+  - variable: lat
+    provider_label:
+      - lat
+    display_name: Latitude
+    definition: Latitude of the village centre, WGS-84 decimal degrees.
+    data_type: number
+    data_shape: continuous
+    stable_id: OBI_0001620
+    display_type: latitude
+  - variable: longitude
+    provider_label:
+      - lon
+    display_name: Longitude
+    definition: Longitude of the village centre, WGS-84 decimal degrees.
+    data_type: longitude
+    data_shape: continuous
+    stable_id: OBI_0001621
+    display_type: longitude
+  - variable: established_market
+    provider_label:
+      - Established market
+    display_name: Established market
+    definition: The village has had a weekly market for 10 years or more.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - 'Yes'
+      - 'No'
+
+categories: []

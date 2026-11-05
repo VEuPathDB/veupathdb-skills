@@ -1,0 +1,46 @@
+name: menu
+display_name: Menu
+display_name_plural: Menus
+
+id_columns:
+  - id_column: shop_id
+    entity_name: coffee_shop
+    entity_level: -1
+    provider_label:
+      - shop_id
+  - id_column: menu_id
+    entity_name: menu
+    provider_label:
+      - menu_id
+
+variables:
+  - variable: menu_name
+    provider_label:
+      - name
+    display_name: Menu name
+    definition: The menu's name, usually the season and year.
+    data_type: string
+    data_shape: categorical
+  - variable: menu_start_date
+    provider_label:
+      - from
+    display_name: First day available
+    definition: The first day the menu is available.
+    data_type: date
+    data_shape: continuous
+  - variable: menu_end_date
+    provider_label:
+      - to
+    display_name: Last day available
+    definition: The last day the menu is available.
+    data_type: date
+    data_shape: continuous
+  - variable: menu_service
+    provider_label:
+      - service
+    display_name: Service
+    definition: Where or when the menu is offered, such as at the counter or all day.
+    data_type: string
+    data_shape: categorical
+
+categories: []

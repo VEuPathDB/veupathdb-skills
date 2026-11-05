@@ -1,0 +1,34 @@
+name: region
+display_name: Region
+display_name_plural: Regions
+
+id_columns:
+  - id_column: region_id
+    entity_name: region
+    provider_label:
+      - region_id
+
+variables:
+  - variable: region_name
+    provider_label:
+      - name
+    display_name: Region name
+    definition: What the company calls the region, used for day-to-day management of its shops.
+    data_type: string
+    data_shape: categorical
+  - variable: region_area
+    provider_label:
+      - area
+    display_name: Area covered
+    definition: A short description of the area the region covers.
+    data_type: string
+    data_shape: categorical
+  - variable: region_contact
+    provider_label:
+      - contact
+    display_name: Regional contact
+    definition: The person who looks after the region.
+    data_type: string
+    data_shape: categorical
+
+categories: []

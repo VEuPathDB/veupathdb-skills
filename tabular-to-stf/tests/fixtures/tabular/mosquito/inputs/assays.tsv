@@ -1,0 +1,16 @@
+assay_id	sample_id	assay type	insecticide	mortality %	kdr genotype
+A01	S001	WHO tube	deltamethrin	42	RR
+A02	S002	WHO tube	deltamethrin	88	RS
+A03	S003	WHO tube	permethrin	35	RR
+A04	S004	CDC bottle	permethrin	60	RS
+A05	S005	WHO tube	deltamethrin	105	SS
+A06	S006	CDC bottle	deltamethrin	91	SS
+A07	S007	WHO tube	permethrin	28	RR
+A08	S008	CDC bottle	permethrin	47	RS
+A09	S009	WHO tube	deltamethrin	73	RS
+A10	S010	WHO tube	permethrin	39	RR
+A11	S011	CDC bottle	deltamethrin	96	SS
+A12	S012	WHO tube	deltamethrin	51	RR
+A13	S013	CDC bottle	permethrin	66	RS
+A14	S014	WHO tube	permethrin	30	RR
+A15	S015	CDC bottle	deltamethrin	84	SS

@@ -1,0 +1,51 @@
+name: sample
+display_name: Blood sample
+display_name_plural: Blood samples
+
+id_columns:
+  - id_column: participant_id
+    entity_name: participant
+    entity_level: -1
+    provider_label:
+      - participant_id
+  - id_column: sample_id
+    entity_name: sample
+    provider_label:
+      - sample_id
+
+variables:
+  - variable: collection_date
+    provider_label:
+      - collection date
+    display_name: Collection date
+    definition: Date the sample was taken.
+    data_type: date
+    data_shape: continuous
+  - variable: temperature
+    provider_label:
+      - Temperature (°C)
+    display_name: Temperature
+    definition: Axillary temperature when the sample was taken.
+    data_type: number
+    data_shape: continuous
+    unit: °C
+  - variable: hb_g_dl
+    provider_label:
+      - Hb (g/dL)
+    display_name: Haemoglobin
+    definition: Haemoglobin concentration measured by HemoCue.
+    data_type: number
+    data_shape: continuous
+    unit: g/dL
+  - variable: rdt_result
+    provider_label:
+      - Malaria RDT result
+    display_name: Malaria RDT result
+    definition: Result of the malaria rapid diagnostic test.
+    data_type: string
+    data_shape: binary
+    vocabulary_order:
+      - Positive
+      - Negative
+
+categories: []

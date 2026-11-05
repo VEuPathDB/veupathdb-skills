@@ -1,0 +1,13 @@
+village_id	household_id \\ Descriptors	construction_material	sleeping_rooms	roof_type
+V01	H001	Mud	2	Thatch
+V01	H002	Brick	3	Iron sheet
+V02	H003	Mud	1	Thatch
+V03	H004	Concrete	4	Iron sheet
+V03	H005	Brick		Iron sheet
+V04	H006	Mud	2	Thatch
+V05	H007	Brick	3	Iron sheet
+V06	H008	Mud	2	Iron sheet
+V07	H009	Concrete	5	Iron sheet
+V08	H010	Mud	1	Thatch
+V09	H011	Brick	3	Iron sheet
+V10	H012	Mud	2	Thatch

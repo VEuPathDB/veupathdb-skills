@@ -1,0 +1,181 @@
+staff_id,team_id,first,surname,role,start,hours,rate,contract,trained,notes
+P001,T001,Arthur,García,Supervisor,15/05/21,16,15.30,Part time,Yes,
+P002,T001,Anika,White,cafe assistant,2023-03-21,20,13.24, Part time ,Pending,Food hygiene refresehr due
+P003,T001,Daniel,Thompson,Cafe assistant,10/11/2021,20,12.71,Part time,Y,
+P004,T001,noah,Thompson,Cafe assistant,2023-05-20,40,13.37,Full time,Yes,Prefers  early shifts
+P005,T001,Amelia,Edwards,Cafe assistant,18/05/2021,35,12.91,Full time,No,Food hygiene refresher due
+P006,T002,Sofia,Hughes,Head barista,2024/07-07,30,15.58,Part time,Yes,Prefers early shifts
+P007,T002,Ibrahim,Clrake,Barista,2023-11-06,16,12.87,Part time,Yes,
+P008,T002,George,khan,Barista,14/11/2024,30,13.10,Part time,Pending,Cover by agreement
+P009,T002,Noah, Clarke ,Barista,27/08/2023,40,13.67,full time, Yes ,Available weekends
+P010,T002,Olivia,Murphy,Barista,2023-11-27,20,12.39,Part time,Pending,Available weekends
+P011,T003,Grace,Singh,Kitchen lead,2024-12-14,30,n/a,Part time,Pending,Prefers early shifts
+P012,T003,Mia,Singh,Kitchen assistant,2021-01-28,40,13.01,Full time, Yes ,Food hygiene refresher due
+P013,T003,Leo,Singh,Kitchen assistant,25/04/2021,40,12.87,Full time,No,Available weekends
+P014,T003,SOFIA,Williams,Kitchen assistant,2022-01-18,20,12.32,Part time,No,Food hygiene refresher due
+P015,T003,Theo,Thomas,Kitchen assistant,2022-05-11,35,12.80,Full time,Yes,Food hygiene refresher due
+P016,T004,Finn,Taylor,supervisor,2022-03-21,16,15.90,Part time,Yes,
+P017,T004,Sofia,Ahmed,Cafe assistant,04/11/2021,24,12.88,Part time,Yes,PREFERS EARLY SHIFTS
+P018,T004,Niamh,Brown,Cafe assistant,03/12/2023,20,13.06,Part time,n/a,-
+P019,T004,Finn,Reid,Cafe assistant,27/03/21,24,,Part time,yes,Food hygiene refresher due
+P020,T004,Noah,White,Cafe assistant,2023-07-01,16,13.63,Part time,Pending,Cover by agreement
+P021,T005,Hgo,Thompson,Head barista,2023-02-14,40,15.92,Full time, Y ,
+P022,T005,Isla,Taylor,Barista,2024-12-15,16,12.38,Part time,Yes,
+P023,T005,Arthur,Wilson,Barista,22/07/2022,35,13.12,Full time,Y,
+P024,T005,Daniel,ROBERTS, Barista ,2022-11-02,35,13.54,-,No,Prefers early shifts
+P025,T005,ZARA,Thompson,Barista,2022-06-19,16,13.05,Part time,Yes,
+P026,T006,Theo,Wright,Kitchen lead,26/11/2022,20,15.85,n/a,Yes,
+P027,T006,zara,clarke,Kitchen assistant,2023-06-13,30,13.65,Part time,no,Available weekends
+P028,T006,Mia,chen,Kitchen assistant,2021-10-17,35, 13.74 ,Full time,Y,Cover by agreement
+P029,T006,Isla,García,Kitcen assistant,2024-07-23,40,"12,41",Full time,Yes,-
+P030,T006,Finn,Clarke,Kitchen assistant,2023-09-13,30,12.36,Part time,Yes,Prefers early shifts
+P031,T007, Leo ,Khan,Supervisor,02/12/2022, 24 ,,Part time,No,Prefers early shifts
+P032,T007,Zara,Walker,Cafe assistant,,20,12.33,Part time,No,Available weekends
+P033,T007,Arjun,Smith,Cafe assistant,2024-02-28,16,13.01,Part time,Yes,
+P034,T007,Isla,Singh,Cafe assistant,17/08/2022,20, 13.09 , Part time ,Pending,
+P035,T007,Zara,Jones,CAFE ASSISTANT,2021-01-09,40,13.26,Full tie,Pending,Food hygiene refresher due
+P036,T008,Muhammad,Wright,Head barista,2021-12-05,20,15.48,Part time,Yes,Prefers early shifts
+P037,T008,Ella,Taylor,Barista,09/09/2024,24,13.77,Part time,Yes,Cover by agreemnet
+P038,T008,Sofia,García,BARISTA,2023-11-16,16,13.44,Part time,No,
+P039,T008,Ella,Brown,Barista,2024-12-10,40,12.88,Full time,Yes,Available weekends
+P040,T008,Harper,Murphy,Barista,2024-03-15,30,13.65,part time,No,n/a
+P041,T009,Noah,Walker,Kitchen lead,2023-10-03,40,15.35,Full time,Y,Available weekends
+P042,T009,Grace,green,Kitchen assistant,2022-11-26,20,13.36,Part time,Y,Prefers early shifts
+P043,T009,Olivia,Patel,Kitchen assistant,21/06/2023,16,13.79,Part time,Yes,
+P044,T009,Leo,Reid,Kitchen assistant,27/05/2024,16,12.60,PART TIME,Y,Cover by agreement
+P045,T009,Daniel,Khan,Kitchen assistant,22/01/2023,20,13.00,Part ime,No,
+P046,T010,Niamh,Singh,Supervisor,18/02/24,24,15.73,Part time,Y,
+P047,T010, Harper ,Roberts,Cafe assistant,2021-06-16,40,13.38,Full time, Yes ,
+P048,T010,Isla,Green,Cafe assistant,06/12/2022,24,13.52,,Yes,Available weekends
+P049,T010,Oscar,García,Cafe assistant,11/01/2021,35,12.76,Full time,Y,COVER BY AGREEMENT
+P050,T010,Rroy,Evans,Cafe  assistant,2022-11-20,16,13.18,Part time,Y,Food hygiene refresher due
+P051,T011,Freya,Thomas, Head barista ,2021-09-19,30,15.39,Part time,Yes,Available weekends
+P052,T011,ARTHUR,Roberts,Brista,2022-02-15,20,12.73,Part time,Yes,-
+P053,T011,Oliver,Clarke,Barista,2023-03-07,24,12.58,Part time,Yes,Food hygiene refresher due
+P054,T011,Noah,White,Barista,24/05/2021,16,12.55,Part time,YES,
+P055,T011,Sam,Reid,BARISTA,26/06/2021,16,12.43, Part time ,Pending,Cover by agreement
+P056,T012, Oscar ,Thompson,Kitchen lead,20/12/2021,20,15.99,Part time,Yes,
+P057,T012,Teo,Khan,,18/09/2021,30,12.84,Part time,No,
+P058,T012,Anika,Wilson,kitchen assistant,2023-02-08,16,13.24,Part time,Yes,Food hygiene refresher due
+P059,T012,Chloe,hughes,Kitchen assistant,2023-08-01,30,13.42,Part time,Yes,n/a
+P060,T012,Theo,green,Kitchen assistant,24/05/2024,40,12.31,Full time,y,Cover by agreement
+P061,T013,Oliver,SMITH,Supervisor,10/12/21,35,15.07,Full time,Yes,Food hygiene refresher due
+P062,T013,Feya,Edwards,Cafe assistant,14/10/22,40, 12.76 ,full time,Pendnig,Cover by agreement
+P063,T013,Hugo,Khan,Cafe assistant,16/11/2021,20,12.35,Part time,Yes,
+P064,T013,Arthur,Reid,n/a,2023-10-06,16,13.53,Part time,-,Food hygiene refresher due
+P065,T013,Arthur,Roberts,Cafe assistant,02/11/21,30,12.43,Part time,Y,
+P066,T014,George,O’Neill,Head barista,09/04/2021,24,14.87,Part time,Yes,Cover by agreement
+P067,T014,Sam,Johnson,Barista,2022-03-28,30,13.37,Part time,Y,
+P068,T014,Theo,Roberts,Barista,20/01/2021,24,12.51,Part time,No,
+P069,T014,Rory,EVANS,Barista,2022-04-23,24, 13.04 ,Part time,Y,Available weekends
+P070,T014,Muhammad,Thomas,BARISTA,22/10/21,20,13.28,Part time,Pending,Cover by agreement
+P071,T015,Harper,Huges,Kitchen lead,2024-11-24,16,15.44,Part time,YES,
+P072,T015,Ibrahim,Jones,Kitchen assistant,18/04/2022,20,12.59,part time,Y,
+P073,T015,Daniel,White,Kitchen assistant,2023-10-24,40,12.61,Full time,No,Food hygiene rferesher due
+P074,T015,Muhammad,Clarke,Kitchen assistant,10/05/21,24,13.19,Part time,No,-
+P075,T015,Sofia,johnson,Kitchen assistant,2021-12-21,40,13.21, Full time ,Yes,
+P076,T016,AVA,Taylor,Supervisor,27/02/21,16,15.39,Part time,No,Prefers early shifts
+P077,T016,Ella,Smith,Cafe assistant,16/10/2024,20,13.20,Part time,Yes,Available weekends
+P078,T016,Teho,White,Cafe assistant,21/06/2021,40,13.33,Full time,Yes,
+P079,T016,Ajrun,Taylor,Cafe assistant,2023-10-02,40,12.62,Full time,Yes,Food hygiene refresher ude
+P080,T016,Hugo,Green,Cafe assistant,17/07/2023,40,13.05,Full time,Yes, Prefers early shifts 
+P081,T017,Noah,Patel,Head barista,16/06/24,40,14.86,Full time,Pending,Cover by agreement
+P082,T017,Chloe,Walker,Barista,2021-05-28,20,12.50,Part time,No,
+P083,T017,Ava,Rberts,Barista,2022-12-22,40,13.60,Full time,Pending,Prefers early shifts
+P084,T017,Theo,Cen,Barista,01/08/2023,24,"12,66",Part time,Y,Prefers early shifts
+P085,T017,Sam,Davies,Barista,2024/10-06,40,12.43,Full time,Yes,
+P086,T018,Muhammad,Green,Kitchen lead,2022/08-05,30,15.74,Part time,Yes,Prefers early shifts
+P087,T018, Hugo ,Edwards,Kitchen assistant,24/12/2024,40,12.48,Fullt ime,Y,
+P088,T018,Chloe,Wilson,Kitchen assistant,2021-03-04,30,13.13,Part time,No,
+P089,T018,Harper,Hughes,Kitchen asisstant,10/08/22,30,"12,42",Part time,Yes,
+P090,T018,Arthur,Johnson,Kitchen assistant,24/04/2024,24,-,Part time,Yes,Food hygiene refresher due
+P091,T019,Ella,Evans,Supervisor,2021-12-22, 30 ,15.02,Part time,Yes,
+P092,T019,Finn,Thomas,CAFE ASSISTANT,02/10/23,20,13.52,Part time,No,Prefers early shifts
+P093,T019,Finn,Wilson,Cafe assistatn,2021-08-17,16,12.63,Part time,Y,FOOD HYGIENE REFRESHER DUE
+P094,T019,Oscar,Clarke,Cafe assistant,2022-12-10,16, 12.74 ,Part time,Yes, Available weekends 
+P095,T019,George,Ahmed,Cafe assistant,2024-05-06,30,13.04,Part time,Pending,Prefers early shifts
+P096,T020,Olivia,murphy,Head brista,2022-03-28,30,14.91,Part time,Yes,Cover by agreement
+P097,T020,Oliver,Ahmed,Barista,12/09/2022,40, 12.44 ,Full time,Yes,
+P098,T020,Aisha,Smith,Barista,2023-01-24,30,12.54,Part time,Y,Cover by agreement
+P099,T020,Arjun,Chen,Barista,04/04/2024,,13.11,Part time,Yes,
+P100,T020,Isla,JOHNSON,Barista,2023-05-19,20,12.49,Part time,Pending,Food hygiene refresher due
+P101,T021,Isla,Hughes,Kitchen lead,04/12/24,24,16.08,Part time,No,
+P102,T021,Harpre,Wright,Kitchen assistant,2022-02-25,40,13.32, Full time ,Pending,
+P103,T021,Finn,Johnson,n/a,2021-09-12,35,13.42,Ful ltime,No,Food hygiene refresher due
+P104,T021,Ava,Hughes,Kitchen assstant,21/08/22,35,13.56,Full time,Yes,
+P105,T021,Olivia,williams,Kitchen assistant,2023-06-28,35,13.04,Full time,Yes,
+P106,T022,Oliver,Walker,Supervisor,2023-11-10,30,15.54,Part time,Yes,Available weekends
+P107,T022,Muhammad,Taylor,Cafe assistant,17/03/2022,30,12.55,Part time,Yes,
+P108,T022,George,Smith,Cafe assistant,2023-06-24,16,13.77,Part time,Yes,Food hygiene refresher due
+P109,T022,Hugo, Brown ,Cafe assistant,27/04/2021,16,12.65,Part time,Yes,
+P110,T022,Ella,Davies,Cafe assistant,2024-08-14,20,12.46,Part time,No,
+P111,T023,Amelia,jones,HEAD BARISTA,2023-07-09,35,15.41,Full time,Pending,
+P112,T023,Ferya,Hughes,Barista,2021/09-10,20,12.66,Part time,Yes,Available weekends
+P113,T023,Olivia,Davies,Barista,2023-05-17,35,13.40,Full time,PENDING,
+P114,T023,Olivia,Patel,Barisat,2021-08-05,20,13.57,Part time,Y,
+P115,T023,Harper,García,Barista,08/05/2022,40,13.32,Full  time,Pending,
+P116,T024,Amelia,Wright,Kichen lead,2023-10-18,40?,15.90,Full time,Yes,
+P117,T024,Aisha,Clarke,Kitchen assistant,2021-06-10,35,13.50,Full time,Yes,
+P118,T024,Hugo,Campbell,Kitchen assistant,07/12/2022,30,12.80,Part time,No,
+P119,T024,Theo,Patel,Kitchen assistant,2023-06-11,16,12.64,Part time,Pending,Prefers early shifts
+P120,T024,Daniel,O’Neill,Kitchen assistant,01/03/23,24,12.58,Part time,yes,  
+P121,T025,Oliver,White,Supervisor,2023-06-05,35?,16.29,Full time,Yes,Available weekends
+P122,T025,Sofia,Evans,Cafe assistant,2023-04-18,24,12.50,-,Y,Food hygiene refresher due
+P123,T025,George,Thomas,Cafe assistant,2022-07-08,40,13.00,Full time,Yes,
+P124,T025,Ella,Wilsn,cafe assistant,2023-02-27,20,13.54,Part time,No,Available weekends
+P125,T025,Zara,Thomas,Cafe assistant,2022-01-07,16,12.68,Part time,Yes,Available weekends
+P126,T026,Sofia,Evans,Head barista,13/05/2021,40,16.26,Full time,No,Food hygiene refresher due
+P127,T026,Zara,O’Neill,Barista,2021-04-10,16,13.08,Part time,No,Prefers early shifts
+P128,T026,Rory,Singh,Barista,2023/06-15,40, 12.87 ,Full time,No,Prefers early shifts
+P129,T026, Theo ,Okaofr,Barista,2022-12-15,16,12.78,Part time,Yes,Food hygiene refresher due
+P130,T026, Sam ,Okafor,Barista,2022-08-27,16,12.37,Part tie,Yes,Cover by agreement
+P131,T027,Sofia,Roberts,Ktchen lead,26/07/2023,30,15.06,Part time,Yes,Prefers early shifts
+P132,T027,Hugo,Wilson,Kitchen assistant,2024-11-19,30,12.46,Part time,Yes,
+P133,T027,Ainka,Campbell,Kitchen assistant,2021-11-24,16,13.57,Part time,Pending,Cover by agreement
+P134,T027,Olivia,Khna,Kitchen assistant,2023-10-19, 30 ,12.89,Part time,Y,
+P135,T027,Oliver,Thomas,Kitchen  assistant,03/06/21,30,13.12,Part time,Yes,
+P136,T028,Noah,Edwards,Supervisor,2021-03-24,30,15.89,Part time,Y,
+P137,T028,Ava,Singh,Cafe assistant,2024-06-14,n/a,13.74, Part time ,Yes,Available weekends
+P138,T028,Noah,Murphy,Cafe assistant,25/06/2024,35,13.40,Full time,No,
+P139,T028,Grace,Hughes,Cafe assistant,2024/03-12,40,13.56,Full time,,COVER BY AGREEMENT
+P140,T028,Mia,Wilson,cafe assistant,2022-11-02,30,13.37,Part time,Pending,Available weekends
+P141,T029,Ella,Evans,Head barista,2023-09-14,16,15.27,part time,Y,Available weekends
+P142,T029, Hugo ,Williams,Barista,2023-11-17,35,13.00,Full time,No,Cover by agreement
+P143,T029,Daniel,Sith,Barista,2023-07-25,24,12.93,Part time,Pending,
+P144,T029,Olivia, Jones ,Barista,2022-10-25,40,12.85,Full time,Yes,Food hygiene refresher due
+P145,T029,Chloe,Davies,Braista,2024-07-15,35,12.40,Full time,No,Available weekends
+P146,T030,Noah,Smith,Kitchen lead,2024-08-10,30,16.13,Part time,Y,Prefers early shifts
+P147,T030,Ibrahim,Johnson,Kitchen assistant,2021/02-08,n/a,13.45,Part time,Yes,
+P148,T030,Isla,Campbell,Kitchen assistant,2023-07-23,16,"12,36",Part time,Y,Available weekends
+P149,T030,Amelia,Singh,Kitchen assistant,2024-12-17,24,13.42,PART TIME,Yes,Prefers early shifts
+P150,T030,Niamh,Roberts, Kitchen assistant ,2022/09-14,40,13.61, Full time ,Y,Prefers early shifts
+P151,T031,Hugo,Evans,Supervisor,28/01/2023,20,15.43,Part time,Pending,Available weekends
+P152,T031,oscar,Evans,Cafe assistant,2024/05-11,16,13.44,PART TIME,Pending,Prefers early shifts
+P153,T031,Olivia,Murphy,Cafe assistant,2023-02-23,24,12.72,Prt time,No,n/a
+P154,T031,OLIVER,Patel,Cafe assistant,2023-11-06,20,12.92,Part time,No,
+P155,T031,Grace,Hughes,Cafe assistant,06/03/2021,40,13.10,Full time,n/a,
+P156,T032,Muhammad,Smith,Head barista,2022-09-25,24,14.95,Part time,Y,
+P157,T032,George,O’Neill,Barista,03/02/2023,20,12.86,Part time,Yes,Prefers early shifts
+P158,T032,Anika,-,Barista,24/10/2022,24?,12.83,Part time,Y,Prefers early shifts
+P159,T032,Ava,Dvies,BARISTA,2021-11-18,40,13.25,Full time,Yes,Prefers early shifts
+P160,T032,MUHAMMAD,Walker,Barista,2021-01-01,16,13.17,Part time,Y,Available weekends
+P161,T033,hugo,Edwards,Kitchen lead,08/04/2024,20,15.03, Part time ,No,
+P162,T033,Oliver,Ahmed,Kitchen assistant,2021-12-16,35,13.65,Full time,Y,Cover by agreement
+P163,T033,oscar,Smith,Kitchen assistant,2021-05-03,20,13.52,Part time,Y,Prefers early shifts
+P164,T033,Muhammad,Rid,Kitchen assistnt,20/05/2023,24,12.65,Part time,No,Available weekends
+P165,T033,Ibrahim,Rberts,Kitchen assistant,05/12/2022,35,12.89,Full time,Yes,Food hygiene refresher due
+P166,T034,Anika,garcía,Supervisor,12/08/2023,40,15.30,full time,Yes,Available weekends
+P167,T034,Harper,Green,Cafe assistant,11/10/2023,30,12.41,Part time,Y,
+P168,T034,Huo,Roberts,Cafe assisatnt,2022-12-22,20,12.77,Part time,Pneding,
+P169,T034,Anika,Wright,Cafe assistant,2021-04-16,35,12.86,Full time,Pending,Prefers early shifts
+P170,T034,ella,White,Cafe assistant,09/10/2023,20,13.79,part time,Pending,FOOD HYGIENE REFRESHER DUE
+P171,T035,Daniel,Davies,Head barista,2023-03-12,20,15.66,part time,Pending,Prefers early shifts
+P172,T035,Arjun,MURPHY,Barista,2021/11-06,20,12.49,Part time,No,
+P173,T035,Anika,Walker,Barista,2021-11-12,40,13.10,Full time,Yes,Food hygiene refresher due
+P174,T035,Zara,Clarke,Barista,2021-10-20,30,13.36,Part time,no,Cover by agreement
+P175,T035,Grace,Johnson,Barista,2021-07-12,35,13.41,Full time,No,Food hygiene refresher due
+P176,T036,Noah, Khan ,Kitchen lead,05/11/2021,20,15.29, Part time ,pending,Prefers early shifts
+P177,T036,Chloe,Roberts,Kitchen assistant,2024-04-04,20,12.91,Part time,No,Cover by agreement
+P178,T036,Aisha,Roberts,Kitchen assistant,2023-04-09,20,13.50,Part time,Y,Available weekends
+P179,T036,Olivia,Thomas,Kitchen assistant,2024-09-27,40,12.87,Full time,No,Cover by agreement
+P180,T036,Anika,Walker,Kitchen assistant,2022-05-16,35,12.39,Ful ltime,Pending,Prefers early shifts

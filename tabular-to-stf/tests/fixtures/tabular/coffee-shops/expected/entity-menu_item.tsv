@@ -1,0 +1,201 @@
+menu_id	item_id \\ Descriptors	item_name	item_group	serving_size	item_price	item_cost	vegan	item_notes	item_price_uncertainty
+M001	I001	Cappuccino	Coffee	regular	3.90	0.82	No	Supplier may vary	No
+M001	I002	Oat latte	Coffee	large	4.40	1.07	Yes	Supplier may vary	No
+M001	I003	Filter coffee	Coffee	regular	3.10	0.44	Yes	Supplier may vary	No
+M001	I004	Butter croissant	Bakery	each	3.10	1.16	No	Subject to availability	No
+M001	I005	Iced latte	Coffee	large	4.20	0.95	No		No
+M001	I006	Apple juice	Cold drinks	250 ml	3.40	1.04		Supplier may vary	No
+M001	I007	Chai latte	Tea	regular	4.10	1.01	No		No
+M001	I008	Espresso	Coffee	single	2.80	0.49	Yes	Subject to availability	No
+M001	I009	Breakfast tea	Tea	pot	3.20	0.36	Yes	Supplier may vary	Yes
+M002	I010	Apple juice	Cold drinks	250 ml	3.50	1.08	Yes	Subject to availability	No
+M002	I011	Vegan brownie	Bakery	slice	3.80	1.25	Yes		No
+M002	I012	Americano	Coffee	regular	3.50	0.49	Yes	Ask about allergens	No
+M002	I013	Banana loaf	Bakery	slice	3.60	1.06	No	Made on site	No
+M002	I014		Coffee	regular	4.00	0.83	No	Subject to availability	No
+M002	I015	Espresso	Coffee	single	2.90	0.50	Yes		No
+M002	I016	Iced latte	Coffee	large	4.30	0.94	No	Supplier may vary	No
+M002	I017	Cappuccino	Coffee	regular	4.00	0.87	No	Supplier may vary	No
+M002	I018	Butter croissant	Bakery	each	3.20	1.10	No	Supplier may vary	No
+M003	I019	Flat white	Coffee	regular	3.90	0.78	No		No
+M003	I020	Chai latte	Tea	regular	4.10	0.99	No	Ask about allergens	No
+M003	I021	Oat latte	Coffee	large	4.40	1.09	Yes	Supplier may vary	No
+M003	I022	Iced latte	Coffee	large	4.20	0.92	No	Supplier may vary	No
+M003	I023	Cappuccino	Coffee	regular	3.90	0.82	No		No
+M003	I024	Banana loaf	Bakery	slice	3.50	1.02	No	Made on site	No
+M003	I025	Americano	Coffee	regular	3.40	0.53	Yes	Subject to availability	No
+M003	I026	Cheese toastie	Food	each	6.10	2.11	No	Supplier may vary	No
+M003	I027	Apple juice	Cold drinks	250 ml	3.40	1.06	Yes	Made on site	No
+M004	I028	Vegan brownie	Bakery	slice	3.80	1.25	Yes		No
+M004	I029	Banana loaf	Bakery	slice	3.60	0.99	No		No
+M004	I030	Chai latte	Tea	regular	4.20	0.97	No	Subject to availability	No
+M004	I031	Espresso	Coffee	single	2.90	0.46	Yes	Made on site	No
+M004	I032	Breakfast tea	Tea	pot	3.30	0.35	Yes		No
+M004	I033	Cappuccino	Coffee	regular	4.00	0.82	No		No
+M004	I034	Americano	Coffee	regular	3.50	0.54	Yes	Made on site	No
+M004	I035	Oat latte	Coffee	large	4.50	1.08	Yes	Ask about allergens	No
+M004	I036	Hot chocolate	Chocolate	regular	4.20	1.10	No		No
+M005	I037	Apple juice	Cold drinks	250 ml	3.40	1.04	Yes	Subject to availability	No
+M005	I038	Banana loaf	Bakery	slice	3.50	1.09	No	Made on site	No
+M005	I039	Butter croissant	Bakery		3.10	1.09	No	Subject to availability	No
+M005	I040	Flat white	Coffee	regular	3.90	0.79	No	Supplier may vary	No
+M005	I041	Oat latte	Coffee	large	4.40	0.99	Yes	Made on site	No
+M005	I042	Iced latte	Coffee	large	4.20	0.98	No	Supplier may vary	No
+M005	I043	Filter coffee	Coffee	regular	3.10	0.41	Yes	Supplier may vary	No
+M005	I044	Espresso	Coffee	single	2.80	0.49	Yes	Supplier may vary	No
+M005	I045	Vegan brownie	Bakery	slice	3.70	1.17	Yes		No
+M006	I046	Chai latte	Tea	regular	4.20	1.04	No	Supplier may vary	Yes
+M006	I047	Butter croissant	Bakery	each	3.20	1.04	No	Made on site	No
+M006	I048	Flat white	Coffee	regular	4.00	0.81	No	Made on site	No
+M006	I049	Filter coffee	Coffee	regular	3.20	0.41	Yes		No
+M006	I050	Iced latte	Coffee	large	4.30	0.95	No		No
+M006	I051	Breakfast tea	Tea	pot	3.30	0.35	Yes		No
+M006	I052	Espresso	Coffee	single	2.90	0.48	Yes	Ask about allergens	No
+M006	I053	Hot chocolate	Chocolate	regular	4.20	1.07	No	Ask about allergens	No
+M006	I054	Banana loaf	Bakery	slice	3.60	1.01	No	Ask about allergens	No
+M007	I055	Hot chocolate	Chocolate	regular	3.80	1.08	No	Made on site	No
+M007	I056	Iced latte	Coffee	large	3.90	0.90	No	Subject to availability	No
+M007	I057	Butter croissant	Bakery	each	2.80	1.14	No	Supplier may vary	No
+M007	I058	Filter coffee	Coffee	regular	2.80	0.42	Yes	Subject to availability	No
+M007	I059	Espresso	Coffee	single	2.50	0.47	Yes	Ask about allergens	No
+M007	I060	Lemon cake	Bakery	slice	3.50	1.20	No	Made on site	No
+M007	I061	Cappuccino	Coffee	regular	3.60	0.86	No	Subject to availability	No
+M007	I062	Vegan brownie	Bakery	slice	3.40	1.23	Yes	Ask about allergens	No
+M007	I063	Cheese toastie	Food	each	5.80	2.16	No		No
+M008	I064		Coffee	regular	3.70	0.80	No		No
+M008	I065	Flat white	Coffee	regular	3.70	0.86	No		No
+M008	I066	Banana loaf	Bakery	slice	3.30	1.10	No	Made on site	No
+M008	I067	Butter croissant	Bakery	each	2.90	1.11	No		No
+M008	I068	Espresso	Coffee	single	2.60	0.49	Yes		No
+M008	I069	Americano	Coffee	regular	3.20	0.53	Yes		No
+M008	I070	Cheese toastie	Food	each	5.90	2.04	No	Ask about allergens	No
+M008	I071	Chai latte	Tea	regular	3.90	1.00	No		No
+M008	I072	Apple juice	Cold drinks	250 ml	3.20	1.09	Yes	Ask about allergens	No
+M009	I073	Vegan brownie	Bakery	slice	3.40	1.25	Yes	Supplier may vary	No
+M009	I074	Iced latte	Coffee	large	3.90	0.97	No		No
+M009	I075	Lemon cake	Bakery	slice	3.50	1.18	No	Ask about allergens	No
+M009	I076	Chai latte	Tea	regular	3.80	0.96	No	Ask about allergens	No
+M009	I077	Hot chocolate	Chocolate	regular	3.80	1.09	No		No
+M009	I078	Apple juice	Cold drinks	250 ml	3.10	1.00	Yes	Made on site	No
+M009	I079	Oat latte	Coffee	large	4.10	1.08	Yes	Made on site	No
+M009	I080	Butter croissant	Bakery	each	2.80	1.12	No		No
+M010	I081	Iced latte	Coffee	large	4.00	0.98	No	Supplier may vary	No
+M010	I082	Breakfast tea	Tea	pot	3.00	0.34	Yes	Ask about allergens	No
+M010	I083	Cappuccino	Coffee	regular	3.70	0.80	No		No
+M010	I084	Oat latte	Coffee	large	4.20	1.08	Yes	Made on site	No
+M010	I085	Filter coffee	Coffee	regular	2.90	0.43	Yes	Made on site	Yes
+M010	I086	Espresso	Coffee	single	2.60	0.45	Yes		No
+M010	I087	Chai latte	Tea	regular	3.90	0.96	No	Subject to availability	No
+M010	I088	Americano	Coffee		3.20	0.55	Yes		No
+M011	I089	Oat latte	Coffee	large	4.10	1.02	Yes	Supplier may vary	No
+M011	I090	Breakfast tea	Tea	pot	2.90	0.37	Yes	Ask about allergens	No
+M011	I091	Cheese toastie	Food	each	5.80	2.06	No		No
+M011	I092	Butter croissant	Bakery	each	2.80	1.07	No	Made on site	Yes
+M011	I093	Chai latte	Tea	regular	3.80	0.94	No	Subject to availability	No
+M011	I094	Cappuccino		regular	3.60	0.84	No	Made on site	No
+M011	I095	Vegan brownie	Bakery	slice	3.40	1.22	Yes	Subject to availability	No
+M011	I096	Iced latte	Coffee	large		0.93	No	Ask about allergens	No
+M012	I097	Flat white	Coffee	regular	3.70	0.80	No	Supplier may vary	No
+M012	I098	Lemon cake	Bakery	slice	3.60	1.25	No		No
+M012	I099	Banana loaf	Bakery	slice	3.30	1.08	No		No
+M012	I100	Cappuccino	Coffee	regular	3.70		No	Supplier may vary	No
+M012	I101	Iced latte	Coffee	large	4.00	0.94	No		No
+M012	I102	Apple juice	Cold drinks	250 ml	3.20	1.01	Yes		No
+M012	I103	Espresso	Coffee	single	2.60	0.48	Yes	Ask about allergens	No
+M012	I104	Breakfast tea	Tea	pot	3.00	0.36	Yes	Subject to availability	No
+M013	I105	Hot chocolate	Chocolate	regular	3.80	1.04	No	Supplier may vary	No
+M013	I106	Apple juice	Cold drinks	250 ml	3.10	0.99	Yes		No
+M013	I107	Oat latte	Coffee	large	4.10	1.05	Yes		No
+M013	I108	Lemon cake	Bakery	slice	3.50	1.24	No		No
+M013	I109	Vegan brownie	Bakery	slice	3.40	1.26	Yes		No
+M013	I110	Filter coffee	Coffee	regular	2.80	0.39	Yes	Subject to availability	No
+M013	I111		Tea	regular	3.80	0.99	No		No
+M013	I112	Breakfast tea	Tea	pot	2.90	0.34	Yes	Ask about allergens	No
+M014	I113	Apple juice	Cold drinks	250 ml	3.20	1.05	Yes		No
+M014	I114	Lemon cake	Bakery	slice	3.60	1.14	No		No
+M014	I115	Cappuccino	Coffee	regular	3.70	0.80	No	Ask about allergens	No
+M014	I116	Banana loaf	Bakery	slice	3.30	1.05	No	Ask about allergens	No
+M014	I117	Filter coffee	Coffee	regular	2.90	0.44	Yes	Ask about allergens	No
+M014	I118	Chai latte	Tea	regular	3.90	0.99	No	Ask about allergens	No
+M014	I119	Hot chocolate	Chocolate	regular	3.90	1.13	No	Supplier may vary	No
+M014	I120	Iced latte	Coffee	large	4.00	0.92	No		No
+M015	I121	Filter coffee	Coffee	regular	2.80	0.41	Yes	Made on site	No
+M015	I122	Butter croissant	Bakery	each	2.80	1.04	No	Ask about allergens	No
+M015	I123	Cheese toastie	Food	each	5.80	2.07	No	Subject to availability	No
+M015	I124	Hot chocolate	Chocolate	regular	3.80	1.03	No		No
+M015	I125	Cappuccino	Coffee	regular	3.60	0.80	No	Subject to availability	No
+M015	I126	Espresso	Coffee	single	2.50	0.48	Yes	Ask about allergens	No
+M015	I127	Breakfast tea	Tea	pot	2.90	0.34	Yes		No
+M015	I128	Chai latte	Tea	regular	3.80	0.98	No		No
+M016	I129		Coffee	regular	3.70	0.83	No	Ask about allergens	No
+M016	I130	Lemon cake	Bakery	slice	3.60	1.17	No	Subject to availability	No
+M016	I131	Oat latte	Coffee	large	4.20	1.08	Yes		No
+M016	I132	Vegan brownie	Bakery	slice	3.50	1.16	Yes		No
+M016	I133	Iced latte	Coffee	large	4.00	0.98	No	Subject to availability	No
+M016	I134	Americano	Coffee	regular	3.20	0.50	Yes	Supplier may vary	No
+M016	I135	Hot chocolate	Chocolate	regular	3.90	1.06	No		No
+M016	I136	Flat white	Coffee	regular	3.70	0.85	No		No
+M017	I137	Vegan brownie	Bakery	slice	3.40	1.13	Yes	Supplier may vary	No
+M017	I138	Cheese toastie	Food	each	5.80	2.12	No	Made on site	No
+M017	I139	Butter croissant	Bakery	each	2.80	1.06	No	Supplier may vary	Yes
+M017	I140	Chai latte	Tea	regular	3.80	1.03	No	Supplier may vary	No
+M017	I141	Hot chocolate	Chocolate	regular	3.80	1.09	No		No
+M017	I142	Lemon cake	Bakery	slice	3.50	1.23	No	Made on site	No
+M017	I143	Flat white	Coffee	regular	3.60	0.86	No	Made on site	No
+M017	I144	Iced latte	Coffee	large	3.90	0.94	No		No
+M018	I145	Vegan brownie	Bakery	slice	3.50	1.26	Yes	Subject to availability	No
+M018	I146	Filter coffee	Coffee	regular	2.90		Yes	Supplier may vary	No
+M018	I147	Espresso	Coffee	single	2.60	0.47			No
+M018	I148	Breakfast tea	Tea	pot	3.00	0.36	Yes	Subject to availability	No
+M018	I149	Hot chocolate	Chocolate	regular	3.90	1.09	No	Made on site	No
+M018	I150	Americano	Coffee	regular	3.20	0.50	Yes	Subject to availability	No
+M018	I151	Cappuccino	Coffee	regular	3.70	0.84	No	Ask about allergens	No
+M018	I152	Flat white	Coffee	regular	3.70	0.79	No	Supplier may vary	No
+M019	I153	Oat latte	Coffee	large	4.10	1.05	Yes		No
+M019	I154	Chai latte	Tea	regular	3.80	1.04	No	Subject to availability	No
+M019	I155	Americano	Coffee	regular		0.49	Yes	Ask about allergens	No
+M019	I156	Hot chocolate	Chocolate	regular	3.80	1.13	No	Ask about allergens	No
+M019	I157	Apple juice	Cold drinks	250 ml	3.10	1.07	Yes	Supplier may vary	Yes
+M019	I158	Vegan brownie	Bakery	slice	3.40	1.22	Yes	Made on site	No
+M019	I159	Flat white	Coffee	regular	3.60	0.82	No	Ask about allergens	No
+M019	I160	Iced latte	Coffee	large	3.90	0.96	No	Supplier may vary	No
+M020	I161	Apple juice	Cold drinks	250 ml	3.20	1.08	Yes		No
+M020	I162	Chai latte	Tea	regular	3.90	1.01	No		No
+M020	I163	Americano	Coffee	regular	3.20	0.49	Yes	Supplier may vary	No
+M020	I164	Filter coffee	Coffee	regular	2.90	0.40	Yes	Made on site	No
+M020	I165	Espresso	Coffee	single	2.60	0.44	Yes		No
+M020	I166	Lemon cake	Bakery	slice	3.60	1.16	No		No
+M020	I167	Cheese toastie	Food	each	5.90	2.14	No	Supplier may vary	No
+M020	I168	Flat white	Coffee	regular	3.70	0.80	No	Made on site	No
+M021	I169	Oat latte	Coffee	large	4.10	1.04	Yes	Subject to availability	No
+M021	I170	Banana loaf	Bakery	slice	3.20	1.06	No		No
+M021	I171	Chai latte	Tea		3.80	0.94	No		No
+M021	I172	Flat white	Coffee	regular	3.60	0.84	No	Supplier may vary	No
+M021	I173	Iced latte	Coffee	large	3.90	0.98	No	Supplier may vary	No
+M021	I174	Filter coffee	Coffee	regular	2.80	0.43	Yes		No
+M021	I175	Butter croissant	Bakery	each	2.80	1.13	No	Ask about allergens	No
+M021	I176	Espresso	Coffee	single	2.50	0.44	Yes	Supplier may vary	No
+M022	I177	Filter coffee	Coffee	regular	2.90	0.44	Yes	Supplier may vary	No
+M022	I178	Butter croissant	Bakery	each	2.90	1.14	No		No
+M022	I179	Vegan brownie	Bakery	slice	3.50	1.20	Yes		No
+M022	I180	Espresso	Coffee	single	2.60	0.49	Yes	Made on site	No
+M022	I181	Apple juice	Cold drinks	250 ml	3.20	1.00	Yes		No
+M022	I182		Bakery	slice	3.30	1.08	No	Ask about allergens	No
+M022	I183	Americano	Coffee	regular	3.20	0.53	Yes	Subject to availability	No
+M022	I184	Lemon cake	Bakery	slice	3.60	1.16	No	Made on site	No
+M023	I185	Americano	Coffee	regular	3.10	0.51	Yes	Made on site	No
+M023	I186	Cappuccino	Coffee	regular	3.60	0.79	No		No
+M023	I187	Breakfast tea	Tea	pot	2.90	0.34	Yes		No
+M023	I188	Oat latte	Coffee	large	4.10	1.00	Yes	Supplier may vary	No
+M023	I189	Butter croissant	Bakery	each	2.80	1.04	No	Made on site	No
+M023	I190	Hot chocolate	Chocolate		3.80	1.06	No	Ask about allergens	No
+M023	I191	Cheese toastie	Food	each	5.80	2.16	No	Ask about allergens	No
+M023	I192	Apple juice	Cold drinks	250 ml	3.10	1.11	Yes	Supplier may vary	Yes
+M024	I193	Filter coffee	Coffee	regular	2.90	0.41	Yes	Supplier may vary	No
+M024	I194	Oat latte	Coffee	large	4.20	1.03	Yes	Made on site	No
+M024	I195	Cheese toastie	Food	each	5.90	2.11	No	Made on site	No
+M024	I196	Americano	Coffee	regular	3.20	0.54	Yes	Made on site	No
+M024	I197	Breakfast tea	Tea	pot	3.00	0.37			No
+M024	I198	Hot chocolate	Chocolate	regular	3.90	1.02	No	Subject to availability	No
+M024	I199	Cappuccino	Coffee	regular	3.70	0.85	No	Supplier may vary	No
+M024	I200	Iced latte	Coffee	large	4.00	0.89	No		No
