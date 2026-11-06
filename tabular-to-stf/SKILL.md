@@ -142,8 +142,10 @@ When many values share a shape, such as `40?`, `35?` and `24?`, a transform
 can use a pattern instead of listing each value (`"match": "regex"`). A
 pattern can match more than you meant, so such a transform is never `auto`.
 Write it into the spec as `proposed`, then run
-`uv run scripts/stf.py preview <work>/curation-spec.json <n>`, where `<n>` is
-its index in `transforms`. Read the output: the values it would change, any
+`uv run scripts/stf.py preview <spec.json> <n>` on the current spec
+(`<work>/curation-spec.json` before the first render,
+`<out>/curation-spec.json` after it), where `<n>` is its index in
+`transforms`. Read the output: the values it would change, any
 ambiguous ones, and the values it leaves alone. Use `--bottom N` to look for
 rare values the pattern missed. Show the user what it changes and anything
 suspicious it leaves, then set it to `user` if they accept, or `rejected`

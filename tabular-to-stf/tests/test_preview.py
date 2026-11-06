@@ -84,9 +84,16 @@ def test_top_and_bottom_do_not_repeat_values():
 
 
 def test_unmatched_empty_cells_are_counted_not_listed():
-    text = preview_transform(spec(STRIP), ages("", "", "1?"), 0)
-    assert "Unmatched: 0 distinct values, 0 cells; 2 empty cells" in text
+    text = preview_transform(spec(STRIP), ages("", "", "1?", "x"), 0)
+    assert "Unmatched: 1 distinct value, 1 cell; 2 empty cells" in text
     assert '  ""' not in text
+    assert "Unmatched: 2 empty cells" in preview_transform(spec(STRIP), ages("", "", "1?"), 0)
+
+
+def test_derive_column_says_empty_cells_get_the_default():
+    s = spec(T("derive-column", column="u", match="regex", map={r"~.*": "Yes"}, default="No", **{"from": "age"}))
+    text = preview_transform(s, ages("~3", ""), 0)
+    assert 'Unmatched: 1 empty cell → "No" (default)' in text.split("\n")
 
 
 def test_matched_empty_cells_are_listed():

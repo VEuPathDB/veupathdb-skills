@@ -82,12 +82,30 @@ def test_regex_matches_empty_cells_too():
     assert [r[1] for r in out["p"].rows] == ["x", "x", "x"]
 
 
-def test_ambiguous_regex_fails_naming_row_ids():
-    t = {"p": mk(["id", "age"], [["P1", "3?"], ["P2", "4"]])}
+def test_ambiguous_regex_fails_naming_row_ids_and_values():
+    t = {"p": mk(["id", "age"], [["P1", "3?"], ["P2", "4"], ["P3", "3?"]])}
     with pytest.raises(TransformError, match=re.escape(
-            'values in column "age" match more than one key with different results for row IDs: P1; '
-            "tighten the patterns or settle them with replace-cells before this transform")):
+            'values in column "age" match more than one key with different results for row IDs: P1, P3 '
+            '(values "3?"); tighten the patterns or settle them with replace-cells before this transform '
+            "(stf.py preview shows the keys)")):
         run([T("map-values", column="age", match="regex", map={r".*\?": "a", r"\d\?": "b"})], t)
+
+
+@pytest.mark.parametrize("transform", [
+    T("map-values", column="age", map={"80+": "80"}),
+    T("blank-placeholders", values=["NA"]),
+    T("derive-column", column="c", map={"80+": "Yes"}, default="No", **{"from": "age"}),
+    T("blank-placeholders", match="regex", values=["N.?A"]),
+])
+def test_no_ambiguity_pass_when_results_cannot_differ(monkeypatch, transform):
+    # Exact keys are unique, and keys that all give one result cannot disagree, so
+    # the extra pass over the table (costly at 1M rows) must be skipped.
+    import _match
+
+    def fail(hits):
+        raise AssertionError("ambiguity check ran")
+    monkeypatch.setattr(_match.ValueMatcher, "is_ambiguous", staticmethod(fail))
+    run([transform])
 
 
 def test_ambiguous_derive_column_names_the_source_column():

@@ -70,10 +70,11 @@ def _value_section(t: dict, column: str, cells: list[str], top: int, bottom: int
     out += _capped(matched, matched_line, top, bottom)
     out.append(f"Ambiguous: {_summary(ambiguous)}" if ambiguous else "Ambiguous: none")
     out += [ambiguous_line(v, n) for v, n in ambiguous]
-    if unmatched or empty:
-        out.append(f"Unmatched: {_summary(unmatched)}" + (f"; {_plural(empty, 'empty cell')}" if empty else ""))
-    else:
-        out.append("Unmatched: none")
+    parts = [_summary(unmatched)] if unmatched else []
+    if empty:
+        default = f" → {js_json(fallback)} (default)" if fallback is not None else ""
+        parts.append(f"{_plural(empty, 'empty cell')}{default}")
+    out.append(f"Unmatched: {'; '.join(parts)}" if parts else "Unmatched: none")
     out += _capped(unmatched, unmatched_line, top, bottom)
     return out
 

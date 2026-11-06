@@ -178,29 +178,39 @@ def _apply_one(t, index, table, id_column, renames):
     def value_rule_for(indexes):
         """A cached cell -> new value function for a MATCH_OPS transform; fails on ambiguous cells."""
         matcher, fallback = value_rule(t)
+        if not matcher.regex:
+            # Exact keys are unique, so no cell is ambiguous: a plain lookup, no extra pass.
+            m = matcher.mapping
+            return lambda v: m[v] if v in m else (v if fallback is None else fallback)
         cache = {}
+        # Keys that all give one result cannot disagree, so skip the ambiguity pass.
+        can_disagree = len(set(matcher.mapping.values())) > 1 or any("$" in v for v in matcher.mapping.values())
 
         def resolve(v):
             if v not in cache:
                 hits = matcher.hits(v)
-                if ValueMatcher.is_ambiguous(hits):
+                if can_disagree and ValueMatcher.is_ambiguous(hits):
                     cache[v] = _AMBIGUOUS
                 else:
                     cache[v] = hits[0][1] if hits else (v if fallback is None else fallback)
             return cache[v]
 
+        if not can_disagree:
+            return resolve
         rid = _id_index(table, id_column, renames)
-        ambiguous = [
-            row[rid] if rid >= 0 else f"row {r + 1}"
-            for r, row in enumerate(table.rows)
-            if any(resolve(row[c]) is _AMBIGUOUS for c in indexes)
-        ]
+        ambiguous, values = [], {}
+        for r, row in enumerate(table.rows):
+            bad = [row[c] for c in indexes if resolve(row[c]) is _AMBIGUOUS]
+            if bad:
+                ambiguous.append(row[rid] if rid >= 0 else f"row {r + 1}")
+                values.update(dict.fromkeys(bad))
         if ambiguous:
             name = table.headers[indexes[0]] if len(indexes) == 1 else ", ".join(table.headers[c] for c in indexes)
             raise TransformError(
                 f"{where}: values in column {js_json(name)} match more than one key with different results "
-                f"for row IDs: {', '.join(ambiguous)}; tighten the patterns or settle them with replace-cells "
-                f"before this transform"
+                f"for row IDs: {', '.join(ambiguous)} (values {', '.join(js_json(v) for v in values)}); "
+                f"tighten the patterns or settle them with replace-cells before this transform "
+                f"(stf.py preview shows the keys)"
             )
         return resolve
 
