@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["ruamel.yaml>=0.18"]
+# dependencies = ["ruamel.yaml>=0.18,<0.20"]
 # ///
 """stf.py - tabular-to-stf command line.
 

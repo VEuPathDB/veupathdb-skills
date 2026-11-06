@@ -70,7 +70,7 @@ Tests and gold standards are in `veupathdb_database/TESTS.md`; run them with
 ### tabular-to-stf
 
 From `tabular-to-stf/`, run
-`uv run --with pytest --with "ruamel.yaml>=0.18" python -m pytest tests -q`. The golden
+`uv run --with pytest --with "ruamel.yaml>=0.18,<0.20" python -m pytest tests -q`. The golden
 tests render the fixtures in `tests/fixtures/tabular/` and compare them with each
 `expected/` directory. Two groups are skipped by default:
 the container tests (set `STF_CONTAINER_TESTS=1`; needs Docker or Podman and the pinned
