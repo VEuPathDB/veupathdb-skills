@@ -110,6 +110,85 @@ def test_parse_dates_takes_format_or_formats(fields, error):
     assert validate_spec(s) == ([] if error is None else [error])
 
 
+def regex_spec(*transforms, version="1.1.0"):
+    s = minimal_spec()
+    s["specVersion"] = version
+    s["transforms"] = [{"entity": "participant", "reason": "r", "approval": "user", **t} for t in transforms]
+    return s
+
+
+MAP = {"op": "map-values", "column": "age", "match": "regex"}
+
+
+def test_regex_transforms_with_user_approval_are_valid():
+    s = regex_spec(
+        {**MAP, "map": {"(\\d+)\\?": "$1"}},
+        {"op": "derive-column", "column": "age_uncertain", "from": "age", "match": "regex",
+         "map": {"~.*": "Yes"}, "default": "No"},
+        {"op": "blank-placeholders", "match": "regex", "values": ["n\\.?a\\.?"]},
+        {"op": "map-values", "column": "age", "match": "exact", "map": {"a": "b"}},
+    )
+    assert validate_spec(s) == []
+
+
+def test_exact_map_value_with_dollar_is_valid():
+    s = regex_spec({"op": "map-values", "column": "age", "map": {"80+": "$80"}, "approval": "auto"})
+    assert validate_spec(s) == []
+
+
+def test_match_must_be_exact_or_regex():
+    s = regex_spec({**MAP, "match": "glob", "map": {}})
+    assert validate_spec(s) == ['transforms[0].match: must be "exact" or "regex"']
+
+
+def test_match_only_on_the_three_ops():
+    s = regex_spec({"op": "trim", "match": "regex"})
+    assert validate_spec(s) == [
+        "transforms[0].match: only map-values, derive-column and blank-placeholders take match"]
+
+
+def test_match_on_a_1_0_0_spec_is_refused():
+    s = regex_spec({**MAP, "map": {"a": "b"}}, version="1.0.0")
+    assert validate_spec(s) == ["transforms[0].match: needs specVersion 1.1.0 or later"]
+
+
+def test_regex_cannot_be_auto():
+    s = regex_spec({**MAP, "map": {"a": "b"}, "approval": "auto"})
+    assert validate_spec(s) == ['transforms[0].approval: "auto" is not allowed with match "regex"; use "user"']
+
+
+def test_regex_blank_placeholders_of_unambiguous_values_still_cannot_be_auto():
+    s = regex_spec({"op": "blank-placeholders", "match": "regex", "values": ["NA"], "approval": "auto"})
+    assert validate_spec(s) == ['transforms[0].approval: "auto" is not allowed with match "regex"; use "user"']
+
+
+def test_invalid_pattern_is_reported():
+    s = regex_spec({**MAP, "map": {"(\\d+": "x"}},
+                   {"op": "blank-placeholders", "match": "regex", "values": ["["]})
+    errors = validate_spec(s)
+    assert len(errors) == 2
+    assert errors[0].startswith('transforms[0].map: invalid pattern "(\\\\d+": missing )')
+    assert errors[1].startswith('transforms[1].values: invalid pattern "[": ')
+
+
+def test_bad_replacement_is_reported():
+    s = regex_spec({**MAP, "map": {"(\\d+)": "x$"}})
+    assert validate_spec(s) == [
+        'transforms[0].map: replacement "x$": "$" must be followed by a group number or "$"']
+
+
+def test_replacement_group_beyond_the_pattern_is_reported():
+    s = regex_spec({**MAP, "map": {"(\\d+)\\?": "$2"}})
+    assert validate_spec(s) == [
+        'transforms[0].map: replacement "$2" refers to group 2, but pattern "(\\\\d+)\\\\?" has 1 group(s)']
+
+
+def test_derive_column_default_is_not_a_template():
+    s = regex_spec({"op": "derive-column", "column": "u", "from": "age", "match": "regex",
+                    "map": {"~.*": "Yes"}, "default": "$"})
+    assert validate_spec(s) == []
+
+
 def test_bad_data_type_name_approval_missing_instead_unknown_entity():
     s = minimal_spec()
     s["entities"][1]["variables"][0]["dataType"] = "float"
