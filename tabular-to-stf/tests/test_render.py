@@ -241,6 +241,22 @@ def test_render_notes_lists_row_ids_for_user_value_changes_capped_at_10_and_not_
     assert "Q1" not in notes
 
 
+def test_render_notes_marks_regex_transforms():
+    s = spec([{"column": "a"}])
+    s["transforms"] = [
+        {"op": "map-values", "entity": "p", "column": "a", "match": "regex", "map": {"(\\d+)\\?": "$1"},
+         "approval": "user", "reason": "unsure"},
+        {"op": "map-values", "entity": "p", "column": "a", "map": {"x": "y"}, "approval": "user", "reason": "typo"},
+    ]
+    notes = render_notes(s, [
+        {"index": 0, "op": "map-values", "entity": "p", "column": "a", "approval": "user", "cellsChanged": 1, "ids": ["P1"]},
+        {"index": 1, "op": "map-values", "entity": "p", "column": "a", "approval": "user", "cellsChanged": 0, "ids": []},
+    ])
+    # Values are JSON-quoted in the notes, so a pattern reads as it does in the spec file.
+    assert '`p.a`: "(\\\\d+)\\\\?" → "$1" (regex), 1 cell changed (row P1). Reason: unsure' in notes
+    assert '`p.a`: "x" → "y", 0 cells changed. Reason: typo' in notes
+
+
 def test_render_notes_names_every_parse_dates_format():
     s = spec([{"column": "a"}])
     s["transforms"] = [

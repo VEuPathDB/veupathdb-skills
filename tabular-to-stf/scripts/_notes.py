@@ -74,6 +74,8 @@ def _row_ids(t: dict, entry: dict | None) -> str:
 
 def _line(t: dict, entry: dict | None = None) -> str:
     target, text = _describe(t)
+    if t.get("match") == "regex":
+        text += " (regex)"
     count = f", {plural(entry['cellsChanged'], 'cell')} changed{_row_ids(t, entry)}" if entry and t["op"] in COUNTED else ""
     instead = f" Instead: {t.get('instead')}" if t.get("approval") == "rejected" else ""
     return f"- {target}: {text}{count}. Reason: {t.get('reason')}{instead}"

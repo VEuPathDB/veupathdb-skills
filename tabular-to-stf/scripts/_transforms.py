@@ -19,10 +19,12 @@ import datetime
 import re
 
 from _common import is_valid_iso_date
+from _match import ValueMatcher
 from _read_table import Table
 from _spec import js_json
 
 SKIPPED = ("proposed", "rejected")
+_AMBIGUOUS = object()
 
 # What JavaScript's String.prototype.trim strips (differs from str.strip).
 _JS_WHITESPACE = (
@@ -45,6 +47,24 @@ class TransformError(ValueError):
 def date_formats(t: dict) -> list[str]:
     """A parse-dates transform's formats: `formats`, or the single `format`."""
     return list(t["formats"]) if "formats" in t else [t["format"]]
+
+
+def value_rule(t: dict) -> tuple[ValueMatcher, str | None]:
+    """The matcher for a MATCH_OPS transform, and the value for cells no key matches
+    (derive-column's default; None means the cell stays as it is)."""
+    regex = t.get("match") == "regex"
+    if t["op"] == "blank-placeholders":
+        return ValueMatcher({v: "" for v in t["values"]}, regex), None
+    return ValueMatcher(t["map"], regex), t["default"] if t["op"] == "derive-column" else None
+
+
+def value_columns(t: dict, headers: list[str]) -> list[str]:
+    """The columns a MATCH_OPS transform reads."""
+    if t["op"] == "map-values":
+        return [t["column"]]
+    if t["op"] == "derive-column":
+        return [t["from"]]
+    return list(t["columns"]) if t.get("columns") is not None else list(headers)
 
 
 def _copy_table(t: Table) -> Table:
@@ -155,15 +175,43 @@ def _apply_one(t, index, table, id_column, renames):
                 note_row(row, r)
         return n
 
+    def value_rule_for(indexes):
+        """A cached cell -> new value function for a MATCH_OPS transform; fails on ambiguous cells."""
+        matcher, fallback = value_rule(t)
+        cache = {}
+
+        def resolve(v):
+            if v not in cache:
+                hits = matcher.hits(v)
+                if ValueMatcher.is_ambiguous(hits):
+                    cache[v] = _AMBIGUOUS
+                else:
+                    cache[v] = hits[0][1] if hits else (v if fallback is None else fallback)
+            return cache[v]
+
+        rid = _id_index(table, id_column, renames)
+        ambiguous = [
+            row[rid] if rid >= 0 else f"row {r + 1}"
+            for r, row in enumerate(table.rows)
+            if any(resolve(row[c]) is _AMBIGUOUS for c in indexes)
+        ]
+        if ambiguous:
+            name = table.headers[indexes[0]] if len(indexes) == 1 else ", ".join(table.headers[c] for c in indexes)
+            raise TransformError(
+                f"{where}: values in column {js_json(name)} match more than one key with different results "
+                f"for row IDs: {', '.join(ambiguous)}; tighten the patterns or settle them with replace-cells "
+                f"before this transform"
+            )
+        return resolve
+
     if op == "trim":
         return with_ids({"cellsChanged": map_cells(cols(), lambda v: v.strip(_JS_WHITESPACE))})
     if op == "blank-placeholders":
-        values = t["values"]
-        return with_ids({"cellsChanged": map_cells(cols(), lambda v: "" if v in values else v)})
+        indexes = cols()
+        return with_ids({"cellsChanged": map_cells(indexes, value_rule_for(indexes))})
     if op == "map-values":
         c = col(t["column"])
-        m = t["map"]
-        return with_ids({"column": t["column"], "cellsChanged": map_cells([c], lambda v: m[v] if v in m else v)})
+        return with_ids({"column": t["column"], "cellsChanged": map_cells([c], value_rule_for([c]))})
     if op == "rename-column":
         c = col(t["from"])
         if t["from"] != t["to"] and t["to"] in table.headers:
@@ -240,10 +288,10 @@ def _apply_one(t, index, table, id_column, renames):
         src = col(t["from"])
         if t["column"] in table.headers:
             raise TransformError(f"{where}: column {js_json(t['column'])} already exists")
+        resolve = value_rule_for([src])
         table.headers.append(t["column"])
-        m = t["map"]
         for row in table.rows:
-            row.append(m[row[src]] if row[src] in m else t["default"])
+            row.append(resolve(row[src]))
         return {"column": t["column"], "cellsChanged": 0}
     if op == "drop-column":
         c = col(t["column"])
@@ -254,12 +302,19 @@ def _apply_one(t, index, table, id_column, renames):
     raise TransformError(f"{where}: unknown op")
 
 
-def apply_transforms(tables: dict[str, Table], spec: dict) -> tuple[dict[str, Table], list[dict]]:
+def apply_transforms(tables: dict[str, Table], spec: dict, *, upto: int | None = None,
+                     entity: str | None = None) -> tuple[dict[str, Table], list[dict]]:
+    """Runs the transforms with index < upto (all if None); with entity, only that entity's,
+    and the others are not logged. Logged indexes are the spec's."""
     out = {name: _copy_table(t) for name, t in tables.items()}
     id_columns = {e["name"]: e.get("idColumn") for e in spec.get("entities") or []}
     transforms = spec.get("transforms") or []
     log = []
     for index, t in enumerate(transforms):
+        if upto is not None and index >= upto:
+            break
+        if entity is not None and t["entity"] != entity:
+            continue
         entry = {
             "index": index,
             "op": t["op"],

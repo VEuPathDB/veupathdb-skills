@@ -53,6 +53,70 @@ def test_blank_placeholders():
     assert log[0]["cellsChanged"] == 1
 
 
+def uncertain():
+    return {"p": mk(["id", "age"], [["P1", "40?"], ["P2", "~35"], ["P3", "35"]])}
+
+
+def test_map_values_regex_with_capture():
+    out, log = run([T("map-values", column="age", match="regex", map={r"(\d+)\?": "$1"}),
+                    T("map-values", column="age", match="regex", map={r"~(\d+)": "$1"})], uncertain())
+    assert [r[1] for r in out["p"].rows] == ["40", "35", "35"]
+    assert log[0]["ids"] == ["P1"] and log[1]["ids"] == ["P2"]
+    assert log[0]["cellsChanged"] == 1
+
+
+def test_derive_column_regex_flag_before_strip():
+    out, _ = run([T("derive-column", column="age_uncertain", match="regex",
+                    map={r"~.*": "Yes", r".*\?": "Yes"}, default="No", **{"from": "age"})], uncertain())
+    assert [r[2] for r in out["p"].rows] == ["Yes", "Yes", "No"]
+
+
+def test_blank_placeholders_regex():
+    t = {"p": mk(["id", "v"], [["A", "n.a."], ["B", "N/A"], ["C", "nan"]])}
+    out, _ = run([T("blank-placeholders", match="regex", values=[r"(?i)n\.?/?a\.?"], columns=["v"])], t)
+    assert [r[1] for r in out["p"].rows] == ["", "", "nan"]
+
+
+def test_regex_matches_empty_cells_too():
+    out, _ = run([T("map-values", column="age", match="regex", map={".*": "x"})])
+    assert [r[1] for r in out["p"].rows] == ["x", "x", "x"]
+
+
+def test_ambiguous_regex_fails_naming_row_ids():
+    t = {"p": mk(["id", "age"], [["P1", "3?"], ["P2", "4"]])}
+    with pytest.raises(TransformError, match=re.escape(
+            'values in column "age" match more than one key with different results for row IDs: P1; '
+            "tighten the patterns or settle them with replace-cells before this transform")):
+        run([T("map-values", column="age", match="regex", map={r".*\?": "a", r"\d\?": "b"})], t)
+
+
+def test_ambiguous_derive_column_names_the_source_column():
+    t = {"p": mk(["id", "age"], [["P1", "3?"]])}
+    with pytest.raises(TransformError, match='values in column "age" match more than one key'):
+        run([T("derive-column", column="u", match="regex", map={r".*\?": "a", r"\d\?": "b"},
+               default="n", **{"from": "age"})], t)
+
+
+def test_overlapping_keys_with_the_same_result_are_fine():
+    t = {"p": mk(["id", "age"], [["P1", "~3?"]])}
+    out, _ = run([T("derive-column", column="u", match="regex", map={r"~.*": "Yes", r".*\?": "Yes"},
+                    default="No", **{"from": "age"})], t)
+    assert out["p"].rows[0][2] == "Yes"
+
+
+def test_exact_mode_value_with_dollar_is_literal():
+    out, _ = run([T("map-values", column="age", map={"80+": "$1"})])
+    assert out["p"].rows[0][1] == "$1"
+
+
+def test_upto_and_entity_limit_the_run_and_keep_spec_indexes():
+    s = {"entities": [{"name": "p", "idColumn": "id"}, {"name": "q", "idColumn": "id"}],
+         "transforms": [T("trim"), {**T("trim"), "entity": "q"}, T("drop-column", column="note")]}
+    out, log = apply_transforms(tables(), s, upto=2, entity="p")
+    assert [e["index"] for e in log] == [0]
+    assert "note" in out["p"].headers
+
+
 def test_map_values_exact_match_only():
     out, log = run([T("map-values", column="age", map={"80+": "80", "5": "5"})])
     assert [r[1] for r in out["p"].rows] == ["80", "5", ""]
