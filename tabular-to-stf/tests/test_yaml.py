@@ -417,3 +417,12 @@ def test_dump_layout_block_style_indented_sequences_and_empty_lists():
 def test_dump_does_not_fold_long_lines():
     long = " ".join(["word"] * 300)
     assert dump_yaml({"definition": long}) == f"definition: {long}\n"
+
+
+@pytest.mark.parametrize("s", ["a  b" * 2000, "yes  " + "a  b" * 2000])
+def test_very_long_strings_with_double_spaces_round_trip_on_one_line(s):
+    from ruamel.yaml import YAML
+    text = dump_yaml({"k": s})
+    assert text.count("\n") == 1, "the scalar was folded"
+    assert load_stf_yaml(text)[0]["k"] == s
+    assert YAML(typ="safe", pure=True).load("%YAML 1.1\n---\n" + text)["k"] == s

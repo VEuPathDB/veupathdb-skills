@@ -10,6 +10,7 @@ aliases, tags, extra documents and flow mappings with content.
 import io
 import json
 import re
+import sys
 from typing import Any
 
 from ruamel.yaml import YAML
@@ -107,7 +108,7 @@ def dump_yaml(data: Any) -> str:
     yaml.Representer = _Representer
     yaml.Resolver = _PlainValueResolver
     yaml.indent(mapping=2, sequence=4, offset=2)
-    yaml.width = 4096
+    yaml.width = sys.maxsize  # never fold: a fold inside a double space loses a space on read-back
     out = io.StringIO()
     yaml.dump(data, out)
     return out.getvalue()
