@@ -30,6 +30,16 @@ alone. Input files are never modified.
 check: checks an STF directory (study.yaml, entity-<name>.{tsv,yaml}) for the
 problems that stop study-wrangler loading it. Read-only. Prints ERROR:/WARNING:
 lines, or JSON with --json, and exits 1 if there are errors.
+
+  stf.py validate <stfDir> [--engine docker|podman]
+  stf.py validate --detect
+
+validate: validates an STF directory with study-wrangler in its pinned
+container (baseline and eda profiles, geo variables inferred). Needs docker or
+podman and the image already present; never pulls it. Prints the validator
+output, then "Result: pass|fail|error|load-error". Exits 0 on pass, 1 on fail,
+2 on error or load-error, 3 when there is no container engine. --detect prints
+the engine found (or "none").
 """
 
 from __future__ import annotations
@@ -44,6 +54,8 @@ from pathlib import Path
 PROFILE_USAGE = "Usage: stf.py profile <inputDir> [--top N] [--file <name>] [--out <path>]"
 RENDER_USAGE = "Usage: stf.py render <spec.json> <outDir> [--no-raw-data]"
 CHECK_USAGE = "Usage: stf.py check <stfDir> [--json]"
+VALIDATE_USAGE = "Usage: stf.py validate <stfDir> [--engine docker|podman] | --detect"
+_VALIDATE_EXIT = {"pass": 0, "fail": 1, "error": 2, "load-error": 2}
 _TABLE_NAME = re.compile(r"\.(csv|tsv|txt)$", re.IGNORECASE)
 _NUMERIC = re.compile(r"\s*[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?\s*", re.ASCII)
 
@@ -140,6 +152,26 @@ def cmd_check(args) -> int:
     return 1 if result["errors"] else 0
 
 
+def cmd_validate(args) -> int:
+    from _container import detect_engine, validate_study_in_container
+
+    if args.engine and args.engine not in ("docker", "podman"):
+        raise ValueError("--engine must be docker or podman")
+    engine = detect_engine(preferred=args.engine)
+    if args.detect:
+        print(engine or "none")
+        return 0
+    if len(args.stfDir) != 1:
+        raise ValueError(VALIDATE_USAGE)
+    if not engine:
+        print("No container engine (docker or podman) found", file=sys.stderr)
+        return 3
+    status, output = validate_study_in_container(Path(args.stfDir[0]), engine)
+    print(output)
+    print(f"Result: {status}")
+    return _VALIDATE_EXIT[status]
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="stf.py", description="tabular-to-stf command line")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -164,6 +196,13 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("stfDir", nargs="*", metavar="stfDir", help="the STF directory")
     c.add_argument("--json", action="store_true", help="print {errors, warnings} as JSON")
     c.set_defaults(func=cmd_check)
+
+    v = sub.add_parser("validate", usage=VALIDATE_USAGE.removeprefix("Usage: "),
+                       description="Validate an STF directory with study-wrangler in its pinned container.")
+    v.add_argument("stfDir", nargs="*", metavar="stfDir", help="the STF directory")
+    v.add_argument("--engine", metavar="docker|podman", help="container engine (default: detect docker, then podman)")
+    v.add_argument("--detect", action="store_true", help="print the container engine found, or none")
+    v.set_defaults(func=cmd_validate)
     return parser
 
 
