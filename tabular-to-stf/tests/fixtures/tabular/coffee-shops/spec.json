@@ -1,0 +1,2775 @@
+{
+  "specVersion": 1,
+  "study": {
+    "name": "Coffee shops 2025",
+    "description": "Fictional data on twelve coffee shops in four regions of England: the teams and staff working in each shop, the seasonal menus and menu items, and monthly accounts, January to October 2025. Money is in pounds sterling (GBP)."
+  },
+  "inputDir": "inputs",
+  "extraFiles": [
+    "coffee-shops-data-dictionary.md"
+  ],
+  "entities": [
+    {
+      "name": "region",
+      "displayName": "Region",
+      "displayNamePlural": "Regions",
+      "file": "regions.csv",
+      "idColumn": "region_id",
+      "variables": [
+        {
+          "column": "name",
+          "name": "region_name",
+          "displayName": "Region name",
+          "definition": "What the company calls the region, used for day-to-day management of its shops."
+        },
+        {
+          "column": "area",
+          "name": "region_area",
+          "displayName": "Area covered",
+          "definition": "A short description of the area the region covers."
+        },
+        {
+          "column": "contact",
+          "name": "region_contact",
+          "displayName": "Regional contact",
+          "definition": "The person who looks after the region."
+        }
+      ]
+    },
+    {
+      "name": "coffee_shop",
+      "displayName": "Coffee shop",
+      "displayNamePlural": "Coffee shops",
+      "file": "coffee_shops.csv",
+      "idColumn": "shop_id",
+      "parent": "region",
+      "parentColumn": "region_id",
+      "variables": [
+        {
+          "column": "name",
+          "name": "shop_name",
+          "displayName": "Shop name",
+          "definition": "The shop's name."
+        },
+        {
+          "column": "town",
+          "name": "shop_town",
+          "displayName": "Town",
+          "definition": "The town or city the shop is in."
+        },
+        {
+          "column": "address",
+          "name": "shop_address",
+          "displayName": "Street address",
+          "definition": "The shop's street address."
+        },
+        {
+          "column": "opened",
+          "name": "date_opened",
+          "displayName": "Date opened",
+          "dataType": "date",
+          "definition": "The date the shop first opened."
+        },
+        {
+          "column": "seats",
+          "name": "seats",
+          "displayName": "Seats",
+          "dataType": "integer",
+          "dataShape": "continuous",
+          "definition": "The number of customers the shop can seat."
+        },
+        {
+          "column": "status",
+          "name": "shop_status",
+          "displayName": "Status",
+          "definition": "Whether the shop is open."
+        }
+      ]
+    },
+    {
+      "name": "team",
+      "displayName": "Team",
+      "displayNamePlural": "Teams",
+      "file": "teams.csv",
+      "idColumn": "team_id",
+      "parent": "coffee_shop",
+      "parentColumn": "shop_id",
+      "variables": [
+        {
+          "column": "name",
+          "name": "team_name",
+          "displayName": "Team",
+          "definition": "What the team does, such as the bar or kitchen team."
+        },
+        {
+          "column": "shift",
+          "name": "team_shift",
+          "displayName": "Usual shift",
+          "definition": "The shifts the team usually covers: early, late or a mixture."
+        },
+        {
+          "column": "ext",
+          "name": "team_extension",
+          "displayName": "Phone extension",
+          "dataType": "string",
+          "dataShape": "categorical",
+          "definition": "The team's internal phone extension. A code, not a quantity."
+        }
+      ]
+    },
+    {
+      "name": "staff_member",
+      "displayName": "Staff member",
+      "displayNamePlural": "Staff members",
+      "file": "staff.csv",
+      "idColumn": "staff_id",
+      "parent": "team",
+      "parentColumn": "team_id",
+      "variables": [
+        {
+          "column": "first",
+          "name": "first_name",
+          "displayName": "First name",
+          "definition": "The person's first name."
+        },
+        {
+          "column": "surname",
+          "name": "surname_abbreviated",
+          "displayName": "Surname (abbreviated)",
+          "definition": "The person's surname, shortened to the first letter or letters that tell apart surnames sharing a first name."
+        },
+        {
+          "column": "role",
+          "name": "job_role",
+          "displayName": "Job role",
+          "definition": "The person's job, such as barista or kitchen assistant.",
+          "parentCategory": "employment"
+        },
+        {
+          "column": "start",
+          "name": "start_date",
+          "displayName": "Start date",
+          "dataType": "date",
+          "definition": "The date the person started working for the company."
+        },
+        {
+          "column": "hours",
+          "name": "contracted_hours",
+          "displayName": "Contracted hours",
+          "dataType": "integer",
+          "dataShape": "continuous",
+          "unit": "hours per week",
+          "definition": "Contracted working hours per week.",
+          "parentCategory": "employment"
+        },
+        {
+          "column": "rate",
+          "name": "hourly_pay_rate",
+          "displayName": "Hourly pay rate",
+          "dataType": "number",
+          "dataShape": "continuous",
+          "unit": "GBP per hour",
+          "definition": "Hourly pay before deductions.",
+          "parentCategory": "employment"
+        },
+        {
+          "column": "contract",
+          "name": "contract_type",
+          "displayName": "Contract type",
+          "dataShape": "binary",
+          "vocabularyOrder": [
+            "Full time",
+            "Part time"
+          ],
+          "definition": "Whether the person works full time or part time.",
+          "parentCategory": "employment"
+        },
+        {
+          "column": "trained",
+          "name": "initial_training",
+          "displayName": "Initial training",
+          "dataShape": "ordinal",
+          "ordinalLevels": [
+            "No",
+            "Pending",
+            "Yes"
+          ],
+          "definition": "Whether the person has completed the required initial training.",
+          "parentCategory": "training_availability"
+        },
+        {
+          "column": "notes",
+          "name": "staff_notes",
+          "displayName": "Staff notes",
+          "definition": "Notes on shifts, availability or training.",
+          "parentCategory": "training_availability"
+        },
+        {
+          "column": "hours_uncertainty",
+          "name": "contracted_hours_uncertainty",
+          "displayName": "Contracted hours uncertain",
+          "dataType": "string",
+          "dataShape": "binary",
+          "vocabularyOrder": [
+            "Yes",
+            "No"
+          ],
+          "definition": "Yes if the provider marked the contracted hours value with a question mark, meaning they were unsure of it. The value is kept as given.",
+          "parentCategory": "uncertainty_flags"
+        }
+      ],
+      "categories": [
+        {
+          "category": "employment",
+          "displayName": "Employment",
+          "definition": "The person's job and contract."
+        },
+        {
+          "category": "training_availability",
+          "displayName": "Training and availability",
+          "definition": "Initial training and notes on availability and shifts."
+        },
+        {
+          "category": "uncertainty_flags",
+          "displayName": "Provider uncertainty flags",
+          "definition": "Yes where the provider marked a value with a question mark."
+        }
+      ]
+    },
+    {
+      "name": "menu",
+      "displayName": "Menu",
+      "displayNamePlural": "Menus",
+      "file": "menus.csv",
+      "idColumn": "menu_id",
+      "parent": "coffee_shop",
+      "parentColumn": "shop_id",
+      "variables": [
+        {
+          "column": "name",
+          "name": "menu_name",
+          "displayName": "Menu name",
+          "definition": "The menu's name, usually the season and year."
+        },
+        {
+          "column": "from",
+          "name": "menu_start_date",
+          "displayName": "First day available",
+          "dataType": "date",
+          "definition": "The first day the menu is available."
+        },
+        {
+          "column": "to",
+          "name": "menu_end_date",
+          "displayName": "Last day available",
+          "dataType": "date",
+          "definition": "The last day the menu is available."
+        },
+        {
+          "column": "service",
+          "name": "menu_service",
+          "displayName": "Service",
+          "definition": "Where or when the menu is offered, such as at the counter or all day."
+        }
+      ]
+    },
+    {
+      "name": "menu_item",
+      "displayName": "Menu item",
+      "displayNamePlural": "Menu items",
+      "file": "menu_items.csv",
+      "idColumn": "item_id",
+      "parent": "menu",
+      "parentColumn": "menu_id",
+      "variables": [
+        {
+          "column": "name",
+          "name": "item_name",
+          "displayName": "Item name",
+          "definition": "What the food or drink is called."
+        },
+        {
+          "column": "group",
+          "name": "item_group",
+          "displayName": "Menu section",
+          "definition": "The section the item goes under, such as Coffee or Bakery."
+        },
+        {
+          "column": "size",
+          "name": "serving_size",
+          "displayName": "Serving size",
+          "definition": "The serving size, or whether the item is sold by the slice, pot and so on."
+        },
+        {
+          "column": "price",
+          "name": "item_price",
+          "displayName": "Price",
+          "dataType": "number",
+          "dataShape": "continuous",
+          "unit": "GBP",
+          "definition": "What the customer pays for one serving, including VAT where applicable."
+        },
+        {
+          "column": "cost",
+          "name": "item_cost",
+          "displayName": "Cost",
+          "dataType": "number",
+          "dataShape": "continuous",
+          "unit": "GBP",
+          "definition": "Roughly what one serving costs in ingredients or to buy in, before any VAT that can be claimed back. Excludes staff time and running the shop."
+        },
+        {
+          "column": "vegan",
+          "name": "vegan",
+          "displayName": "Vegan",
+          "dataShape": "binary",
+          "vocabularyOrder": [
+            "Yes",
+            "No"
+          ],
+          "definition": "Whether the item is intended to be suitable for vegans."
+        },
+        {
+          "column": "notes",
+          "name": "item_notes",
+          "displayName": "Item notes",
+          "definition": "Extra details about the item, supplier or availability."
+        },
+        {
+          "column": "price_uncertainty",
+          "name": "item_price_uncertainty",
+          "displayName": "Price uncertain",
+          "dataType": "string",
+          "dataShape": "binary",
+          "vocabularyOrder": [
+            "Yes",
+            "No"
+          ],
+          "definition": "Yes if the provider marked the price value with a question mark, meaning they were unsure of it. The value is kept as given."
+        }
+      ]
+    },
+    {
+      "name": "monthly_account",
+      "displayName": "Monthly account",
+      "displayNamePlural": "Monthly accounts",
+      "file": "monthly_accounts.csv",
+      "idColumn": "account_id",
+      "parent": "coffee_shop",
+      "parentColumn": "shop_id",
+      "variables": [
+        {
+          "column": "period",
+          "name": "reporting_month",
+          "displayName": "Reporting month",
+          "dataType": "date",
+          "definition": "The month the return covers, given as the first day of the month."
+        },
+        {
+          "column": "sales",
+          "name": "monthly_sales",
+          "displayName": "Sales",
+          "dataType": "number",
+          "dataShape": "continuous",
+          "unit": "GBP",
+          "definition": "Sales for the whole month, with VAT taken off.",
+          "parentCategory": "takings_costs"
+        },
+        {
+          "column": "cost",
+          "name": "cost_of_goods",
+          "displayName": "Cost of goods",
+          "dataType": "number",
+          "dataShape": "continuous",
+          "unit": "GBP",
+          "definition": "What the food, drinks and ingredients sold that month cost.",
+          "parentCategory": "takings_costs"
+        },
+        {
+          "column": "pay",
+          "name": "staffing_cost",
+          "displayName": "Staffing cost",
+          "dataType": "number",
+          "dataShape": "continuous",
+          "unit": "GBP",
+          "definition": "Total staffing costs for the month, including the employer's costs on top of wages.",
+          "parentCategory": "takings_costs"
+        },
+        {
+          "column": "rent",
+          "name": "monthly_rent",
+          "displayName": "Rent",
+          "dataType": "number",
+          "dataShape": "continuous",
+          "unit": "GBP",
+          "definition": "The shop's rent for the month.",
+          "parentCategory": "takings_costs"
+        },
+        {
+          "column": "other",
+          "name": "other_running_costs",
+          "displayName": "Other running costs",
+          "dataType": "number",
+          "dataShape": "continuous",
+          "unit": "GBP",
+          "definition": "Other running costs for the month, separate from stock, staffing and rent.",
+          "parentCategory": "takings_costs"
+        },
+        {
+          "column": "txns",
+          "name": "transactions",
+          "displayName": "Transactions",
+          "dataType": "integer",
+          "dataShape": "continuous",
+          "definition": "Number of customer purchases put through the till in the month. One purchase can include several items.",
+          "parentCategory": "activity"
+        },
+        {
+          "column": "status",
+          "name": "return_status",
+          "displayName": "Return status",
+          "dataShape": "ordinal",
+          "ordinalLevels": [
+            "Draft",
+            "Checked",
+            "Final"
+          ],
+          "definition": "How far the checking or finalising of the return has got.",
+          "parentCategory": "return_status_group"
+        },
+        {
+          "column": "notes",
+          "name": "account_notes",
+          "displayName": "Account notes",
+          "definition": "Anything useful to know about the month's figures, such as a repair bill or a supplier credit awaited.",
+          "parentCategory": "return_status_group"
+        },
+        {
+          "column": "sales_uncertainty",
+          "name": "monthly_sales_uncertainty",
+          "displayName": "Sales uncertain",
+          "dataType": "string",
+          "dataShape": "binary",
+          "vocabularyOrder": [
+            "Yes",
+            "No"
+          ],
+          "definition": "Yes if the provider marked the sales value with a question mark, meaning they were unsure of it. The value is kept as given.",
+          "parentCategory": "uncertainty_flags"
+        },
+        {
+          "column": "cost_uncertainty",
+          "name": "cost_of_goods_uncertainty",
+          "displayName": "Cost of goods uncertain",
+          "dataType": "string",
+          "dataShape": "binary",
+          "vocabularyOrder": [
+            "Yes",
+            "No"
+          ],
+          "definition": "Yes if the provider marked the cost of goods value with a question mark, meaning they were unsure of it. The value is kept as given.",
+          "parentCategory": "uncertainty_flags"
+        },
+        {
+          "column": "rent_uncertainty",
+          "name": "monthly_rent_uncertainty",
+          "displayName": "Rent uncertain",
+          "dataType": "string",
+          "dataShape": "binary",
+          "vocabularyOrder": [
+            "Yes",
+            "No"
+          ],
+          "definition": "Yes if the provider marked the rent value with a question mark, meaning they were unsure of it. The value is kept as given.",
+          "parentCategory": "uncertainty_flags"
+        },
+        {
+          "column": "other_uncertainty",
+          "name": "other_running_costs_uncertainty",
+          "displayName": "Other running costs uncertain",
+          "dataType": "string",
+          "dataShape": "binary",
+          "vocabularyOrder": [
+            "Yes",
+            "No"
+          ],
+          "definition": "Yes if the provider marked the other running costs value with a question mark, meaning they were unsure of it. The value is kept as given.",
+          "parentCategory": "uncertainty_flags"
+        },
+        {
+          "column": "txns_uncertainty",
+          "name": "transactions_uncertainty",
+          "displayName": "Transactions uncertain",
+          "dataType": "string",
+          "dataShape": "binary",
+          "vocabularyOrder": [
+            "Yes",
+            "No"
+          ],
+          "definition": "Yes if the provider marked the transactions value with a question mark, meaning they were unsure of it. The value is kept as given.",
+          "parentCategory": "uncertainty_flags"
+        }
+      ],
+      "categories": [
+        {
+          "category": "takings_costs",
+          "displayName": "Takings and costs",
+          "definition": "Monthly sales and running costs in GBP."
+        },
+        {
+          "category": "activity",
+          "displayName": "Activity",
+          "definition": "Till activity during the month."
+        },
+        {
+          "category": "return_status_group",
+          "displayName": "Return status",
+          "definition": "How far the return has been checked, and notes on it."
+        },
+        {
+          "category": "uncertainty_flags",
+          "displayName": "Provider uncertainty flags",
+          "definition": "Yes where the provider marked a value with a question mark."
+        }
+      ]
+    }
+  ],
+  "transforms": [
+    {
+      "op": "trim",
+      "entity": "region",
+      "reason": "Stray leading and trailing spaces were found in several columns.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "region",
+      "column": "name",
+      "map": {
+        "north": "North"
+      },
+      "reason": "Same region name written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "region",
+      "column": "name",
+      "map": {
+        "Souht East": "South East",
+        "Midlnds": "Midlands"
+      },
+      "reason": "Likely typos of region name values, corrected to the nearby valid value; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "region",
+      "column": "contact",
+      "map": {
+        "Rwan Patel": "Ryan Patel"
+      },
+      "reason": "Likely typo of the contact name; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "trim",
+      "entity": "coffee_shop",
+      "reason": "Stray leading and trailing spaces were found in several columns.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "coffee_shop",
+      "column": "name",
+      "map": {
+        "Copper  Finch": "Copper Finch",
+        "Litlte Lantern": "Little Lantern"
+      },
+      "reason": "A doubled space and a transposed-letter typo in shop names; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "coffee_shop",
+      "column": "status",
+      "map": {
+        "open": "Open"
+      },
+      "reason": "Same status written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "coffee_shop",
+      "column": "opened",
+      "map": {
+        "14/12/19": "2019-12-14",
+        "14/09/2018": "2018-09-14",
+        "14/04/19": "2019-04-14",
+        "14/11/2020": "2020-11-14"
+      },
+      "reason": "Opening dates were written as DD/MM/YYYY, DD/MM/YY (read as 20YY) or YYYY/MM-DD; day-first order confirmed by the user. Rewritten as ISO YYYY-MM-DD.",
+      "approval": "user"
+    },
+    {
+      "op": "replace-cells",
+      "entity": "coffee_shop",
+      "column": "name",
+      "cells": [
+        {
+          "id": "S011",
+          "from": "-",
+          "to": "TBC: Totally Brilliant Coffee"
+        }
+      ],
+      "reason": "The source gave `-` for the name of the Leeds shop (S011), the only unnamed shop. The user chose the placeholder name \"TBC: Totally Brilliant Coffee\" until the real name is known.",
+      "approval": "user"
+    },
+    {
+      "op": "trim",
+      "entity": "team",
+      "reason": "Stray leading and trailing spaces were found in several columns.",
+      "approval": "auto"
+    },
+    {
+      "op": "blank-placeholders",
+      "entity": "team",
+      "columns": [
+        "name",
+        "shift"
+      ],
+      "values": [
+        "-",
+        "n/a"
+      ],
+      "reason": "`-` and `n/a` mean the value is missing.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "team",
+      "column": "name",
+      "map": {
+        "KITCHEN": "Kitchen"
+      },
+      "reason": "Same team name written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "team",
+      "column": "shift",
+      "map": {
+        "mixed": "Mixed"
+      },
+      "reason": "Same shift written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "team",
+      "column": "shift",
+      "map": {
+        "Eary": "Early"
+      },
+      "reason": "Likely typos of shift values, corrected to the nearby valid value; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "trim",
+      "entity": "staff_member",
+      "reason": "Stray leading and trailing spaces were found in several columns.",
+      "approval": "auto"
+    },
+    {
+      "op": "blank-placeholders",
+      "entity": "staff_member",
+      "columns": [
+        "surname",
+        "role",
+        "hours",
+        "rate",
+        "contract",
+        "trained",
+        "notes"
+      ],
+      "values": [
+        "-",
+        "n/a"
+      ],
+      "reason": "`-` and `n/a` mean the value is missing.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "staff_member",
+      "column": "first",
+      "map": {
+        "noah": "Noah",
+        "SOFIA": "Sofia",
+        "ZARA": "Zara",
+        "zara": "Zara",
+        "ARTHUR": "Arthur",
+        "AVA": "Ava",
+        "oscar": "Oscar",
+        "OLIVER": "Oliver",
+        "MUHAMMAD": "Muhammad",
+        "hugo": "Hugo",
+        "ella": "Ella"
+      },
+      "reason": "Same first name written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "staff_member",
+      "column": "first",
+      "map": {
+        "Hgo": "Hugo",
+        "Rroy": "Rory",
+        "Feya": "Freya",
+        "Teho": "Theo",
+        "Ajrun": "Arjun",
+        "Harpre": "Harper",
+        "Ferya": "Freya",
+        "Ainka": "Anika",
+        "Huo": "Hugo",
+        "Teo": "Theo"
+      },
+      "reason": "Likely typos of first names, each one or two letters from a name used elsewhere in the data; approved by the user. Teo was read as Theo on the user's judgement (neighbouring keys on a QWERTY keyboard).",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "staff_member",
+      "column": "role",
+      "map": {
+        "cafe assistant": "Cafe assistant",
+        "supervisor": "Supervisor",
+        "CAFE ASSISTANT": "Cafe assistant",
+        "BARISTA": "Barista",
+        "Cafe  assistant": "Cafe assistant",
+        "kitchen assistant": "Kitchen assistant",
+        "HEAD BARISTA": "Head barista",
+        "Kitchen  assistant": "Kitchen assistant"
+      },
+      "reason": "Same role written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "staff_member",
+      "column": "role",
+      "map": {
+        "Kitcen assistant": "Kitchen assistant",
+        "Brista": "Barista",
+        "Kitchen asisstant": "Kitchen assistant",
+        "Cafe assistatn": "Cafe assistant",
+        "Head brista": "Head barista",
+        "Kitchen assstant": "Kitchen assistant",
+        "Barisat": "Barista",
+        "Kichen lead": "Kitchen lead",
+        "Ktchen lead": "Kitchen lead",
+        "Braista": "Barista",
+        "Kitchen assistnt": "Kitchen assistant",
+        "Cafe assisatnt": "Cafe assistant"
+      },
+      "reason": "Likely typos of role values, corrected to the nearby valid value; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "staff_member",
+      "column": "contract",
+      "map": {
+        "full time": "Full time",
+        "part time": "Part time",
+        "PART TIME": "Part time",
+        "Full  time": "Full time"
+      },
+      "reason": "Same contract type written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "staff_member",
+      "column": "contract",
+      "map": {
+        "Full tie": "Full time",
+        "Part ime": "Part time",
+        "Fullt ime": "Full time",
+        "Ful ltime": "Full time",
+        "Part tie": "Part time",
+        "Prt time": "Part time"
+      },
+      "reason": "Likely typos of contract type values, corrected to the nearby valid value; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "staff_member",
+      "column": "trained",
+      "map": {
+        "Y": "Yes",
+        "yes": "Yes",
+        "no": "No",
+        "YES": "Yes",
+        "y": "Yes",
+        "PENDING": "Pending",
+        "pending": "Pending"
+      },
+      "reason": "Same training status written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "staff_member",
+      "column": "trained",
+      "map": {
+        "Pendnig": "Pending",
+        "Pneding": "Pending"
+      },
+      "reason": "Likely typos of training status values, corrected to the nearby valid value; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "staff_member",
+      "column": "notes",
+      "map": {
+        "Prefers  early shifts": "Prefers early shifts",
+        "PREFERS EARLY SHIFTS": "Prefers early shifts",
+        "COVER BY AGREEMENT": "Cover by agreement",
+        "FOOD HYGIENE REFRESHER DUE": "Food hygiene refresher due"
+      },
+      "reason": "Same note written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "staff_member",
+      "column": "notes",
+      "map": {
+        "Food hygiene refresehr due": "Food hygiene refresher due",
+        "Cover by agreemnet": "Cover by agreement",
+        "Food hygiene rferesher due": "Food hygiene refresher due",
+        "Food hygiene refresher ude": "Food hygiene refresher due"
+      },
+      "reason": "Likely typos of note values, corrected to the nearby valid value; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "staff_member",
+      "column": "surname",
+      "map": {
+        "khan": "Khan",
+        "ROBERTS": "Roberts",
+        "clarke": "Clarke",
+        "green": "Green",
+        "hughes": "Hughes",
+        "SMITH": "Smith",
+        "EVANS": "Evans",
+        "johnson": "Johnson",
+        "murphy": "Murphy",
+        "Chen": "chen",
+        "JOHNSON": "Johnson",
+        "williams": "Williams",
+        "jones": "Jones",
+        "garcía": "García",
+        "MURPHY": "Murphy"
+      },
+      "reason": "Same surname written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "staff_member",
+      "column": "surname",
+      "map": {
+        "Cen": "Chen",
+        "Clrake": "Clarke",
+        "Dvies": "Davies",
+        "Huges": "Hughes",
+        "Khna": "Khan",
+        "Okaofr": "Okafor",
+        "Rberts": "Roberts",
+        "Rid": "Reid",
+        "Sith": "Smith",
+        "Wilsn": "Wilson"
+      },
+      "reason": "Likely typos of surnames, each one or two letters from a surname that occurs elsewhere in the data; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "staff_member",
+      "column": "start",
+      "map": {
+        "15/05/21": "2021-05-15",
+        "10/11/2021": "2021-11-10",
+        "18/05/2021": "2021-05-18",
+        "2024/07-07": "2024-07-07",
+        "14/11/2024": "2024-11-14",
+        "27/08/2023": "2023-08-27",
+        "25/04/2021": "2021-04-25",
+        "04/11/2021": "2021-11-04",
+        "03/12/2023": "2023-12-03",
+        "27/03/21": "2021-03-27",
+        "22/07/2022": "2022-07-22",
+        "26/11/2022": "2022-11-26",
+        "02/12/2022": "2022-12-02",
+        "17/08/2022": "2022-08-17",
+        "09/09/2024": "2024-09-09",
+        "21/06/2023": "2023-06-21",
+        "27/05/2024": "2024-05-27",
+        "22/01/2023": "2023-01-22",
+        "18/02/24": "2024-02-18",
+        "06/12/2022": "2022-12-06",
+        "11/01/2021": "2021-01-11",
+        "24/05/2021": "2021-05-24",
+        "26/06/2021": "2021-06-26",
+        "20/12/2021": "2021-12-20",
+        "18/09/2021": "2021-09-18",
+        "24/05/2024": "2024-05-24",
+        "10/12/21": "2021-12-10",
+        "14/10/22": "2022-10-14",
+        "16/11/2021": "2021-11-16",
+        "02/11/21": "2021-11-02",
+        "09/04/2021": "2021-04-09",
+        "20/01/2021": "2021-01-20",
+        "22/10/21": "2021-10-22",
+        "18/04/2022": "2022-04-18",
+        "10/05/21": "2021-05-10",
+        "27/02/21": "2021-02-27",
+        "16/10/2024": "2024-10-16",
+        "21/06/2021": "2021-06-21",
+        "17/07/2023": "2023-07-17",
+        "16/06/24": "2024-06-16",
+        "01/08/2023": "2023-08-01",
+        "2024/10-06": "2024-10-06",
+        "2022/08-05": "2022-08-05",
+        "24/12/2024": "2024-12-24",
+        "10/08/22": "2022-08-10",
+        "24/04/2024": "2024-04-24",
+        "02/10/23": "2023-10-02",
+        "12/09/2022": "2022-09-12",
+        "04/04/2024": "2024-04-04",
+        "04/12/24": "2024-12-04",
+        "21/08/22": "2022-08-21",
+        "17/03/2022": "2022-03-17",
+        "27/04/2021": "2021-04-27",
+        "2021/09-10": "2021-09-10",
+        "08/05/2022": "2022-05-08",
+        "07/12/2022": "2022-12-07",
+        "01/03/23": "2023-03-01",
+        "13/05/2021": "2021-05-13",
+        "2023/06-15": "2023-06-15",
+        "26/07/2023": "2023-07-26",
+        "03/06/21": "2021-06-03",
+        "25/06/2024": "2024-06-25",
+        "2024/03-12": "2024-03-12",
+        "2021/02-08": "2021-02-08",
+        "2022/09-14": "2022-09-14",
+        "28/01/2023": "2023-01-28",
+        "2024/05-11": "2024-05-11",
+        "06/03/2021": "2021-03-06",
+        "03/02/2023": "2023-02-03",
+        "24/10/2022": "2022-10-24",
+        "08/04/2024": "2024-04-08",
+        "20/05/2023": "2023-05-20",
+        "05/12/2022": "2022-12-05",
+        "12/08/2023": "2023-08-12",
+        "11/10/2023": "2023-10-11",
+        "09/10/2023": "2023-10-09",
+        "2021/11-06": "2021-11-06",
+        "05/11/2021": "2021-11-05"
+      },
+      "reason": "Start dates were written as DD/MM/YYYY, DD/MM/YY (read as 20YY) or YYYY/MM-DD; day-first order confirmed by the user. Rewritten as ISO YYYY-MM-DD.",
+      "approval": "user"
+    },
+    {
+      "op": "derive-column",
+      "entity": "staff_member",
+      "column": "hours_uncertainty",
+      "from": "hours",
+      "map": {
+        "40?": "Yes",
+        "35?": "Yes",
+        "24?": "Yes"
+      },
+      "default": "No",
+      "reason": "The provider marked 3 contracted-hours values with a trailing question mark; record that as a Yes/No flag before the mark is removed.",
+      "approval": "user"
+    },
+    {
+      "op": "replace-cells",
+      "entity": "staff_member",
+      "column": "surname",
+      "cells": [
+        {
+          "id": "P001",
+          "from": "García",
+          "to": "G"
+        },
+        {
+          "id": "P002",
+          "from": "White",
+          "to": "WH"
+        },
+        {
+          "id": "P003",
+          "from": "Thompson",
+          "to": "T"
+        },
+        {
+          "id": "P004",
+          "from": "Thompson",
+          "to": "T"
+        },
+        {
+          "id": "P005",
+          "from": "Edwards",
+          "to": "E"
+        },
+        {
+          "id": "P006",
+          "from": "Hughes",
+          "to": "H"
+        },
+        {
+          "id": "P007",
+          "from": "Clarke",
+          "to": "C"
+        },
+        {
+          "id": "P008",
+          "from": "Khan",
+          "to": "K"
+        },
+        {
+          "id": "P009",
+          "from": "Clarke",
+          "to": "C"
+        },
+        {
+          "id": "P010",
+          "from": "Murphy",
+          "to": "M"
+        },
+        {
+          "id": "P011",
+          "from": "Singh",
+          "to": "S"
+        },
+        {
+          "id": "P012",
+          "from": "Singh",
+          "to": "S"
+        },
+        {
+          "id": "P013",
+          "from": "Singh",
+          "to": "S"
+        },
+        {
+          "id": "P014",
+          "from": "Williams",
+          "to": "W"
+        },
+        {
+          "id": "P015",
+          "from": "Thomas",
+          "to": "T"
+        },
+        {
+          "id": "P016",
+          "from": "Taylor",
+          "to": "TA"
+        },
+        {
+          "id": "P017",
+          "from": "Ahmed",
+          "to": "A"
+        },
+        {
+          "id": "P018",
+          "from": "Brown",
+          "to": "B"
+        },
+        {
+          "id": "P019",
+          "from": "Reid",
+          "to": "R"
+        },
+        {
+          "id": "P020",
+          "from": "White",
+          "to": "WH"
+        },
+        {
+          "id": "P021",
+          "from": "Thompson",
+          "to": "T"
+        },
+        {
+          "id": "P022",
+          "from": "Taylor",
+          "to": "T"
+        },
+        {
+          "id": "P023",
+          "from": "Wilson",
+          "to": "W"
+        },
+        {
+          "id": "P024",
+          "from": "Roberts",
+          "to": "R"
+        },
+        {
+          "id": "P025",
+          "from": "Thompson",
+          "to": "THOMP"
+        },
+        {
+          "id": "P026",
+          "from": "Wright",
+          "to": "WR"
+        },
+        {
+          "id": "P027",
+          "from": "Clarke",
+          "to": "C"
+        },
+        {
+          "id": "P028",
+          "from": "chen",
+          "to": "C"
+        },
+        {
+          "id": "P029",
+          "from": "García",
+          "to": "GA"
+        },
+        {
+          "id": "P030",
+          "from": "Clarke",
+          "to": "C"
+        },
+        {
+          "id": "P031",
+          "from": "Khan",
+          "to": "K"
+        },
+        {
+          "id": "P032",
+          "from": "Walker",
+          "to": "W"
+        },
+        {
+          "id": "P033",
+          "from": "Smith",
+          "to": "S"
+        },
+        {
+          "id": "P034",
+          "from": "Singh",
+          "to": "S"
+        },
+        {
+          "id": "P035",
+          "from": "Jones",
+          "to": "J"
+        },
+        {
+          "id": "P036",
+          "from": "Wright",
+          "to": "WR"
+        },
+        {
+          "id": "P037",
+          "from": "Taylor",
+          "to": "T"
+        },
+        {
+          "id": "P038",
+          "from": "García",
+          "to": "G"
+        },
+        {
+          "id": "P039",
+          "from": "Brown",
+          "to": "B"
+        },
+        {
+          "id": "P040",
+          "from": "Murphy",
+          "to": "M"
+        },
+        {
+          "id": "P041",
+          "from": "Walker",
+          "to": "WA"
+        },
+        {
+          "id": "P042",
+          "from": "Green",
+          "to": "G"
+        },
+        {
+          "id": "P043",
+          "from": "Patel",
+          "to": "P"
+        },
+        {
+          "id": "P044",
+          "from": "Reid",
+          "to": "R"
+        },
+        {
+          "id": "P045",
+          "from": "Khan",
+          "to": "K"
+        },
+        {
+          "id": "P046",
+          "from": "Singh",
+          "to": "S"
+        },
+        {
+          "id": "P047",
+          "from": "Roberts",
+          "to": "R"
+        },
+        {
+          "id": "P048",
+          "from": "Green",
+          "to": "GR"
+        },
+        {
+          "id": "P049",
+          "from": "García",
+          "to": "G"
+        },
+        {
+          "id": "P050",
+          "from": "Evans",
+          "to": "E"
+        },
+        {
+          "id": "P051",
+          "from": "Thomas",
+          "to": "T"
+        },
+        {
+          "id": "P052",
+          "from": "Roberts",
+          "to": "RO"
+        },
+        {
+          "id": "P053",
+          "from": "Clarke",
+          "to": "C"
+        },
+        {
+          "id": "P054",
+          "from": "White",
+          "to": "WH"
+        },
+        {
+          "id": "P055",
+          "from": "Reid",
+          "to": "R"
+        },
+        {
+          "id": "P056",
+          "from": "Thompson",
+          "to": "T"
+        },
+        {
+          "id": "P057",
+          "from": "Khan",
+          "to": "K"
+        },
+        {
+          "id": "P058",
+          "from": "Wilson",
+          "to": "WI"
+        },
+        {
+          "id": "P059",
+          "from": "Hughes",
+          "to": "H"
+        },
+        {
+          "id": "P060",
+          "from": "Green",
+          "to": "G"
+        },
+        {
+          "id": "P061",
+          "from": "Smith",
+          "to": "S"
+        },
+        {
+          "id": "P062",
+          "from": "Edwards",
+          "to": "E"
+        },
+        {
+          "id": "P063",
+          "from": "Khan",
+          "to": "K"
+        },
+        {
+          "id": "P064",
+          "from": "Reid",
+          "to": "RE"
+        },
+        {
+          "id": "P065",
+          "from": "Roberts",
+          "to": "RO"
+        },
+        {
+          "id": "P066",
+          "from": "O’Neill",
+          "to": "O"
+        },
+        {
+          "id": "P067",
+          "from": "Johnson",
+          "to": "J"
+        },
+        {
+          "id": "P068",
+          "from": "Roberts",
+          "to": "R"
+        },
+        {
+          "id": "P069",
+          "from": "Evans",
+          "to": "E"
+        },
+        {
+          "id": "P070",
+          "from": "Thomas",
+          "to": "TH"
+        },
+        {
+          "id": "P071",
+          "from": "Hughes",
+          "to": "H"
+        },
+        {
+          "id": "P072",
+          "from": "Jones",
+          "to": "JON"
+        },
+        {
+          "id": "P073",
+          "from": "White",
+          "to": "W"
+        },
+        {
+          "id": "P074",
+          "from": "Clarke",
+          "to": "C"
+        },
+        {
+          "id": "P075",
+          "from": "Johnson",
+          "to": "J"
+        },
+        {
+          "id": "P076",
+          "from": "Taylor",
+          "to": "T"
+        },
+        {
+          "id": "P077",
+          "from": "Smith",
+          "to": "S"
+        },
+        {
+          "id": "P078",
+          "from": "White",
+          "to": "WH"
+        },
+        {
+          "id": "P079",
+          "from": "Taylor",
+          "to": "T"
+        },
+        {
+          "id": "P080",
+          "from": "Green",
+          "to": "G"
+        },
+        {
+          "id": "P081",
+          "from": "Patel",
+          "to": "P"
+        },
+        {
+          "id": "P082",
+          "from": "Walker",
+          "to": "WA"
+        },
+        {
+          "id": "P083",
+          "from": "Roberts",
+          "to": "R"
+        },
+        {
+          "id": "P084",
+          "from": "Chen",
+          "to": "C"
+        },
+        {
+          "id": "P085",
+          "from": "Davies",
+          "to": "D"
+        },
+        {
+          "id": "P086",
+          "from": "Green",
+          "to": "G"
+        },
+        {
+          "id": "P087",
+          "from": "Edwards",
+          "to": "ED"
+        },
+        {
+          "id": "P088",
+          "from": "Wilson",
+          "to": "WI"
+        },
+        {
+          "id": "P089",
+          "from": "Hughes",
+          "to": "H"
+        },
+        {
+          "id": "P090",
+          "from": "Johnson",
+          "to": "J"
+        },
+        {
+          "id": "P091",
+          "from": "Evans",
+          "to": "E"
+        },
+        {
+          "id": "P092",
+          "from": "Thomas",
+          "to": "TH"
+        },
+        {
+          "id": "P093",
+          "from": "Wilson",
+          "to": "W"
+        },
+        {
+          "id": "P094",
+          "from": "Clarke",
+          "to": "C"
+        },
+        {
+          "id": "P095",
+          "from": "Ahmed",
+          "to": "A"
+        },
+        {
+          "id": "P096",
+          "from": "Murphy",
+          "to": "M"
+        },
+        {
+          "id": "P097",
+          "from": "Ahmed",
+          "to": "A"
+        },
+        {
+          "id": "P098",
+          "from": "Smith",
+          "to": "S"
+        },
+        {
+          "id": "P099",
+          "from": "chen",
+          "to": "C"
+        },
+        {
+          "id": "P100",
+          "from": "Johnson",
+          "to": "J"
+        },
+        {
+          "id": "P101",
+          "from": "Hughes",
+          "to": "H"
+        },
+        {
+          "id": "P102",
+          "from": "Wright",
+          "to": "W"
+        },
+        {
+          "id": "P103",
+          "from": "Johnson",
+          "to": "J"
+        },
+        {
+          "id": "P104",
+          "from": "Hughes",
+          "to": "H"
+        },
+        {
+          "id": "P105",
+          "from": "Williams",
+          "to": "W"
+        },
+        {
+          "id": "P106",
+          "from": "Walker",
+          "to": "WA"
+        },
+        {
+          "id": "P107",
+          "from": "Taylor",
+          "to": "TA"
+        },
+        {
+          "id": "P108",
+          "from": "Smith",
+          "to": "S"
+        },
+        {
+          "id": "P109",
+          "from": "Brown",
+          "to": "B"
+        },
+        {
+          "id": "P110",
+          "from": "Davies",
+          "to": "D"
+        },
+        {
+          "id": "P111",
+          "from": "Jones",
+          "to": "J"
+        },
+        {
+          "id": "P112",
+          "from": "Hughes",
+          "to": "H"
+        },
+        {
+          "id": "P113",
+          "from": "Davies",
+          "to": "D"
+        },
+        {
+          "id": "P114",
+          "from": "Patel",
+          "to": "P"
+        },
+        {
+          "id": "P115",
+          "from": "García",
+          "to": "GA"
+        },
+        {
+          "id": "P116",
+          "from": "Wright",
+          "to": "W"
+        },
+        {
+          "id": "P117",
+          "from": "Clarke",
+          "to": "C"
+        },
+        {
+          "id": "P118",
+          "from": "Campbell",
+          "to": "C"
+        },
+        {
+          "id": "P119",
+          "from": "Patel",
+          "to": "P"
+        },
+        {
+          "id": "P120",
+          "from": "O’Neill",
+          "to": "O"
+        },
+        {
+          "id": "P121",
+          "from": "White",
+          "to": "WH"
+        },
+        {
+          "id": "P122",
+          "from": "Evans",
+          "to": "E"
+        },
+        {
+          "id": "P123",
+          "from": "Thomas",
+          "to": "T"
+        },
+        {
+          "id": "P124",
+          "from": "Wilson",
+          "to": "WI"
+        },
+        {
+          "id": "P125",
+          "from": "Thomas",
+          "to": "THOMA"
+        },
+        {
+          "id": "P126",
+          "from": "Evans",
+          "to": "E"
+        },
+        {
+          "id": "P127",
+          "from": "O’Neill",
+          "to": "O"
+        },
+        {
+          "id": "P128",
+          "from": "Singh",
+          "to": "S"
+        },
+        {
+          "id": "P129",
+          "from": "Okafor",
+          "to": "O"
+        },
+        {
+          "id": "P130",
+          "from": "Okafor",
+          "to": "O"
+        },
+        {
+          "id": "P131",
+          "from": "Roberts",
+          "to": "R"
+        },
+        {
+          "id": "P132",
+          "from": "Wilson",
+          "to": "WILS"
+        },
+        {
+          "id": "P133",
+          "from": "Campbell",
+          "to": "C"
+        },
+        {
+          "id": "P134",
+          "from": "Khan",
+          "to": "K"
+        },
+        {
+          "id": "P135",
+          "from": "Thomas",
+          "to": "T"
+        },
+        {
+          "id": "P136",
+          "from": "Edwards",
+          "to": "E"
+        },
+        {
+          "id": "P137",
+          "from": "Singh",
+          "to": "S"
+        },
+        {
+          "id": "P138",
+          "from": "Murphy",
+          "to": "M"
+        },
+        {
+          "id": "P139",
+          "from": "Hughes",
+          "to": "H"
+        },
+        {
+          "id": "P140",
+          "from": "Wilson",
+          "to": "W"
+        },
+        {
+          "id": "P141",
+          "from": "Evans",
+          "to": "E"
+        },
+        {
+          "id": "P142",
+          "from": "Williams",
+          "to": "WILL"
+        },
+        {
+          "id": "P143",
+          "from": "Smith",
+          "to": "S"
+        },
+        {
+          "id": "P144",
+          "from": "Jones",
+          "to": "J"
+        },
+        {
+          "id": "P145",
+          "from": "Davies",
+          "to": "D"
+        },
+        {
+          "id": "P146",
+          "from": "Smith",
+          "to": "S"
+        },
+        {
+          "id": "P147",
+          "from": "Johnson",
+          "to": "JOH"
+        },
+        {
+          "id": "P148",
+          "from": "Campbell",
+          "to": "C"
+        },
+        {
+          "id": "P149",
+          "from": "Singh",
+          "to": "S"
+        },
+        {
+          "id": "P150",
+          "from": "Roberts",
+          "to": "R"
+        },
+        {
+          "id": "P151",
+          "from": "Evans",
+          "to": "EV"
+        },
+        {
+          "id": "P152",
+          "from": "Evans",
+          "to": "E"
+        },
+        {
+          "id": "P153",
+          "from": "Murphy",
+          "to": "M"
+        },
+        {
+          "id": "P154",
+          "from": "Patel",
+          "to": "P"
+        },
+        {
+          "id": "P155",
+          "from": "Hughes",
+          "to": "H"
+        },
+        {
+          "id": "P156",
+          "from": "Smith",
+          "to": "S"
+        },
+        {
+          "id": "P157",
+          "from": "O’Neill",
+          "to": "O"
+        },
+        {
+          "id": "P159",
+          "from": "Davies",
+          "to": "D"
+        },
+        {
+          "id": "P160",
+          "from": "Walker",
+          "to": "WA"
+        },
+        {
+          "id": "P161",
+          "from": "Edwards",
+          "to": "ED"
+        },
+        {
+          "id": "P162",
+          "from": "Ahmed",
+          "to": "A"
+        },
+        {
+          "id": "P163",
+          "from": "Smith",
+          "to": "S"
+        },
+        {
+          "id": "P164",
+          "from": "Reid",
+          "to": "R"
+        },
+        {
+          "id": "P165",
+          "from": "Roberts",
+          "to": "R"
+        },
+        {
+          "id": "P166",
+          "from": "García",
+          "to": "G"
+        },
+        {
+          "id": "P167",
+          "from": "Green",
+          "to": "GR"
+        },
+        {
+          "id": "P168",
+          "from": "Roberts",
+          "to": "R"
+        },
+        {
+          "id": "P169",
+          "from": "Wright",
+          "to": "WR"
+        },
+        {
+          "id": "P170",
+          "from": "White",
+          "to": "WH"
+        },
+        {
+          "id": "P171",
+          "from": "Davies",
+          "to": "D"
+        },
+        {
+          "id": "P172",
+          "from": "Murphy",
+          "to": "M"
+        },
+        {
+          "id": "P173",
+          "from": "Walker",
+          "to": "WA"
+        },
+        {
+          "id": "P174",
+          "from": "Clarke",
+          "to": "C"
+        },
+        {
+          "id": "P175",
+          "from": "Johnson",
+          "to": "J"
+        },
+        {
+          "id": "P176",
+          "from": "Khan",
+          "to": "K"
+        },
+        {
+          "id": "P177",
+          "from": "Roberts",
+          "to": "R"
+        },
+        {
+          "id": "P178",
+          "from": "Roberts",
+          "to": "R"
+        },
+        {
+          "id": "P179",
+          "from": "Thomas",
+          "to": "T"
+        },
+        {
+          "id": "P180",
+          "from": "Walker",
+          "to": "WA"
+        }
+      ],
+      "reason": "Surnames identify people, so each is abbreviated to uppercase letters: the shortest prefix that tells apart the surnames sharing a first name (e.g. a lone surname becomes one letter, \"Walker\" and \"White\" for the same first name become \"WA\" and \"WH\"). Accents are removed. The user chose this over dropping the column.",
+      "approval": "user"
+    },
+    {
+      "op": "replace-cells",
+      "entity": "staff_member",
+      "column": "hours",
+      "cells": [
+        {
+          "id": "P116",
+          "from": "40?",
+          "to": "40"
+        },
+        {
+          "id": "P121",
+          "from": "35?",
+          "to": "35"
+        },
+        {
+          "id": "P158",
+          "from": "24?",
+          "to": "24"
+        }
+      ],
+      "reason": "Malformed numbers in contracted hours: comma decimal separators (continental European entry) became points, the letter O typed for zero became 0, and a trailing question mark was removed (flagged in the matching _uncertainty column).",
+      "approval": "user"
+    },
+    {
+      "op": "replace-cells",
+      "entity": "staff_member",
+      "column": "rate",
+      "cells": [
+        {
+          "id": "P029",
+          "from": "12,41",
+          "to": "12.41"
+        },
+        {
+          "id": "P084",
+          "from": "12,66",
+          "to": "12.66"
+        },
+        {
+          "id": "P089",
+          "from": "12,42",
+          "to": "12.42"
+        },
+        {
+          "id": "P148",
+          "from": "12,36",
+          "to": "12.36"
+        }
+      ],
+      "reason": "Malformed numbers in hourly rates: comma decimal separators (continental European entry) became points, the letter O typed for zero became 0, and a trailing question mark was removed (flagged in the matching _uncertainty column).",
+      "approval": "user"
+    },
+    {
+      "op": "trim",
+      "entity": "menu",
+      "reason": "Stray leading and trailing spaces were found in several columns.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu",
+      "column": "name",
+      "map": {
+        "Summer  2025": "Summer 2025",
+        "summer 2025": "Summer 2025"
+      },
+      "reason": "Same menu name written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu",
+      "column": "name",
+      "map": {
+        "Summre 2025": "Summer 2025"
+      },
+      "reason": "Likely typos of menu name values, corrected to the nearby valid value; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu",
+      "column": "service",
+      "map": {
+        "all day": "All day"
+      },
+      "reason": "Same service written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu",
+      "column": "service",
+      "map": {
+        "Cuonter": "Counter"
+      },
+      "reason": "Likely typos of service values, corrected to the nearby valid value; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu",
+      "column": "from",
+      "map": {
+        "01/01/2025": "2025-01-01",
+        "01/05/25": "2025-05-01",
+        "01/05/2025": "2025-05-01"
+      },
+      "reason": "Menu start dates were written as DD/MM/YYYY, DD/MM/YY (read as 20YY) or YYYY/MM-DD; day-first order confirmed by the user. Rewritten as ISO YYYY-MM-DD.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu",
+      "column": "to",
+      "map": {
+        "30/04/2025": "2025-04-30",
+        "31/10/2025": "2025-10-31",
+        "31/10/25": "2025-10-31",
+        "30/04/25": "2025-04-30"
+      },
+      "reason": "Menu end dates were written as DD/MM/YYYY, DD/MM/YY (read as 20YY) or YYYY/MM-DD; day-first order confirmed by the user. Rewritten as ISO YYYY-MM-DD.",
+      "approval": "user"
+    },
+    {
+      "op": "trim",
+      "entity": "menu_item",
+      "reason": "Stray leading and trailing spaces were found in several columns.",
+      "approval": "auto"
+    },
+    {
+      "op": "blank-placeholders",
+      "entity": "menu_item",
+      "columns": [
+        "name",
+        "group",
+        "price",
+        "cost",
+        "vegan",
+        "notes"
+      ],
+      "values": [
+        "-",
+        "n/a"
+      ],
+      "reason": "`-` and `n/a` mean the value is missing.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu_item",
+      "column": "name",
+      "map": {
+        "CAPPUCCINO": "Cappuccino",
+        "Filter  coffee": "Filter coffee",
+        "cheese toastie": "Cheese toastie",
+        "Iced  latte": "Iced latte",
+        "oat latte": "Oat latte",
+        "butter croissant": "Butter croissant",
+        "cappuccino": "Cappuccino",
+        "Hot  chocolate": "Hot chocolate",
+        "americano": "Americano",
+        "HOT CHOCOLATE": "Hot chocolate",
+        "flat white": "Flat white",
+        "OAT LATTE": "Oat latte"
+      },
+      "reason": "Same item name written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu_item",
+      "column": "name",
+      "map": {
+        "Capupccino": "Cappuccino",
+        "Flat wihte": "Flat white",
+        "Aemricano": "Americano",
+        "Espreso": "Espresso",
+        "Breafkast tea": "Breakfast tea",
+        "Buter croissant": "Butter croissant",
+        "Berakfast tea": "Breakfast tea",
+        "Lemo ncake": "Lemon cake",
+        "Flatw hite": "Flat white",
+        "Oat atte": "Oat latte",
+        "Fiter coffee": "Filter coffee",
+        "Americao": "Americano",
+        "Cheese tostie": "Cheese toastie"
+      },
+      "reason": "Likely typos of item name values, corrected to the nearby valid value; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu_item",
+      "column": "group",
+      "map": {
+        "COFFEE": "Coffee",
+        "bakery": "Bakery",
+        "cold drinks": "Cold drinks",
+        "coffee": "Coffee",
+        "tea": "Tea"
+      },
+      "reason": "Same item group written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu_item",
+      "column": "group",
+      "map": {
+        "Cofefe": "Coffee",
+        "Bakey": "Bakery",
+        "Cofee": "Coffee",
+        "Bakeyr": "Bakery",
+        "Cohcolate": "Chocolate",
+        "Cffee": "Coffee",
+        "Bakry": "Bakery",
+        "Cfofee": "Coffee"
+      },
+      "reason": "Likely typos of item group values, corrected to the nearby valid value; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu_item",
+      "column": "size",
+      "map": {
+        "SLICE": "slice",
+        "REGULAR": "regular",
+        "POT": "pot",
+        "EACH": "each"
+      },
+      "reason": "Same serving size written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu_item",
+      "column": "size",
+      "map": {
+        "reular": "regular",
+        "ech": "each",
+        "regulr": "regular",
+        "slce": "slice",
+        "regualr": "regular",
+        "reguar": "regular",
+        "250m l": "250 ml",
+        "sice": "slice"
+      },
+      "reason": "Likely typos of serving size values, corrected to the nearby valid value; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu_item",
+      "column": "vegan",
+      "map": {
+        "NO": "No",
+        "no": "No",
+        "yes": "Yes"
+      },
+      "reason": "Same vegan flag written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu_item",
+      "column": "notes",
+      "map": {
+        "supplier may vary": "Supplier may vary",
+        "Supplier  may vary": "Supplier may vary",
+        "Made  on site": "Made on site",
+        "ask about allergens": "Ask about allergens",
+        "SUPPLIER MAY VARY": "Supplier may vary"
+      },
+      "reason": "Same note written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "menu_item",
+      "column": "notes",
+      "map": {
+        "Made o site": "Made on site",
+        "Ask abou tallergens": "Ask about allergens",
+        "Supplie may vary": "Supplier may vary",
+        "Mdae on site": "Made on site",
+        "Subject t availability": "Subject to availability",
+        "Ask baout allergens": "Ask about allergens"
+      },
+      "reason": "Likely typos of note values, corrected to the nearby valid value; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "derive-column",
+      "entity": "menu_item",
+      "column": "price_uncertainty",
+      "from": "price",
+      "map": {
+        "3.20?": "Yes",
+        "4.20?": "Yes",
+        "2.90?": "Yes",
+        "2.80?": "Yes",
+        "3.10?": "Yes"
+      },
+      "default": "No",
+      "reason": "The provider marked 7 price values with a trailing question mark; record that as a Yes/No flag before the mark is removed.",
+      "approval": "user"
+    },
+    {
+      "op": "replace-cells",
+      "entity": "menu_item",
+      "column": "price",
+      "cells": [
+        {
+          "id": "I008",
+          "from": "2.8O",
+          "to": "2.80"
+        },
+        {
+          "id": "I009",
+          "from": "3.20?",
+          "to": "3.20"
+        },
+        {
+          "id": "I046",
+          "from": "4.20?",
+          "to": "4.20"
+        },
+        {
+          "id": "I085",
+          "from": "2.90?",
+          "to": "2.90"
+        },
+        {
+          "id": "I088",
+          "from": "3,20",
+          "to": "3.20"
+        },
+        {
+          "id": "I092",
+          "from": "2.80?",
+          "to": "2.80"
+        },
+        {
+          "id": "I094",
+          "from": "3,60",
+          "to": "3.60"
+        },
+        {
+          "id": "I139",
+          "from": "2.80?",
+          "to": "2.80"
+        },
+        {
+          "id": "I157",
+          "from": "3.10?",
+          "to": "3.10"
+        },
+        {
+          "id": "I162",
+          "from": "3,90",
+          "to": "3.90"
+        },
+        {
+          "id": "I181",
+          "from": "3,20",
+          "to": "3.20"
+        },
+        {
+          "id": "I192",
+          "from": "3.10?",
+          "to": "3.10"
+        }
+      ],
+      "reason": "Malformed numbers in prices: comma decimal separators (continental European entry) became points, the letter O typed for zero became 0, and a trailing question mark was removed (flagged in the matching _uncertainty column).",
+      "approval": "user"
+    },
+    {
+      "op": "replace-cells",
+      "entity": "menu_item",
+      "column": "cost",
+      "cells": [
+        {
+          "id": "I005",
+          "from": "0,95",
+          "to": "0.95"
+        },
+        {
+          "id": "I047",
+          "from": "1,04",
+          "to": "1.04"
+        },
+        {
+          "id": "I059",
+          "from": "O.47",
+          "to": "0.47"
+        },
+        {
+          "id": "I077",
+          "from": "1,09",
+          "to": "1.09"
+        },
+        {
+          "id": "I087",
+          "from": "O.96",
+          "to": "0.96"
+        },
+        {
+          "id": "I101",
+          "from": "0,94",
+          "to": "0.94"
+        },
+        {
+          "id": "I111",
+          "from": "0,99",
+          "to": "0.99"
+        },
+        {
+          "id": "I112",
+          "from": "O.34",
+          "to": "0.34"
+        },
+        {
+          "id": "I143",
+          "from": "0,86",
+          "to": "0.86"
+        },
+        {
+          "id": "I159",
+          "from": "0,82",
+          "to": "0.82"
+        },
+        {
+          "id": "I192",
+          "from": "1,11",
+          "to": "1.11"
+        }
+      ],
+      "reason": "Malformed numbers in costs: comma decimal separators (continental European entry) became points, the letter O typed for zero became 0, and a trailing question mark was removed (flagged in the matching _uncertainty column).",
+      "approval": "user"
+    },
+    {
+      "op": "trim",
+      "entity": "monthly_account",
+      "reason": "Stray leading and trailing spaces were found in several columns.",
+      "approval": "auto"
+    },
+    {
+      "op": "blank-placeholders",
+      "entity": "monthly_account",
+      "columns": [
+        "period",
+        "sales",
+        "cost",
+        "pay",
+        "txns",
+        "status",
+        "notes"
+      ],
+      "values": [
+        "-",
+        "n/a"
+      ],
+      "reason": "`-` and `n/a` mean the value is missing.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "monthly_account",
+      "column": "status",
+      "map": {
+        "checked": "Checked",
+        "DRAFT": "Draft",
+        "draft": "Draft",
+        "CHECKED": "Checked",
+        "final": "Final"
+      },
+      "reason": "Same return status written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "monthly_account",
+      "column": "status",
+      "map": {
+        "Fnal": "Final",
+        "Fial": "Final",
+        "Cheked": "Checked",
+        "Finl": "Final",
+        "Finla": "Final",
+        "Cehcked": "Checked"
+      },
+      "reason": "Likely typos of return status values, corrected to the nearby valid value; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "monthly_account",
+      "column": "notes",
+      "map": {
+        "Includes  equipment repair": "Includes equipment repair",
+        "includes equipment repair": "Includes equipment repair",
+        "AWAITING SUPPLIER CREDIT": "Awaiting supplier credit"
+      },
+      "reason": "Same note written with different case or spacing; unified to the form most rows use.",
+      "approval": "auto"
+    },
+    {
+      "op": "map-values",
+      "entity": "monthly_account",
+      "column": "notes",
+      "map": {
+        "Tilld ifference checked": "Till difference checked"
+      },
+      "reason": "Likely typos of note values, corrected to the nearby valid value; approved by the user.",
+      "approval": "user"
+    },
+    {
+      "op": "map-values",
+      "entity": "monthly_account",
+      "column": "period",
+      "map": {
+        "01/02/2025": "2025-02-01",
+        "01/07/2025": "2025-07-01",
+        "01/08/25": "2025-08-01",
+        "01/01/2025": "2025-01-01",
+        "01/03/2025": "2025-03-01",
+        "01/05/2025": "2025-05-01",
+        "01/09/2025": "2025-09-01",
+        "01/04/2025": "2025-04-01",
+        "2025/05-01": "2025-05-01",
+        "01/08/2025": "2025-08-01",
+        "01/02/25": "2025-02-01",
+        "01/04/25": "2025-04-01",
+        "2025/07-01": "2025-07-01",
+        "01/10/2025": "2025-10-01",
+        "01/06/2025": "2025-06-01",
+        "01/05/25": "2025-05-01",
+        "01/01/25": "2025-01-01",
+        "2025/02-01": "2025-02-01"
+      },
+      "reason": "Reporting months were written as DD/MM/YYYY, DD/MM/YY (read as 20YY) or YYYY/MM-DD; day-first order confirmed by the user. Rewritten as ISO YYYY-MM-DD.",
+      "approval": "user"
+    },
+    {
+      "op": "derive-column",
+      "entity": "monthly_account",
+      "column": "sales_uncertainty",
+      "from": "sales",
+      "map": {
+        "32191.13?": "Yes",
+        "49179.65?": "Yes"
+      },
+      "default": "No",
+      "reason": "The provider marked 2 sales values with a trailing question mark; record that as a Yes/No flag before the mark is removed.",
+      "approval": "user"
+    },
+    {
+      "op": "derive-column",
+      "entity": "monthly_account",
+      "column": "cost_uncertainty",
+      "from": "cost",
+      "map": {
+        "8142.15?": "Yes",
+        "9253.94?": "Yes",
+        "10798.33?": "Yes"
+      },
+      "default": "No",
+      "reason": "The provider marked 3 cost of goods values with a trailing question mark; record that as a Yes/No flag before the mark is removed.",
+      "approval": "user"
+    },
+    {
+      "op": "derive-column",
+      "entity": "monthly_account",
+      "column": "rent_uncertainty",
+      "from": "rent",
+      "map": {
+        "2685.00?": "Yes",
+        "3445.00?": "Yes",
+        "3540.00?": "Yes"
+      },
+      "default": "No",
+      "reason": "The provider marked 3 rent values with a trailing question mark; record that as a Yes/No flag before the mark is removed.",
+      "approval": "user"
+    },
+    {
+      "op": "derive-column",
+      "entity": "monthly_account",
+      "column": "other_uncertainty",
+      "from": "other",
+      "map": {
+        "1512.58?": "Yes",
+        "1442.96?": "Yes",
+        "1418.56?": "Yes",
+        "1242.22?": "Yes"
+      },
+      "default": "No",
+      "reason": "The provider marked 4 other-costs values with a trailing question mark; record that as a Yes/No flag before the mark is removed.",
+      "approval": "user"
+    },
+    {
+      "op": "derive-column",
+      "entity": "monthly_account",
+      "column": "txns_uncertainty",
+      "from": "txns",
+      "map": {
+        "4043?": "Yes",
+        "4244?": "Yes"
+      },
+      "default": "No",
+      "reason": "The provider marked 2 transaction-count values with a trailing question mark; record that as a Yes/No flag before the mark is removed.",
+      "approval": "user"
+    },
+    {
+      "op": "replace-cells",
+      "entity": "monthly_account",
+      "column": "sales",
+      "cells": [
+        {
+          "id": "A039",
+          "from": "32191.13?",
+          "to": "32191.13"
+        },
+        {
+          "id": "A048",
+          "from": "49179.65?",
+          "to": "49179.65"
+        },
+        {
+          "id": "A057",
+          "from": "45629,95",
+          "to": "45629.95"
+        },
+        {
+          "id": "A058",
+          "from": "44066,75",
+          "to": "44066.75"
+        },
+        {
+          "id": "A092",
+          "from": "32568,80",
+          "to": "32568.80"
+        },
+        {
+          "id": "A101",
+          "from": "28948,97",
+          "to": "28948.97"
+        }
+      ],
+      "reason": "Malformed numbers in sales values: comma decimal separators (continental European entry) became points, the letter O typed for zero became 0, and a trailing question mark was removed (flagged in the matching _uncertainty column).",
+      "approval": "user"
+    },
+    {
+      "op": "replace-cells",
+      "entity": "monthly_account",
+      "column": "cost",
+      "cells": [
+        {
+          "id": "A018",
+          "from": "8891,42",
+          "to": "8891.42"
+        },
+        {
+          "id": "A065",
+          "from": "8142.15?",
+          "to": "8142.15"
+        },
+        {
+          "id": "A066",
+          "from": "9253.94?",
+          "to": "9253.94"
+        },
+        {
+          "id": "A085",
+          "from": "10798.33?",
+          "to": "10798.33"
+        },
+        {
+          "id": "A087",
+          "from": "12269,49",
+          "to": "12269.49"
+        },
+        {
+          "id": "A106",
+          "from": "7993,10",
+          "to": "7993.10"
+        },
+        {
+          "id": "A107",
+          "from": "8704,57",
+          "to": "8704.57"
+        },
+        {
+          "id": "A112",
+          "from": "9O41.93",
+          "to": "9041.93"
+        }
+      ],
+      "reason": "Malformed numbers in cost of goods values: comma decimal separators (continental European entry) became points, the letter O typed for zero became 0, and a trailing question mark was removed (flagged in the matching _uncertainty column).",
+      "approval": "user"
+    },
+    {
+      "op": "replace-cells",
+      "entity": "monthly_account",
+      "column": "pay",
+      "cells": [
+        {
+          "id": "A014",
+          "from": "9105,75",
+          "to": "9105.75"
+        },
+        {
+          "id": "A032",
+          "from": "10940,21",
+          "to": "10940.21"
+        },
+        {
+          "id": "A046",
+          "from": "17047,52",
+          "to": "17047.52"
+        },
+        {
+          "id": "A064",
+          "from": "9933,64",
+          "to": "9933.64"
+        },
+        {
+          "id": "A079",
+          "from": "1O722.69",
+          "to": "10722.69"
+        }
+      ],
+      "reason": "Malformed numbers in staff cost values: comma decimal separators (continental European entry) became points, the letter O typed for zero became 0, and a trailing question mark was removed (flagged in the matching _uncertainty column).",
+      "approval": "user"
+    },
+    {
+      "op": "replace-cells",
+      "entity": "monthly_account",
+      "column": "rent",
+      "cells": [
+        {
+          "id": "A024",
+          "from": "2685.O0",
+          "to": "2685.00"
+        },
+        {
+          "id": "A025",
+          "from": "2685.00?",
+          "to": "2685.00"
+        },
+        {
+          "id": "A041",
+          "from": "2875,00",
+          "to": "2875.00"
+        },
+        {
+          "id": "A096",
+          "from": "335O.00",
+          "to": "3350.00"
+        },
+        {
+          "id": "A103",
+          "from": "3445.00?",
+          "to": "3445.00"
+        },
+        {
+          "id": "A118",
+          "from": "3540.00?",
+          "to": "3540.00"
+        }
+      ],
+      "reason": "Malformed numbers in rent values: comma decimal separators (continental European entry) became points, the letter O typed for zero became 0, and a trailing question mark was removed (flagged in the matching _uncertainty column).",
+      "approval": "user"
+    },
+    {
+      "op": "replace-cells",
+      "entity": "monthly_account",
+      "column": "other",
+      "cells": [
+        {
+          "id": "A006",
+          "from": "1512.58?",
+          "to": "1512.58"
+        },
+        {
+          "id": "A021",
+          "from": "1160,15",
+          "to": "1160.15"
+        },
+        {
+          "id": "A046",
+          "from": "1442.96?",
+          "to": "1442.96"
+        },
+        {
+          "id": "A090",
+          "from": "1473,30",
+          "to": "1473.30"
+        },
+        {
+          "id": "A091",
+          "from": "1400,18",
+          "to": "1400.18"
+        },
+        {
+          "id": "A095",
+          "from": "1418.56?",
+          "to": "1418.56"
+        },
+        {
+          "id": "A101",
+          "from": "1242.22?",
+          "to": "1242.22"
+        }
+      ],
+      "reason": "Malformed numbers in other-costs values: comma decimal separators (continental European entry) became points, the letter O typed for zero became 0, and a trailing question mark was removed (flagged in the matching _uncertainty column).",
+      "approval": "user"
+    },
+    {
+      "op": "replace-cells",
+      "entity": "monthly_account",
+      "column": "txns",
+      "cells": [
+        {
+          "id": "A037",
+          "from": "4043?",
+          "to": "4043"
+        },
+        {
+          "id": "A067",
+          "from": "4244?",
+          "to": "4244"
+        }
+      ],
+      "reason": "Malformed numbers in transaction-count values: comma decimal separators (continental European entry) became points, the letter O typed for zero became 0, and a trailing question mark was removed (flagged in the matching _uncertainty column).",
+      "approval": "user"
+    }
+  ],
+  "notes": {
+    "flagged": [
+      "`menu_item.cost`: item I026 has a cost of 2.11, much higher than the other costs for similar items. It was kept as given and may be worth confirming with the provider.",
+      "Twenty-four cells in seven columns were given with a trailing `?`. The `?` was removed and the cell recorded in the matching `*_uncertainty` flag column. The provider has not confirmed those values."
+    ],
+    "pii": [
+      "`staff_member`: first names are kept in full. Surnames were abbreviated to the shortest letters that tell apart surnames sharing a first name, so people are harder to identify. `hourly_pay_rate`, `start_date` and the free-text notes remain, and with the first name and role could still identify a person in a small team. The unabbreviated surnames remain in `raw-data/staff.csv`.",
+      "`region.region_contact` holds the names of the regional managers, `coffee_shop.shop_address` the street addresses of shops and `team.team_extension` internal phone extensions. They were kept as business information, not private personal data."
+    ],
+    "decisions": [
+      "The shop whose name was `-` in the source (S011, Leeds, region North, 15 staff, two menus, 10 monthly accounts) is named \"TBC: Totally Brilliant Coffee\" here. This is a **placeholder chosen with the user, not the shop's real name**; replace it when the provider supplies one.",
+      "Entity tree: region > coffee shop > (team > staff member), (menu > menu item) and monthly account. Every parent link was confirmed by the profile and by the column names.",
+      "All dates in the source were read as day-first (DD/MM/YYYY or DD/MM/YY), never month-first, and rewritten as ISO dates. Two-digit years are read as 20YY. `2025/02-01` and similar are read as YYYY/MM-DD.",
+      "Numbers entered with a comma decimal separator (e.g. `28948,97`) were converted to a decimal point. The company has continental European staff who enter figures that way. The letter O typed in place of zero was also corrected.",
+      "`initial_training` is ordinal No < Pending < Yes. `return_status` is ordinal Draft < Checked < Final. Money is in GBP, `contracted_hours` is per week, and `transactions` is a count per month.",
+      "No latitude or longitude columns exist, so no geo metadata was set.",
+      "Variable output names are prefixed with the entity (`shop_name`, `team_name`, `item_price` and so on) so that no two entities share a variable name.",
+      "`staff_member.first_name`: `Teo` was corrected to `Theo`, although it is also one edit from `Leo`. The user judged it most likely a keyboard slip.",
+      "Category trees were drafted for the two entities with about 10 or more variables, staff member and monthly account, and applied as drafted. The uncertainty flag columns sit in their own category in each.",
+      "`team.team_extension` is a string with a categorical shape: it is a code, not a quantity. (In the original curation session study-wrangler 1.0.53 rejected the all-digit string column, VEuPathDB/study-wrangler#95, and it was typed integer as a workaround. 1.0.54 fixes that, so the fixture uses string.)"
+    ],
+    "validation": [
+      "study-wrangler 1.0.54, `validate(study, profiles = c(\"baseline\", \"eda\"))` after `map_entities(study, infer_geo_variables_for_eda)`: passed, study and all 7 entities valid. Under 1.0.53 the same spec failed on `team_extension` (VEuPathDB/study-wrangler#95)."
+    ]
+  }
+}

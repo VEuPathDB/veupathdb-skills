@@ -30,9 +30,53 @@ antibody-array (limma) contrasts on EDA-backed datasets.
 Ask your agent a VEuPathDB question. A free VEuPathDB account is required, and the
 agent walks you through saving your API key on first use.
 
+## tabular-to-stf
+
+Turns a folder of related CSV/TSV tables (one file per entity, e.g. village, household,
+participant, sample) into a Study Transfer Format (STF) directory that study-wrangler
+loads and VEuPathDB EDA accepts. The agent profiles your data, asks you about it, and
+writes a curation spec; scripts render and check the STF. Optionally it validates the
+result in the pinned study-wrangler container.
+
+### Install
+
+1. Download `tabular-to-stf-<version>.zip` from the
+   [latest release](../../releases/latest) (the named asset, not "Source code").
+2. Unzip it into your agent's skills directory, e.g. `~/.claude/skills/` for Claude Code.
+   The skill is the `tabular-to-stf/` folder containing `SKILL.md`.
+3. Install [uv](https://docs.astral.sh/uv/); the scripts run through `uv run`.
+4. Recommended supply-chain protection: make uv ignore package versions published in
+   the last week, so a freshly compromised release is never installed. Put this in
+   `~/.config/uv/uv.toml`:
+
+   ```toml
+   exclude-newer = "1 week"
+   ```
+
+5. Optional: install Docker or Podman for container validation.
+
+### Use
+
+Ask your agent to convert your tables to STF and give it the input folder, an output
+folder, and optionally a study description or data dictionary.
+
 ## Development
+
+### veupathdb_database
 
 Tests and gold standards are in `veupathdb_database/TESTS.md`; run them with
 `uv run --with pytest --with httpx python -m pytest tests -q` from `veupathdb_database/`.
+
+### tabular-to-stf
+
+From `tabular-to-stf/`, run
+`uv run --with pytest --with "ruamel.yaml>=0.18,<0.20" python -m pytest tests -q`. The golden
+tests render the fixtures in `tests/fixtures/tabular/` and compare them with each
+`expected/` directory. Two groups are skipped by default:
+the container tests (set `STF_CONTAINER_TESTS=1`; needs Docker or Podman and the pinned
+study-wrangler image) and the 1M-row scale test (set `STF_SCALE_TEST=1`).
+
+### Releases
+
 Design specs and plans are archived on the `docs` branch. Publishing a GitHub release
-builds and attaches the skill zip.
+builds and attaches a zip for each skill, `veupathdb_database` and `tabular-to-stf`.

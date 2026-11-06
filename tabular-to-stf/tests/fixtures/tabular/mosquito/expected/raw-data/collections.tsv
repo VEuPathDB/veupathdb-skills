@@ -1,0 +1,13 @@
+collection_id	site_id	date	method	trap nights	light
+C001	BF01	2022-07-04	CDC light trap	1	on
+C002	BF01	2022-07-05	human landing catch	1	
+C003	BF02	2022-07-04	CDC light trap	2	off
+C004	BF03	2022-07-06	pyrethrum spray catch	1	
+C005	BF04	2022-07-06	CDC light trap	1	on
+C006	BF05	2022-07-07	human landing catch	1	
+C007	BF06	2022-07-08	CDC light trap	3	on
+C008	BF07	2022-07-08	pyrethrum spray catch	1	
+C009	BF08	2022-07-11	CDC light trap	2	off
+C010	BF09	2022-07-11	human landing catch	1	
+C011	BF10	2022-07-12	CDC light trap	1	on
+C012	BF10	2022-07-13	pyrethrum spray catch	1	

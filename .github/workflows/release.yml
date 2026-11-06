@@ -16,8 +16,12 @@ jobs:
         env:
           TAG: ${{ github.event.release.tag_name }}
         run: zip -r "veupathdb_database-$TAG.zip" veupathdb_database -x '*/__pycache__/*' '*.pyc' '*/.pytest_cache/*' 'veupathdb_database/tests/*' veupathdb_database/TESTS.md
+      - name: Build tabular-to-stf zip
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: zip -r "tabular-to-stf-$TAG.zip" tabular-to-stf -x '*/__pycache__/*' '*.pyc' '*/.pytest_cache/*' 'tabular-to-stf/tests/*'
       - name: Attach to release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
-        run: gh release upload "$TAG" "veupathdb_database-$TAG.zip" --clobber
+        run: gh release upload "$TAG" "veupathdb_database-$TAG.zip" "tabular-to-stf-$TAG.zip" --clobber

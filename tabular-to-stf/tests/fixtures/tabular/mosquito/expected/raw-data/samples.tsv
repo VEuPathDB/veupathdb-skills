@@ -1,0 +1,16 @@
+sample_id	collection_id	species	sex	blood fed	count
+S001	C001	Anopheles gambiae	F	yes	12
+S002	C001	Anopheles funestus	F	no	3
+S003	C002	Anopheles gambiae	F	no	7
+S004	C003	Anopheles arabiensis	M	no	2
+S005	C004	Anopheles gambiae	F	yes	15
+S006	C005	Anopheles funestus	F	yes	4
+S007	C006	Anopheles gambie	F	no	9
+S008	C007	Anopheles gambiae	M	no	5
+S009	C007	Anopheles arabiensis	F	yes	6
+S010	C008	Anopheles gambiae	F	yes	11
+S011	C009	Anopheles funestus	F	no	1
+S012	C010	Anopheles gambiae	F	no	8
+S013	C011	Anopheles arabiensis	F	yes	3
+S014	C012	Anopheles gambiae	F	yes	10
+S015	C012	Anopheles funestus	M	no	2

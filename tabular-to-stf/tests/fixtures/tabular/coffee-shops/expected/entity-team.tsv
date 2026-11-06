@@ -1,0 +1,37 @@
+shop_id	team_id \\ Descriptors	team_name	team_shift	team_extension
+S001	T001	Front of house	Mixed	234
+S001	T002	Bar	Late	260
+S001	T003	Kitchen	Early	295
+S002	T004	Front of house	Mixed	257
+S002	T005	Bar	Late	286
+S002	T006	Kitchen	Mixed	264
+S003	T007	Front of house	Mixed	260
+S003	T008	Bar	Mixed	298
+S003	T009	Kitchen	Mixed	251
+S004	T010	Front of house	Mixed	256
+S004	T011	Bar	Early	257
+S004	T012	Kitchen	Mixed	204
+S005	T013	Front of house	Mixed	296
+S005	T014	Bar		272
+S005	T015	Kitchen	Late	264
+S006	T016	Front of house	Mixed	221
+S006	T017	Bar	Late	299
+S006	T018		Early	203
+S007	T019	Front of house	Mixed	214
+S007	T020	Bar	Mixed	236
+S007	T021	Kitchen	Early	256
+S008	T022	Front of house	Mixed	203
+S008	T023	Bar	Late	231
+S008	T024	Kitchen	Late	251
+S009	T025	Front of house	Mixed	226
+S009	T026	Bar	Late	251
+S009	T027	Kitchen	Early	214
+S010	T028	Front of house	Late	260
+S010	T029	Bar	Early	296
+S010	T030	Kitchen	Mixed	229
+S011	T031	Front of house	Mixed	299
+S011	T032	Bar	Late	243
+S011	T033	Kitchen		249
+S012	T034	Front of house	Early	208
+S012	T035	Bar	Early	232
+S012	T036	Kitchen	Early	210

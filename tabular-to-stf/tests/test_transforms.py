@@ -1,0 +1,261 @@
+import copy
+import re
+
+import pytest
+
+from _read_table import Table
+from _transforms import TransformError, apply_transforms
+
+
+def T(op, **extra):
+    return {"op": op, "entity": "p", "reason": "r", "approval": "user", **extra}
+
+
+def spec(transforms, id_column="id"):
+    return {"entities": [{"name": "p", "idColumn": id_column}], "transforms": transforms}
+
+
+def mk(headers, rows):
+    return Table(file="/data/p.csv", delimiter=",", headers=headers, rows=rows)
+
+
+def tables():
+    return {"p": mk(["id", "age", "note"], [["P1", "80+", " NA "], ["P2", "5", "ok "], ["P3", "", "NA"]])}
+
+
+def run(transforms, t=None, id_column="id"):
+    return apply_transforms(t if t is not None else tables(), spec(transforms, id_column))
+
+
+def test_trim_defaults_to_all_columns_and_counts_changed_cells():
+    out, log = run([T("trim")])
+    assert out["p"].rows[0] == ["P1", "80+", "NA"]
+    assert log[0]["cellsChanged"] == 2
+    assert log[0]["index"] == 0
+
+
+def test_trim_uses_js_whitespace_set():
+    t = {"p": mk(["id", "v"], [["A", "﻿ x "], ["B", "\x1cy\x1c"]])}
+    out, _ = run([T("trim")], t)
+    assert out["p"].rows == [["A", "x"], ["B", "\x1cy\x1c"]]
+
+
+def test_trim_with_columns():
+    out, log = run([T("trim", columns=["note"])])
+    assert out["p"].rows[1][2] == "ok"
+    assert log[0]["cellsChanged"] == 2
+
+
+def test_blank_placeholders():
+    out, log = run([T("blank-placeholders", values=["NA"], columns=["note"])])
+    assert out["p"].rows[2][2] == ""
+    assert out["p"].rows[0][2] == " NA "
+    assert log[0]["cellsChanged"] == 1
+
+
+def test_map_values_exact_match_only():
+    out, log = run([T("map-values", column="age", map={"80+": "80", "5": "5"})])
+    assert [r[1] for r in out["p"].rows] == ["80", "5", ""]
+    assert log[0]["cellsChanged"] == 1
+    assert log[0]["column"] == "age"
+
+
+def test_rename_column_and_drop_column():
+    out, _ = run([T("rename-column", **{"from": "age", "to": "years"}), T("drop-column", column="note")])
+    assert out["p"].headers == ["id", "years"]
+    assert out["p"].rows[0] == ["P1", "80+"]
+
+
+def test_missing_column_error_names_entity_index_and_column():
+    with pytest.raises(TransformError, match=r"zzz"):
+        run([T("trim"), T("drop-column", column="zzz")])
+    with pytest.raises(TransformError) as e:
+        run([T("drop-column", column="zzz")])
+    msg = str(e.value)
+    assert 'entity "p"' in msg and "transforms[0]" in msg and "zzz" in msg
+    assert msg == 'entity "p", transforms[0] (drop-column): column "zzz" not found'
+
+
+def test_proposed_and_rejected_are_skipped_but_logged():
+    out, log = run([
+        T("drop-column", column="note", approval="proposed"),
+        T("drop-column", column="age", approval="rejected", instead="x"),
+    ])
+    assert out["p"].headers == ["id", "age", "note"]
+    assert [[l["index"], l["approval"], l["cellsChanged"]] for l in log] == [[0, "proposed", 0], [1, "rejected", 0]]
+    assert log[0]["column"] == "note"
+    assert list(log[0].keys()) == ["index", "op", "entity", "approval", "cellsChanged", "column"]
+
+
+def test_log_key_order():
+    _, log = run([T("map-values", column="note", map={"NA": ""}), T("rename-column", **{"from": "age", "to": "y"})])
+    assert list(log[0].keys()) == ["index", "op", "entity", "approval", "cellsChanged", "column", "ids"]
+    assert list(log[1].keys()) == ["index", "op", "entity", "approval", "cellsChanged", "column"]
+    assert log[1]["column"] == "y"
+
+
+def test_no_table_for_entity():
+    with pytest.raises(TransformError, match=r'entity "q", transforms\[0\] \(trim\): no table for entity'):
+        run([T("trim", entity="q")])
+
+
+def test_unknown_op():
+    with pytest.raises(TransformError, match=r"\(bogus\): unknown op"):
+        run([T("bogus")])
+
+
+def test_replace_cells_applies_by_row_id():
+    out, log = run([T("replace-cells", column="age", cells=[{"id": "P1", "from": "80+", "to": "80"}])])
+    assert out["p"].rows[0][1] == "80"
+    assert log[0]["ids"] == ["P1"]
+    assert log[0]["cellsChanged"] == 1
+
+
+def test_stale_replace_cells_throws_naming_the_row_id():
+    with pytest.raises(TransformError, match="P2") as e:
+        run([T("replace-cells", column="age", cells=[{"id": "P2", "from": "99", "to": "1"}])])
+    assert 'is "5", spec expects "99" (stale spec?)' in str(e.value)
+    with pytest.raises(TransformError, match="P9"):
+        run([T("replace-cells", column="age", cells=[{"id": "P9", "from": "1", "to": "2"}])])
+
+
+def test_parse_dates_dd_mm_yyyy():
+    t = {"p": mk(["id", "d"], [["A", "03/04/2023"], ["B", ""]])}
+    out, log = run([T("parse-dates", column="d", format="DD/MM/YYYY")], t)
+    assert [r[1] for r in out["p"].rows] == ["2023-04-03", ""]
+    assert log[0]["cellsChanged"] == 1
+
+
+def test_parse_dates_single_digit_tokens_and_bad_rows():
+    t = {"p": mk(["id", "d"], [["A", "3.4.2023"], ["B", "12.11.2023"]])}
+    out, _ = run([T("parse-dates", column="d", format="D.M.YYYY")], t)
+    assert [r[1] for r in out["p"].rows] == ["2023-04-03", "2023-11-12"]
+    bad = {"p": mk(["id", "d"], [["A", "31/02/2023"], ["B", "1/2/2023"], ["C", "01/02/2023"]])}
+    with pytest.raises(TransformError) as e:
+        run([T("parse-dates", column="d", format="DD/MM/YYYY")], bad)
+    msg = str(e.value)
+    assert "A" in msg and "B" in msg and not re.search(r"\bC\b", msg)
+    assert msg.endswith("do not match format DD/MM/YYYY for row IDs: A, B")
+
+
+@pytest.mark.parametrize("value", [
+    "2023-02-29",  # not a leap year
+    "2023-00-10",
+    "2023-13-01",
+    "2023-04-31",
+    "2023-04-00",
+    "0050-01-01",  # JS Date.UTC maps years 0-99 to 19xx, so the JS rejects these
+    "0000-01-01",
+    "٢023-01-01",  # non-ASCII digit
+    "2023-01-01\n",
+])
+def test_parse_dates_rejects_impossible_or_unmatched(value):
+    t = {"p": mk(["id", "d"], [["A", value]])}
+    with pytest.raises(TransformError, match="row IDs: A"):
+        run([T("parse-dates", column="d", format="YYYY-MM-DD")], t)
+
+
+def test_parse_dates_accepts_leap_day_and_escapes_format_literals():
+    t = {"p": mk(["id", "d"], [["A", "2024-02-29"], ["B", "29.02.2024"]])}
+    out, _ = run([T("parse-dates", column="d", format="YYYY-MM-DD")], {"p": mk(["id", "d"], [t["p"].rows[0]])})
+    assert out["p"].rows[0][1] == "2024-02-29"
+    out, _ = run([T("parse-dates", column="d", format="DD.MM.YYYY")], {"p": mk(["id", "d"], [t["p"].rows[1]])})
+    assert out["p"].rows[0][1] == "2024-02-29"
+    # "." is literal, not a wildcard
+    with pytest.raises(TransformError):
+        run([T("parse-dates", column="d", format="DD.MM.YYYY")], {"p": mk(["id", "d"], [["A", "29x02x2024"]])})
+
+
+def test_parse_dates_format_missing_a_component_never_matches():
+    t = {"p": mk(["id", "d"], [["A", "2023-04"]])}
+    with pytest.raises(TransformError, match="row IDs: A"):
+        run([T("parse-dates", column="d", format="YYYY-MM")], t)
+
+
+def test_derive_column_then_replace_cells():
+    out, _ = run([
+        T("derive-column", column="age_80plus", **{"from": "age"}, map={"80+": "TRUE"}, default="FALSE"),
+        T("replace-cells", column="age", cells=[{"id": "P1", "from": "80+", "to": "80"}]),
+    ])
+    assert out["p"].headers == ["id", "age", "note", "age_80plus"]
+    assert [[r[1], r[3]] for r in out["p"].rows] == [["80", "TRUE"], ["5", "FALSE"], ["", "FALSE"]]
+    with pytest.raises(TransformError, match="age"):
+        run([T("derive-column", column="age", **{"from": "age"}, map={}, default="")])
+
+
+def test_id_column_resolved_across_a_later_rename():
+    t = {"p": mk(["pid", "age"], [["P1", "80+"]])}
+    out, _ = run([
+        T("replace-cells", column="age", cells=[{"id": "P1", "from": "80+", "to": "80"}]),
+        T("rename-column", **{"from": "pid", "to": "id"}),
+    ], t)
+    assert out["p"].rows[0][1] == "80"
+    assert out["p"].headers == ["id", "age"]
+
+
+def test_missing_id_column_with_a_later_rename_cycle():
+    t = {"p": mk(["age"], [["age1"]])}
+    with pytest.raises(TransformError, match=r'ID column "pid" not found'):
+        run([
+            T("replace-cells", column="age", cells=[{"id": "P1", "from": "age1", "to": "80"}]),
+            T("rename-column", **{"from": "x", "to": "pid"}),
+            T("rename-column", **{"from": "pid", "to": "x"}),
+        ], t, "pid")
+
+
+def test_missing_id_column_with_a_later_noop_rename():
+    t = {"p": mk(["age"], [["age1"]])}
+    with pytest.raises(TransformError, match=r'ID column "pid" not found'):
+        run([
+            T("replace-cells", column="age", cells=[{"id": "P1", "from": "age1", "to": "80"}]),
+            T("rename-column", **{"from": "pid", "to": "pid"}),
+        ], t, "pid")
+    t = {"p": mk([" age"], [["age1"]])}
+    with pytest.raises(TransformError, match=r'transforms\[1\] \(rename-column\): column "pid" not found'):
+        run([T("trim"), T("rename-column", **{"from": "pid", "to": "pid"})], t, "pid")
+
+
+def test_inputs_are_not_mutated():
+    t = tables()
+    before = copy.deepcopy(t)
+    out, _ = run([T("trim"), T("rename-column", **{"from": "age", "to": "y"}), T("drop-column", column="note")], t)
+    assert t == before
+    assert out["p"] is not t["p"]
+    assert out["p"].file == "/data/p.csv" and out["p"].delimiter == ","
+
+
+def test_user_value_changes_log_ids_auto_ones_log_only_counts():
+    m = {"column": "note", "map": {"NA": ""}}
+    user = run([T("map-values", **m)])[1][0]
+    assert user["ids"] == ["P3"]
+    assert user["cellsChanged"] == 1
+    auto = run([T("map-values", **m, approval="auto")])[1][0]
+    assert "ids" not in auto
+    assert auto["cellsChanged"] == 1
+
+
+def test_each_value_changing_op_logs_changed_row_ids_once_per_row_when_user_approved():
+    assert run([T("trim")])[1][0]["ids"] == ["P1", "P2"]
+    assert run([T("blank-placeholders", values=["NA"])])[1][0]["ids"] == ["P3"]
+    dates = {"p": mk(["id", "d"], [["A", "2023-4-3"], ["B", ""], ["C", "2023-01-02"]])}
+    assert run([T("parse-dates", column="d", format="YYYY-M-D")], dates)[1][0]["ids"] == ["A"]
+    cells = [{"id": "P1", "from": "80+", "to": "80"}, {"id": "P2", "from": "5", "to": "5"}]
+    assert run([T("replace-cells", column="age", cells=cells)])[1][0]["ids"] == ["P1"]
+
+
+def test_ids_fall_back_to_row_numbers_without_id_column():
+    log = run([T("trim")], None, "nope")[1][0]
+    assert log["ids"] == ["row 1", "row 2"]
+
+
+def test_empty_columns_list_means_no_columns():
+    # JS treats [] as truthy: zero columns, so nothing changes
+    out, log = run([T("trim", columns=[])])
+    assert log[0]["cellsChanged"] == 0
+    assert out["p"].rows[0][2] == " NA "
+
+
+def test_map_values_does_not_match_inherited_names():
+    t = {"p": mk(["id", "v"], [["A", "toString"], ["B", "__proto__"]])}
+    out, log = run([T("map-values", column="v", map={})], t)
+    assert log[0]["cellsChanged"] == 0

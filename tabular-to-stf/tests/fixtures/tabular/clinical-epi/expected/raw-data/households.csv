@@ -1,0 +1,13 @@
+household_id,village_id,construction material,number of rooms,roof type
+H001,V01,Mud,2,Thatch
+H002,V01,Brick,3,Iron sheet
+H003,V02,Mud,1,Thatch
+H004,V03,Concrete,4,Iron sheet
+H005,V03,Brick,NA,Iron sheet
+H006,V04,Mud,2,Thatch
+H007,V05,Brick,3,Iron sheet
+H008,V06,Mud,2,Iron sheet
+H009,V07,Concrete,5,Iron sheet
+H010,V08,Mud,1,Thatch
+H011,V09,Brick,3,Iron sheet
+H012,V10,Mud,2,Thatch

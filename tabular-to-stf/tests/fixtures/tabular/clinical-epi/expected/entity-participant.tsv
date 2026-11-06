@@ -1,0 +1,17 @@
+household_id	participant_id \\ Descriptors	sex	age	age_censored	education_level	occupation	enrolment_date	bednet_use	recent_fever	weight	height
+H001	P001	Female	34	No	primary	farmer	2023-04-03	Yes	No	61.2	162
+H001	P002	Male	41	No	secondary	trader	2023-04-03	Yes	Yes	72.5	175
+H002	P003	Female	9	No	primary	student	2023-04-05	Yes	Yes	27.0	131
+H003	P004	Male	62	No	none	farmer	2023-04-05	No	No	66.8	170
+H004	P005	Female	27	No	tertiary	trader	2023-04-11	Yes	No	58.4	160
+H005	P006	Male	15	No	secondary	student	2023-04-11	Yes	No	49.9	158
+H006	P007	Female	52	No	primary	farmer	2023-04-18	No	Yes	70.1	165
+H007	P008	Male	38	No	tertiary		2023-04-18	Yes	No	80.3	178
+H008	P009	Female	45	No	secondary	trader	2023-04-24	Yes	No	250	163
+H009	P010	Male	7	No	none	student	2023-04-24	No	Yes	22.6	122
+H010	P011	Female	30	No	primary	farmer	2023-05-02	Yes	No	63.0	166
+H010	P012	Male	80	Yes	none		2023-05-02	No	No	59.7	168
+H011	P013	Female	22	No	tertiary	student	2023-05-09	Yes	Yes	55.2	159
+H011	P014	Male	56	No	secondary	farmer	2023-05-09	Yes	No	77.0	174
+H012	P015	Female	12	No	primary	student	2023-05-16	No	No	38.5	147
+H012	P016	Male	47	No	primary	trader	2023-05-16	Yes	Yes	74.4	172

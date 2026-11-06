@@ -1,0 +1,107 @@
+{
+  "specVersion": 1,
+  "study": {
+    "name": "Lake Victoria household malaria survey",
+    "description": "Synthetic cross-sectional survey of villages, households and participants near Lake Victoria, with one or two blood samples per participant."
+  },
+  "inputDir": "inputs",
+  "extraFiles": ["data-dictionary.md"],
+  "entities": [
+    {
+      "name": "village",
+      "displayName": "Village",
+      "displayNamePlural": "Villages",
+      "file": "villages.csv",
+      "idColumn": "village_id",
+      "geo": { "latitude": "lat", "longitude": "lon" },
+      "variables": [
+        { "column": "name", "name": "village_name", "displayName": "Village name", "definition": "Name of the village." },
+        { "column": "lat", "displayName": "Latitude", "definition": "Latitude of the village centre, WGS-84 decimal degrees." },
+        { "column": "lon", "displayName": "Longitude", "definition": "Longitude of the village centre, WGS-84 decimal degrees." },
+        {
+          "column": "Long-standing market",
+          "name": "established_market",
+          "providerLabel": "Established market",
+          "displayName": "Established market",
+          "definition": "The village has had a weekly market for 10 years or more.",
+          "dataShape": "binary",
+          "vocabularyOrder": ["Yes", "No"]
+        }
+      ]
+    },
+    {
+      "name": "household",
+      "displayName": "Household",
+      "displayNamePlural": "Households",
+      "file": "households.csv",
+      "idColumn": "household_id",
+      "parent": "village",
+      "parentColumn": "village_id",
+      "variables": [
+        { "column": "construction material", "displayName": "Wall material", "definition": "Main material of the household's walls." },
+        { "column": "number of rooms", "name": "sleeping_rooms", "displayName": "Sleeping rooms", "definition": "Number of rooms used for sleeping.", "dataType": "integer" },
+        { "column": "roof type", "displayName": "Roof material", "definition": "Main material of the household's roof." }
+      ]
+    },
+    {
+      "name": "participant",
+      "displayName": "Participant",
+      "displayNamePlural": "Participants",
+      "file": "participants.csv",
+      "idColumn": "participant_id",
+      "parent": "household",
+      "parentColumn": "household_id",
+      "variables": [
+        { "column": "Sex", "displayName": "Sex", "parentCategory": "demographics", "vocabularyOrder": ["Female", "Male"] },
+        { "column": "Age (years)", "name": "age", "displayName": "Age", "definition": "Age at enrolment in completed years. Ages of 80 and over are recorded as 80.", "dataType": "integer", "unit": "years", "parentCategory": "demographics" },
+        { "column": "age_censored", "displayName": "Age 80 or over", "definition": "Yes if the age was recorded as 80 or over, so the age value is a lower bound.", "dataShape": "binary", "vocabularyOrder": ["Yes", "No"], "parentCategory": "demographics" },
+        { "column": "Education level", "displayName": "Education level", "definition": "Highest level of education completed.", "dataShape": "ordinal", "ordinalLevels": ["none", "primary", "secondary", "tertiary"], "parentCategory": "demographics" },
+        { "column": "Occupation", "displayName": "Occupation", "definition": "Main occupation.", "parentCategory": "demographics" },
+        { "column": "Enrolment date", "displayName": "Enrolment date", "definition": "Date the participant was enrolled." },
+        { "column": "Bednet use", "displayName": "Slept under a bednet", "definition": "Slept under a bednet the night before enrolment.", "dataShape": "binary", "vocabularyOrder": ["Yes", "No"], "parentCategory": "behaviour" },
+        { "column": "Fever last 14 days", "name": "recent_fever", "displayName": "Fever in the last 14 days", "definition": "Self-reported fever in the 14 days before enrolment.", "dataShape": "binary", "vocabularyOrder": ["Yes", "No"], "parentCategory": "clinical" },
+        { "column": "Weight (kg)", "name": "weight", "displayName": "Weight", "definition": "Body weight at enrolment.", "unit": "kg", "parentCategory": "anthropometry" },
+        { "column": "Height (cm)", "name": "height", "displayName": "Height", "definition": "Standing height at enrolment.", "dataType": "number", "unit": "cm", "parentCategory": "anthropometry" }
+      ],
+      "categories": [
+        { "category": "demographics", "displayName": "Demographics", "definition": "Who the participant is." },
+        { "category": "behaviour", "displayName": "Behaviour" },
+        { "category": "clinical", "displayName": "Clinical", "definition": "Clinical history and measurements at enrolment." },
+        { "category": "anthropometry", "displayName": "Anthropometry", "definition": "Body measurements.", "parentCategory": "clinical" }
+      ]
+    },
+    {
+      "name": "sample",
+      "displayName": "Blood sample",
+      "displayNamePlural": "Blood samples",
+      "file": "samples.csv",
+      "idColumn": "sample_id",
+      "parent": "participant",
+      "parentColumn": "participant_id",
+      "variables": [
+        { "column": "collection date", "displayName": "Collection date", "definition": "Date the sample was taken." },
+        { "column": "Temperature (°C)", "name": "temperature", "displayName": "Temperature", "definition": "Axillary temperature when the sample was taken.", "unit": "°C" },
+        { "column": "Hb (g/dL)", "displayName": "Haemoglobin", "definition": "Haemoglobin concentration measured by HemoCue.", "unit": "g/dL" },
+        { "column": "Malaria RDT result", "name": "rdt_result", "displayName": "Malaria RDT result", "definition": "Result of the malaria rapid diagnostic test.", "dataShape": "binary", "vocabularyOrder": ["Positive", "Negative"] }
+      ]
+    }
+  ],
+  "transforms": [
+    { "op": "blank-placeholders", "entity": "household", "columns": ["number of rooms"], "values": ["NA"], "approval": "auto", "reason": "NA marks a missing room count." },
+    { "op": "drop-column", "entity": "participant", "column": "Participant name", "approval": "user", "reason": "Personal names are identifying and not needed for analysis." },
+    { "op": "trim", "entity": "participant", "columns": ["Bednet use"], "approval": "auto", "reason": "Some bednet answers have a trailing space." },
+    { "op": "map-values", "entity": "participant", "column": "Bednet use", "map": { "y": "Yes", "yes": "Yes" }, "approval": "auto", "reason": "Spelling and case variants of Yes." },
+    { "op": "map-values", "entity": "participant", "column": "Sex", "map": { "Feamle": "Female" }, "approval": "user", "reason": "Typo for Female." },
+    { "op": "blank-placeholders", "entity": "participant", "columns": ["Occupation"], "values": ["N/A"], "approval": "auto", "reason": "N/A marks a missing occupation." },
+    { "op": "derive-column", "entity": "participant", "column": "age_censored", "from": "Age (years)", "map": { "80+": "Yes" }, "default": "No", "approval": "user", "reason": "Keep the information that the age was top-coded before making the age numeric." },
+    { "op": "replace-cells", "entity": "participant", "column": "Age (years)", "cells": [{ "id": "P012", "from": "80+", "to": "80" }], "approval": "user", "reason": "Ages of 80 and over were recorded as 80+; record them as 80 so age is an integer, flagged by age_censored." },
+    { "op": "parse-dates", "entity": "participant", "column": "Enrolment date", "format": "DD/MM/YYYY", "approval": "user", "reason": "Dates were given day first; STF needs ISO-8601." },
+    { "op": "replace-cells", "entity": "participant", "column": "Weight (kg)", "cells": [{ "id": "P009", "from": "250", "to": "25.0" }], "approval": "rejected", "instead": "Kept 250 and flagged it for the provider to confirm.", "reason": "A weight of 250 kg looks like a slipped decimal point." },
+    { "op": "map-values", "entity": "sample", "column": "Malaria RDT result", "map": { "pos": "Positive", "neg": "Negative" }, "approval": "auto", "reason": "Abbreviations of Positive and Negative." }
+  ],
+  "notes": {
+    "flagged": ["`participant.weight`: P009 weighs 250 kg, which is implausible for a height of 163 cm. Asked the provider."],
+    "pii": ["`participants.csv` column `Participant name` holds full names; dropped from the STF but still present in `raw-data/`."],
+    "decisions": ["The study has no separate visit entity: each sample is linked directly to its participant (provider confirmed)."]
+  }
+}

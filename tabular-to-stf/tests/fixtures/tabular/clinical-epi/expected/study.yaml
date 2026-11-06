@@ -1,0 +1,6 @@
+name: Lake Victoria household malaria survey
+entities:
+  - village
+  - household
+  - participant
+  - sample
