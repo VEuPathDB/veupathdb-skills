@@ -91,6 +91,17 @@ def test_ambiguous_regex_fails_naming_row_ids_and_values():
         run([T("map-values", column="age", match="regex", map={r".*\?": "a", r"\d\?": "b"})], t)
 
 
+def test_ambiguous_regex_error_caps_row_ids_and_values_at_ten():
+    t = {"p": mk(["id", "age"], [[f"P{i}", f"{i}?"] for i in range(1, 26)])}
+    with pytest.raises(TransformError) as e:
+        run([T("map-values", column="age", match="regex", map={r".*\?": "a", r"\d+\?": "b"})], t)
+    ids = ", ".join(f"P{i}" for i in range(1, 11))
+    values = ", ".join(f'"{i}?"' for i in range(1, 11))
+    assert str(e.value).endswith(
+        f"for row IDs: {ids} and 15 more (values {values} and 15 more); tighten the patterns "
+        "or settle them with replace-cells before this transform (stf.py preview shows the keys)")
+
+
 @pytest.mark.parametrize("transform", [
     T("map-values", column="age", map={"80+": "80"}),
     T("blank-placeholders", values=["NA"]),
@@ -302,6 +313,26 @@ def test_parse_dates_iso_cell_another_format_reads_differently_is_ambiguous():
     with pytest.raises(TransformError, match=r"different dates .* row IDs: R1;"):
         parse(dates("2023-04-05", "2023-31-12"), format="YYYY-DD-MM")
     assert parse(dates("2023-05-05", "2023-31-12"), format="YYYY-DD-MM")[0] == ["2023-05-05", "2023-12-31"]
+
+
+def test_parse_dates_unmatched_error_caps_row_ids_at_ten():
+    with pytest.raises(TransformError) as e:
+        parse(dates(*["nope"] * 25), format="DD/MM/YYYY")
+    ids = ", ".join(f"R{i}" for i in range(1, 11))
+    assert str(e.value).endswith(f"for row IDs: {ids} and 15 more")
+
+
+def test_parse_dates_ambiguous_error_caps_row_ids_at_ten():
+    with pytest.raises(TransformError) as e:
+        parse(dates(*["03/04/23"] * 12), formats=["DD/MM/YY", "MM/DD/YY"])
+    ids = ", ".join(f"R{i}" for i in range(1, 11))
+    assert f"for row IDs: {ids} and 2 more; settle them with replace-cells" in str(e.value)
+
+
+def test_parse_dates_lists_exactly_ten_row_ids_without_more():
+    with pytest.raises(TransformError) as e:
+        parse(dates(*["nope"] * 10), format="DD/MM/YYYY")
+    assert str(e.value).endswith("R9, R10")
 
 
 def test_parse_dates_reports_unmatched_and_ambiguous_together():

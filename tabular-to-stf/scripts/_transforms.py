@@ -44,6 +44,16 @@ class TransformError(ValueError):
     pass
 
 
+LIST_CAP = 10
+
+
+def _listed(items: list[str]) -> str:
+    """The first LIST_CAP items, comma-separated, then "and N more", so an error
+    stays readable when a transform fails on thousands of rows."""
+    shown = ", ".join(items[:LIST_CAP])
+    return shown if len(items) <= LIST_CAP else f"{shown} and {len(items) - LIST_CAP:,} more"
+
+
 def date_formats(t: dict) -> list[str]:
     """A parse-dates transform's formats: `formats`, or the single `format`."""
     return list(t["formats"]) if "formats" in t else [t["format"]]
@@ -208,7 +218,7 @@ def _apply_one(t, index, table, id_column, renames):
             name = table.headers[indexes[0]] if len(indexes) == 1 else ", ".join(table.headers[c] for c in indexes)
             raise TransformError(
                 f"{where}: values in column {js_json(name)} match more than one key with different results "
-                f"for row IDs: {', '.join(ambiguous)} (values {', '.join(js_json(v) for v in values)}); "
+                f"for row IDs: {_listed(ambiguous)} (values {_listed([js_json(v) for v in values])}); "
                 f"tighten the patterns or settle them with replace-cells before this transform "
                 f"(stf.py preview shows the keys)"
             )
@@ -277,12 +287,12 @@ def _apply_one(t, index, table, id_column, renames):
             which = f"format {formats[0]}" if len(formats) == 1 else f"any of the formats {', '.join(formats)}"
             problems.append(
                 f"values in column {js_json(t['column'])} do not match {which} and are not "
-                f"{ISO_FORMAT} dates for row IDs: {', '.join(bad)}"
+                f"{ISO_FORMAT} dates for row IDs: {_listed(bad)}"
             )
         if ambiguous:
             problems.append(
                 f"values in column {js_json(t['column'])} read as different dates under more than one "
-                f"format (counting {ISO_FORMAT}) for row IDs: {', '.join(ambiguous)}; "
+                f"format (counting {ISO_FORMAT}) for row IDs: {_listed(ambiguous)}; "
                 f"settle them with replace-cells before this transform"
             )
         if problems:

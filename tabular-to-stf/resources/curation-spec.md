@@ -135,15 +135,18 @@ transforms.
   `map` values are literal text, `$` included. `derive-column`'s `default`
   is always literal.
 - A cell that two keys match with **different** results fails the render,
-  listing the row IDs. Keys that agree are fine. Tighten the patterns, or
-  settle those cells with `replace-cells` first.
+  listing the row IDs and values (the first ten of each, then how many
+  more). Keys that agree are fine. Tighten the patterns, or settle those
+  cells with `replace-cells` first. `stf.py preview` lists every ambiguous
+  value, with counts.
 - `replace-cells` finds rows by the value in the entity's `idColumn`. It
   fails if a row ID is missing or a cell no longer holds `from`, which means
   the spec is stale. Re-profile and fix the spec, do not force it.
 - `parse-dates` turns every non-empty cell into `YYYY-MM-DD`. Cells that
   are already valid `YYYY-MM-DD` dates are left as they are, so a column
   that is only partly ISO needs just the other formats. `YY` always means
-  20YY. It fails, listing the row IDs, if a cell matches none of the formats
+  20YY. It fails, listing the row IDs (the first ten, then how many more),
+  if a cell matches none of the formats
   (and is not ISO) or is not a real date (`31/02/2023`). It also fails if two
   formats, or a format and ISO, read a cell as different dates (`03/04/23`
   under both `DD/MM/YY` and `MM/DD/YY`). Settle those cells with
