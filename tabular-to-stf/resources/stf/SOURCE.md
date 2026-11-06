@@ -11,8 +11,8 @@ git -C <study-wrangler checkout> show v1.0.56:STF_documentation/metadata-fields.
 ```
 
 The tag matches the pinned container image, `STUDY_WRANGLER_VERSION` in
-`scripts/lib/tools/study-wrangler-container.js`. Whenever that
+`scripts/_container.py`. Whenever that
 constant moves, re-bundle both files from the new tag and update this file.
-`tests/tabular-skill.test.js` fails until they agree.
+`tests/test_docs.py` fails until they agree.
 
 Do not edit the copies here. Fix the documentation upstream and re-bundle.

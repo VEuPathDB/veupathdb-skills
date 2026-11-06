@@ -18,17 +18,17 @@ study-wrangler (see [SOURCE.md](resources/stf/SOURCE.md)).
 ## Scripts
 
 All scripts are in this skill's `scripts/` directory (next to this file).
-Run them with `node`. They need no packages, never modify the input files,
-and make no git changes.
+Run them with `uv run`; uv installs the one dependency on first use. They
+never modify the input files and make no git changes.
 
-| Script | What it does |
+| Command | What it does |
 |---|---|
-| `node scripts/profile-tables.js <inputDir> --out <path>` | Profiles every `.csv`/`.tsv`/`.txt` file in `<inputDir>`, writes the full JSON to `<path>` and prints one summary line per file |
-| `node scripts/profile-tables.js <inputDir> --file <name> [--top N]` | Prints the compact JSON profile of one file, with the parent links that involve it |
-| `node scripts/render-stf.js <spec.json> <outDir> [--no-raw-data]` | Renders the spec to an STF directory |
-| `node scripts/check-stf.js <stfDir> [--json]` | Checks an STF directory; exit 1 on errors |
-| `node scripts/validate-stf-in-container.js <stfDir> [--engine docker\|podman]` | Mode 2: validates in the pinned study-wrangler container |
-| `node scripts/validate-stf-in-container.js --detect` | Prints `docker`, `podman` or `none` |
+| `uv run scripts/stf.py profile <inputDir> --out <path>` | Profiles every `.csv`/`.tsv`/`.txt` file in `<inputDir>`, writes the full JSON to `<path>` and prints one summary line per file |
+| `uv run scripts/stf.py profile <inputDir> --file <name> [--top N]` | Prints the compact JSON profile of one file, with the parent links that involve it |
+| `uv run scripts/stf.py render <spec.json> <outDir> [--no-raw-data]` | Renders the spec to an STF directory |
+| `uv run scripts/stf.py check <stfDir> [--json]` | Checks an STF directory; exit 1 on errors |
+| `uv run scripts/stf.py validate <stfDir> [--engine docker\|podman]` | Mode 2: validates in the pinned study-wrangler container |
+| `uv run scripts/stf.py validate --detect` | Prints `docker`, `podman` or `none` |
 
 ## Inputs
 
@@ -50,7 +50,7 @@ It must not be the input folder or `<out>`.
 
 ## Choosing a mode
 
-Run `node scripts/validate-stf-in-container.js --detect` first.
+Run `uv run scripts/stf.py validate --detect` first.
 
 - **Mode 1, tables to STF**, is the default. Follow the steps below.
 - **Mode 2, validate and fix in a container.** Offer it after mode 1 when the
@@ -63,13 +63,12 @@ Run `node scripts/validate-stf-in-container.js --detect` first.
   for data the spec cannot express. If the user asks for it, say it is not
   available yet. See [mode-3-wrangler-script.md](resources/mode-3-wrangler-script.md).
 
-**Containers.** Always validate through `validate-stf-in-container.js`. Never
-run `docker` or `podman` yourself, and never pull an image without asking.
-The script uses the pinned image `veupathdb/study-wrangler:1.0.56` and never
-downloads it. If the image is missing, give the user the exact command,
-`docker pull veupathdb/study-wrangler:1.0.56` (or `podman pull
-docker.io/veupathdb/study-wrangler:1.0.56`), say it is about a 6 GB download,
-and let them decide.
+**Containers.** Always validate through `stf.py validate`. Never run
+`docker` or `podman` yourself, and never pull an image without asking.
+The script uses the pinned study-wrangler image and never downloads it. If
+the image is missing, `validate` prints `Result: load-error` and the two pull
+commands. Pass those commands on to the user, say it is about a 6 GB
+download, and let them decide.
 
 ## The rule
 
@@ -86,11 +85,11 @@ has no curation spec, where nothing can re-render it.
 
 Profile in two steps, so that no single output is too long to read:
 
-1. `node scripts/profile-tables.js <inputDir> --out <work>/profile.json`.
+1. `uv run scripts/stf.py profile <inputDir> --out <work>/profile.json`.
    `<work>` is your working area, such as the current directory. It must not
    be the input folder or `<out>`. This prints one line per file: its name,
    rows, columns and the size of its profile.
-2. For each file, `node scripts/profile-tables.js <inputDir> --file <name>`,
+2. For each file, `uv run scripts/stf.py profile <inputDir> --file <name>`,
    and read that JSON. Do one file at a time.
 
 Do not read whole input files, or the whole `profile.json`. They can be
@@ -161,7 +160,7 @@ Write the first draft of the spec to `<work>/curation-spec.json`, beside
 `profile.json` and outside `<out>`, following
 [curation-spec.md](resources/curation-spec.md). Set `inputDir` to the input
 folder's absolute path. Then run
-`node scripts/render-stf.js <work>/curation-spec.json <out>`. Writing the
+`uv run scripts/stf.py render <work>/curation-spec.json <out>`. Writing the
 draft into `<out>` instead would defeat the renderer's guard against
 rendering into a directory that holds other files.
 
@@ -176,12 +175,12 @@ copy, say so in `notes.decisions`.
 After the first successful render, `<out>/curation-spec.json` is the spec.
 Delete the draft in `<work>`, so there is only one. Make every later change
 in `<out>/curation-spec.json` and re-render with
-`node scripts/render-stf.js <out>/curation-spec.json <out>`. A render error
+`uv run scripts/stf.py render <out>/curation-spec.json <out>`. A render error
 lists every problem in the spec. Fix the spec and render again.
 
 ### 8. Check
 
-Run `node scripts/check-stf.js <out>`. It checks ID integrity, the variable
+Run `uv run scripts/stf.py check <out>`. It checks ID integrity, the variable
 tree, that the files load, allowed values, data types and the EDA geo rules.
 Each `ERROR:` line is fixed in the spec, followed by a re-render and a
 re-check, until there are none. Read every `WARNING:` line and act on it or

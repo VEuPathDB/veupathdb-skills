@@ -32,7 +32,7 @@ Studies that a curator will maintain in R also benefit.
   there, through a bundled runner. Never run `docker` or `podman` directly,
   and never pull images.
 - **A container runner for an arbitrary script.** It would be like
-  `validate-stf-in-container.js`, but it would mount a work directory
+  `stf.py validate`, but it would mount a work directory
   writable as the invoking user, so that `export_to_stf()` can write its
   output.
 
@@ -40,7 +40,7 @@ Studies that a curator will maintain in R also benefit.
 
 - **Bundled STF docs.** These are the same files, pinned to the same
   study-wrangler version.
-- **`check-stf.js`.** Mode 3 output is STF, so the same checks apply after
+- **`stf.py check`.** Mode 3 output is STF, so the same checks apply after
   the script runs. Then mode 2 validation follows.
 - **`curation-notes.md` conventions.** These are the same sections. The
   script's steps are the replayable record of "Data changes", and the notes

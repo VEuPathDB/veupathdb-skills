@@ -47,13 +47,13 @@ to all but 3". Never ask one prompt per column. Ask only about what matters:
 | `displayType` | | | almost always: `default` is implied. The renderer sets geo columns itself |
 | `providerLabel` | only for the geo case below | | almost always: the original header is used |
 
-Rules that are enforced locally, by `render-stf.js` or `check-stf.js`:
+Rules that are enforced locally, by `stf.py render` or `stf.py check`:
 
 - **A declared `dataType` must fit every value.** The renderer checks every
-  whole cell, so a multi-valued column must stay `string`. `check-stf.js`
+  whole cell, so a multi-valued column must stay `string`. `stf.py check`
   checks values against the YAML type as well.
 - **`dataShape` `ordinal` needs `ordinalLevels`.** For a **string** ordinal,
-  `check-stf.js` also reports any value missing from the levels. For an
+  `stf.py check` also reports any value missing from the levels. For an
   integer ordinal it only checks that the values are integers.
 - **Allowed values.** `dataType`, `dataShape` and `displayType` must be
   among the allowed values.
@@ -65,7 +65,7 @@ right in the spec, because mode 1 will not warn you:
 - `ordinalLevels` must list **every** value in the column, after the
   transforms. The loader silently turns an unlisted value into a missing
   value. Check against the profile's `top` and `distinctCount`. This matters
-  most for integer ordinals, which `check-stf.js` does not check against the
+  most for integer ordinals, which `stf.py check` does not check against the
   levels.
 - `vocabularyOrder` is only for `categorical` or `binary` variables, and
   every value it lists must occur in the column.
@@ -130,7 +130,7 @@ The renderer does the rest:
   not be recognised, and logs that in the notes.
 
 Do not write geohash columns. study-wrangler's
-`infer_geo_variables_for_eda()` derives them, and `check-stf.js` warns if
+`infer_geo_variables_for_eda()` derives them, and `stf.py check` warns if
 any are present. The notes record that the study needs
 `map_entities(study, infer_geo_variables_for_eda)` before `eda` validation,
 which mode 2 does.
@@ -171,7 +171,7 @@ should make both in the same spec edit, so one render pass fixes it:
 
 The renderer refuses a stray look-alike on an entity with `geo`, naming
 the fix. The renderer also refuses two or more look-alikes on an entity
-without `geo`. `check-stf.js` warns about a lone look-alike, and about a name
+without `geo`. `stf.py check` warns about a lone look-alike, and about a name
 that only the inference rule matches. Record each such decision in
 `notes.decisions`. The renderer logs `providerLabel` overrides itself.
 

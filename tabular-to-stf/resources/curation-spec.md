@@ -4,7 +4,7 @@ The curation spec is one JSON file. Draft it outside the output directory
 (for example `<work>/curation-spec.json`) for the first render, which saves
 it as `<out>/curation-spec.json`. From then on, that saved copy is the spec:
 edit it and re-render from it.
-`render-stf.js` reads it with the input tables and writes the STF directory.
+`stf.py render` reads it with the input tables and writes the STF directory.
 The spec is the only place where you decide anything: entities, IDs, variable
 metadata, the category tree, and every change to the data, as an ordered list
 of transforms. Loaders ignore the saved copy, and `study.yaml` does not refer
@@ -45,7 +45,7 @@ to it.
 }
 ```
 
-Allowed values, which are the same ones `check-stf.js` enforces:
+Allowed values, which are the same ones `stf.py check` enforces:
 
 - `dataType`: `string`, `number`, `integer`, `date`, `longitude`
 - `dataShape`: `continuous`, `categorical`, `ordinal`, `binary`
@@ -82,7 +82,7 @@ What the approvals mean:
 
 ## How the renderer reads the spec
 
-These rules are what `render-stf.js` actually does. They are not all
+These rules are what `stf.py render` actually does. They are not all
 visible in the schema.
 
 **Transforms run in order, one entity table at a time, on copies of the
@@ -165,12 +165,12 @@ override it. That is only needed for the geo case in
 ## Rendering
 
 ```bash
-node scripts/render-stf.js <work>/curation-spec.json <out>                # first render, into a new or empty <out>
-node scripts/render-stf.js <out>/curation-spec.json <out>                # every later render
-node scripts/render-stf.js <out>/curation-spec.json <out> --no-raw-data
+uv run scripts/stf.py render <work>/curation-spec.json <out>                # first render, into a new or empty <out>
+uv run scripts/stf.py render <out>/curation-spec.json <out>                # every later render
+uv run scripts/stf.py render <out>/curation-spec.json <out> --no-raw-data
 ```
 
-- `render-stf.js` validates the spec, applies the transforms and checks the
+- `stf.py render` validates the spec, applies the transforms and checks the
   result before it writes anything. On failure it prints every problem as a
   `- ` line and exits 1.
 - It refuses an output directory that is not empty unless that directory

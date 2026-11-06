@@ -10,13 +10,13 @@ Changes fall into three kinds, and they are handled differently.
 | Likely typo | a judgement about what was meant, found only by similarity: `Feamle` next to `Female`; `Anopheles gambie` next to `Anopheles gambiae` | `map-values`, once the user confirms | `user` |
 | Data-altering fix | `80+` in an age column, `12..5`, `2023-13-01`, text in a numeric column, ambiguous placeholders | `replace-cells`, `parse-dates`, `derive-column`, `drop-column`, `blank-placeholders` | `user`, only after the user approves |
 
-`render-stf.js` refuses `auto` for `replace-cells`, `parse-dates`,
+`stf.py render` refuses `auto` for `replace-cells`, `parse-dates`,
 `derive-column` and `drop-column`. It also refuses `auto` for
 `blank-placeholders` whose values are not all unambiguous placeholders.
 
 ## What the profile tells you
 
-For each column, `profile-tables.js` reports:
+For each column, `stf.py profile` reports:
 
 - `whitespaceCells`: cells with leading or trailing spaces. Use `trim` with
   `auto`. List the affected columns, or omit `columns` to trim the whole

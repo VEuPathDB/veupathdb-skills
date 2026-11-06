@@ -6,7 +6,7 @@ redo the work. Loaders ignore it. The recommended sections are documented in
 "Curation notes" in
 [Study-Transfer-Format-STF.md](stf/Study-Transfer-Format-STF.md#curation-notes-curation-notesmd).
 
-In mode 1 and in mode 2 with a spec, `render-stf.js` writes the whole file
+In mode 1 and in mode 2 with a spec, `stf.py render` writes the whole file
 from the spec on every render. **Do not edit it by hand**, because the next
 render would overwrite your edits. Put what it needs into the spec instead.
 The file opens with a link to the saved spec, `curation-spec.json`, in the
@@ -43,7 +43,7 @@ Each entry is one Markdown string, a sentence or two. Name things as
   and whether the provider was asked. Examples:
   - near-duplicates the user said are distinct, or could not judge;
   - implausible values that were kept;
-  - `check-stf.js` warnings you chose not to act on.
+  - `stf.py check` warnings you chose not to act on.
 - **`notes.pii`**: columns that may identify people, and what was done with
   them. If a column was dropped, say that `raw-data/` still holds it.
 - **`notes.decisions`**: answers to your questions that shaped the STF. A
@@ -56,7 +56,7 @@ Each entry is one Markdown string, a sentence or two. Name things as
 
   Do not repeat what the transforms already say.
 - **`notes.validation`** (mode 2): one entry per container run, giving:
-  - the study-wrangler version (`1.0.56`);
+  - the image shown on the `Image:` line of the validate output;
   - what was run: `validate(study, profiles = c("baseline", "eda"))` after
     `map_entities(study, infer_geo_variables_for_eda)`;
   - the result (`pass`, `fail`, `error` or `load-error`);

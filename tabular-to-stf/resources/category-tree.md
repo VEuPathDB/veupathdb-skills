@@ -63,5 +63,5 @@ then write the tree, and record any choices they made in `notes.decisions`.
 - `category` is an internal name in snake case (`demographics`). It must not
   equal a variable's output name or a column name.
 - Every `parentCategory` must name a category in the **same** entity, and the
-  categories must not form a cycle. The spec validator and `check-stf.js`
+  categories must not form a cycle. The spec validator and `stf.py check`
   both check this.
