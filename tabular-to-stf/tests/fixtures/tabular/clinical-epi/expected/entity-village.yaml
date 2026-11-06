@@ -1,13 +1,11 @@
 name: village
 display_name: Village
 display_name_plural: Villages
-
 id_columns:
   - id_column: village_id
     entity_name: village
     provider_label:
       - village_id
-
 variables:
   - variable: village_name
     provider_label:
@@ -44,5 +42,4 @@ variables:
     vocabulary_order:
       - 'Yes'
       - 'No'
-
 categories: []

@@ -1,7 +1,6 @@
 name: menu
 display_name: Menu
 display_name_plural: Menus
-
 id_columns:
   - id_column: shop_id
     entity_name: coffee_shop
@@ -12,7 +11,6 @@ id_columns:
     entity_name: menu
     provider_label:
       - menu_id
-
 variables:
   - variable: menu_name
     provider_label:
@@ -42,5 +40,4 @@ variables:
     definition: Where or when the menu is offered, such as at the counter or all day.
     data_type: string
     data_shape: categorical
-
 categories: []

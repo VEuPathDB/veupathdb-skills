@@ -1,7 +1,6 @@
 name: monthly_account
 display_name: Monthly account
 display_name_plural: Monthly accounts
-
 id_columns:
   - id_column: shop_id
     entity_name: coffee_shop
@@ -12,7 +11,6 @@ id_columns:
     entity_name: monthly_account
     provider_label:
       - account_id
-
 variables:
   - variable: reporting_month
     provider_label:
@@ -139,7 +137,6 @@ variables:
       - 'Yes'
       - 'No'
     parent_category: uncertainty_flags
-
 categories:
   - category: takings_costs
     display_name: Takings and costs

@@ -1,7 +1,6 @@
 name: staff_member
 display_name: Staff member
 display_name_plural: Staff members
-
 id_columns:
   - id_column: team_id
     entity_name: team
@@ -12,7 +11,6 @@ id_columns:
     entity_name: staff_member
     provider_label:
       - staff_id
-
 variables:
   - variable: first_name
     provider_label:
@@ -101,7 +99,6 @@ variables:
       - 'Yes'
       - 'No'
     parent_category: uncertainty_flags
-
 categories:
   - category: employment
     display_name: Employment

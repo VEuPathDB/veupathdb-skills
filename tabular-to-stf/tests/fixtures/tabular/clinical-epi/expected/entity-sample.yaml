@@ -1,7 +1,6 @@
 name: sample
 display_name: Blood sample
 display_name_plural: Blood samples
-
 id_columns:
   - id_column: participant_id
     entity_name: participant
@@ -12,7 +11,6 @@ id_columns:
     entity_name: sample
     provider_label:
       - sample_id
-
 variables:
   - variable: collection_date
     provider_label:
@@ -47,5 +45,4 @@ variables:
     vocabulary_order:
       - Positive
       - Negative
-
 categories: []

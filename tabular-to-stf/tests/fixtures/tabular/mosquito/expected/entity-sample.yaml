@@ -1,7 +1,6 @@
 name: sample
 display_name: Mosquito pool
 display_name_plural: Mosquito pools
-
 id_columns:
   - id_column: collection_id
     entity_name: collection
@@ -12,7 +11,6 @@ id_columns:
     entity_name: sample
     provider_label:
       - sample_id
-
 variables:
   - variable: species
     provider_label:
@@ -47,5 +45,4 @@ variables:
     definition: Number of mosquitoes in the pool.
     data_type: integer
     data_shape: continuous
-
 categories: []

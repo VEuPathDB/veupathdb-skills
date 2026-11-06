@@ -1,7 +1,6 @@
 name: menu_item
 display_name: Menu item
 display_name_plural: Menu items
-
 id_columns:
   - id_column: menu_id
     entity_name: menu
@@ -12,7 +11,6 @@ id_columns:
     entity_name: menu_item
     provider_label:
       - item_id
-
 variables:
   - variable: item_name
     provider_label:
@@ -76,5 +74,4 @@ variables:
     vocabulary_order:
       - 'Yes'
       - 'No'
-
 categories: []

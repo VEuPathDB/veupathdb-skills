@@ -1,13 +1,11 @@
 name: region
 display_name: Region
 display_name_plural: Regions
-
 id_columns:
   - id_column: region_id
     entity_name: region
     provider_label:
       - region_id
-
 variables:
   - variable: region_name
     provider_label:
@@ -30,5 +28,4 @@ variables:
     definition: The person who looks after the region.
     data_type: string
     data_shape: categorical
-
 categories: []

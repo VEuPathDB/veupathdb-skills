@@ -1,13 +1,11 @@
 name: site
 display_name: Collection site
 display_name_plural: Collection sites
-
 id_columns:
   - id_column: site_id
     entity_name: site
     provider_label:
       - site_id
-
 variables:
   - variable: site_code
     provider_label:
@@ -39,5 +37,4 @@ variables:
     definition: Main habitat around the collection point.
     data_type: string
     data_shape: categorical
-
 categories: []

@@ -1,6 +1,6 @@
 # Curation notes: Lake Victoria household malaria survey
 
-This directory was rendered from [curation-spec.json](curation-spec.json), the curation spec that records every change below. To re-render it, run the `tabular-to-stf` skill's `scripts/render-stf.js curation-spec.json <this directory>`.
+This directory was rendered from [curation-spec.json](curation-spec.json), the curation spec that records every change below. To re-render it, run `uv run <skill>/scripts/stf.py render <this directory>/curation-spec.json <this directory>`, where `<skill>` is the `tabular-to-stf` skill's folder.
 
 ## Study
 

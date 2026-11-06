@@ -1,7 +1,6 @@
 name: collection
 display_name: Collection
 display_name_plural: Collections
-
 id_columns:
   - id_column: site_id
     entity_name: site
@@ -12,7 +11,6 @@ id_columns:
     entity_name: collection
     provider_label:
       - collection_id
-
 variables:
   - variable: collection_date
     provider_label:
@@ -46,5 +44,4 @@ variables:
     vocabulary_order:
       - 'on'
       - 'off'
-
 categories: []

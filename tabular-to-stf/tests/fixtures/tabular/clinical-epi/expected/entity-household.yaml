@@ -1,7 +1,6 @@
 name: household
 display_name: Household
 display_name_plural: Households
-
 id_columns:
   - id_column: village_id
     entity_name: village
@@ -12,7 +11,6 @@ id_columns:
     entity_name: household
     provider_label:
       - household_id
-
 variables:
   - variable: construction_material
     provider_label:
@@ -35,5 +33,4 @@ variables:
     definition: Main material of the household's roof.
     data_type: string
     data_shape: categorical
-
 categories: []
