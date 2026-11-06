@@ -25,6 +25,15 @@ the inputs. The saved spec then reads from raw-data/, so
 `stf.py render <outDir>/curation-spec.json <outDir>` re-renders from the folder
 alone. Input files are never modified.
 
+  stf.py preview <spec.json> <n> [--top N] [--bottom N]
+
+preview: shows what transform n (0-based, as in transforms[n]) does to its
+entity's input table, whatever its approval. The entity's earlier auto and user
+transforms run first. For map-values, derive-column and blank-placeholders it
+lists each column's matched, ambiguous and unmatched values with counts: the
+--top N most and --bottom N least common of each list (default 10 each), and
+every ambiguous value. Writes nothing.
+
   stf.py check <stfDir> [--json]
 
 check: checks an STF directory (study.yaml, entity-<name>.{tsv,yaml}) for the
@@ -54,6 +63,7 @@ from pathlib import Path
 
 PROFILE_USAGE = "Usage: stf.py profile <inputDir> [--top N] [--file <name>] [--out <path>]"
 RENDER_USAGE = "Usage: stf.py render <spec.json> <outDir> [--no-raw-data]"
+PREVIEW_USAGE = "Usage: stf.py preview <spec.json> <n> [--top N] [--bottom N]"
 CHECK_USAGE = "Usage: stf.py check <stfDir> [--json]"
 VALIDATE_USAGE = "Usage: stf.py validate <stfDir> [--engine docker|podman] | --detect"
 _VALIDATE_EXIT = {"pass": 0, "fail": 1, "error": 2, "load-error": 2}
@@ -137,6 +147,44 @@ def cmd_render(args) -> int:
     return 0
 
 
+def cmd_preview(args) -> int:
+    from _preview import preview_transform
+    from _read_table import read_table
+    from _render import RenderError, load_spec
+    from _transforms import TransformError
+
+    if len(args.paths) != 2:
+        raise ValueError(PREVIEW_USAGE)
+    spec_path, n_text = args.paths
+    limits = {}
+    for name in ("top", "bottom"):
+        value = _positive_int(getattr(args, name))
+        if value is None:
+            raise ValueError(f'--{name} must be a positive integer, got "{getattr(args, name)}"')
+        limits[name] = value
+    try:
+        spec, input_dir = load_spec(Path(spec_path))
+    except RenderError as err:
+        print("Error: the spec is not valid:", file=sys.stderr)
+        for m in err.messages:
+            print(f"- {m}", file=sys.stderr)
+        return 1
+    transforms = spec.get("transforms") or []
+    if not transforms:
+        raise ValueError("the spec has no transforms")
+    if not re.fullmatch(r"\d+", n_text, re.ASCII) or int(n_text) >= len(transforms):
+        raise ValueError(f'<n> must be a transform index from 0 to {len(transforms) - 1}, got "{n_text}"')
+    index = int(n_text)
+    entity = next(e for e in spec["entities"] if e["name"] == transforms[index]["entity"])
+    table = read_table(Path(input_dir) / entity["file"])
+    try:
+        print(preview_transform(spec, table, index, **limits))
+    except TransformError as err:
+        print(f"Error: an earlier transform fails: {err}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def cmd_check(args) -> int:
     from _check import check_stf
 
@@ -209,6 +257,13 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("paths", nargs="*", metavar="spec.json outDir", help="the curation spec and the output directory")
     r.add_argument("--no-raw-data", action="store_true", help="do not copy the inputs to <outDir>/raw-data/")
     r.set_defaults(func=cmd_render)
+
+    w = sub.add_parser("preview", usage=PREVIEW_USAGE.removeprefix("Usage: "),
+                       description="Show what one transform does to its entity's table. Writes nothing.")
+    w.add_argument("paths", nargs="*", metavar="spec.json n", help="the curation spec and the transform's index")
+    w.add_argument("--top", default="10", metavar="N", help="most common values shown per list (default 10)")
+    w.add_argument("--bottom", default="10", metavar="N", help="least common values shown per list (default 10)")
+    w.set_defaults(func=cmd_preview)
 
     c = sub.add_parser("check", usage=CHECK_USAGE.removeprefix("Usage: "),
                        description="Check an STF directory for problems that stop study-wrangler loading it.")

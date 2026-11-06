@@ -28,6 +28,7 @@ never modify the input files and make no git changes.
 |---|---|
 | `uv run scripts/stf.py profile <inputDir> --out <path>` | Profiles every `.csv`/`.tsv`/`.txt` file in `<inputDir>`, writes the full JSON to `<path>` and prints one summary line per file |
 | `uv run scripts/stf.py profile <inputDir> --file <name> [--top N]` | Prints the compact JSON profile of one file, with the parent links that involve it |
+| `uv run scripts/stf.py preview <spec.json> <n> [--top N] [--bottom N]` | Shows what transform `n` (0-based) does to the data: matched, ambiguous and unmatched values with counts. Writes nothing |
 | `uv run scripts/stf.py render <spec.json> <outDir> [--no-raw-data]` | Renders the spec to an STF directory |
 | `uv run scripts/stf.py check <stfDir> [--json]` | Checks an STF directory; exit 1 on errors |
 | `uv run scripts/stf.py validate <stfDir> [--engine docker\|podman]` | Mode 2: validates in the pinned study-wrangler container |
