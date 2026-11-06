@@ -14,7 +14,7 @@ to it.
 
 ```jsonc
 {
-  "specVersion": 1,
+  "specVersion": "1.1.0",                  // see "Spec version" below
   "study": { "name": "string", "description": "string?" },
   "inputDir": "path, relative to the spec file or absolute",   // the saved copy in <out> always says "raw-data" unless --no-raw-data
   "extraFiles": ["dictionary.xlsx", "description.md"],        // optional; other supplied files (data dictionary, study description), relative to inputDir, copied into raw-data/ too
@@ -44,6 +44,18 @@ to it.
   "notes": { "flagged": ["…"], "decisions": ["…"], "pii": ["…"], "validation": ["…"] }
 }
 ```
+
+## Spec version
+
+`specVersion` is a version string, `MAJOR.MINOR.PATCH`. Write new specs with
+the version in the schema above, which is the one these scripts support. The
+scripts read any spec with the same major version and a version no newer than
+theirs, and refuse others with a message naming both versions. A minor
+version adds ops or fields, a patch only clarifies without changing
+behaviour, and a major version removes something or changes what it means.
+Version 1.1.0 added `match` (see Transforms).
+
+## Allowed values
 
 Allowed values, which are the same ones `stf.py check` enforces:
 

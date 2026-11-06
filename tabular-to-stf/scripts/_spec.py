@@ -12,6 +12,8 @@ from typing import Any, Callable
 from _common import is_valid_column_name
 from _constants import DATA_SHAPES, DATA_TYPES, DISPLAY_TYPES, UNAMBIGUOUS_PLACEHOLDERS
 
+SPEC_VERSION = "1.1.0"
+_VERSION = re.compile(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)", re.ASCII)
 APPROVALS = ("auto", "user", "proposed", "rejected")
 ENTITY_NAME_TEXT = "/^[a-z][a-z0-9_]*$/"
 _ENTITY_NAME = re.compile(r"[a-z][a-z0-9_]*")
@@ -88,6 +90,28 @@ def _has_cycle(parent_of: dict, start: Any) -> bool:
         seen.add(k)
         n = parent_of.get(k, MISSING)
     return False
+
+
+def parse_version(v: Any) -> tuple[int, int, int] | None:
+    """(major, minor, patch) for a "MAJOR.MINOR.PATCH" string, else None."""
+    m = _VERSION.fullmatch(v) if isinstance(v, str) else None
+    return (int(m[1]), int(m[2]), int(m[3])) if m else None
+
+
+def _check_version(v: Any, errors: list[str]) -> tuple[int, int, int] | None:
+    """The spec's version if these scripts can read it; otherwise records why not."""
+    have = parse_version(SPEC_VERSION)
+    got = parse_version(v)
+    if got is None:
+        errors.append(f'specVersion: must be a version string like "{SPEC_VERSION}"')
+    elif got[0] != have[0]:
+        errors.append(f"specVersion: major version {got[0]} is not supported "
+                      f"(these scripts support {have[0]}.x, up to {SPEC_VERSION})")
+    elif got > have:
+        errors.append(f"specVersion: this spec needs {v}, these scripts support up to {SPEC_VERSION}")
+    else:
+        return got
+    return None
 
 
 def _all_unambiguous(t: dict) -> bool:
@@ -268,9 +292,7 @@ def validate_spec(spec: Any) -> list[str]:
     errors: list[str] = []
     if not _is_obj(spec):
         return ["spec: must be an object"]
-    sv = spec.get("specVersion")
-    if isinstance(sv, bool) or not isinstance(sv, (int, float)) or sv != 1:
-        errors.append("specVersion: must be 1")
+    _check_version(spec.get("specVersion"), errors)
     study = spec.get("study")
     if not _is_obj(study) or not _is_str(study.get("name")):
         errors.append("study.name: required string")

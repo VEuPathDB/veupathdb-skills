@@ -1,5 +1,5 @@
 {
-  "specVersion": 1,
+  "specVersion": "1.0.0",
   "study": {
     "name": "Lake Victoria household malaria survey",
     "description": "Synthetic cross-sectional survey of villages, households and participants near Lake Victoria, with one or two blood samples per participant."

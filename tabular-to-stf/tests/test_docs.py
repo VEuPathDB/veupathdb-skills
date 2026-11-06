@@ -5,6 +5,7 @@ import re
 import _constants
 import stf
 from _container import STUDY_WRANGLER_VERSION
+from _spec import SPEC_VERSION
 from conftest import SKILL
 
 STF_SETS = {
@@ -53,6 +54,10 @@ def test_version_number_is_written_once_in_the_scripts():
     hits = sorted(p.name for p in (SKILL / "scripts").iterdir()
                   if p.is_file() and STUDY_WRANGLER_VERSION in p.read_text(encoding="utf-8"))
     assert hits == ["_container.py"]
+
+
+def test_curation_spec_md_schema_shows_the_current_spec_version():
+    assert f'"specVersion": "{SPEC_VERSION}"' in read("resources/curation-spec.md")
 
 
 def test_every_relative_link_in_skill_md_and_resources_resolves_inside_the_skill():

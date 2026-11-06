@@ -18,7 +18,7 @@ DATASETS = ["clinical-epi", "mosquito", "coffee-shops"]
 def spec(variables, **extra):
     """Minimal one- or two-entity spec; `variables` are the root entity's."""
     return {
-        "specVersion": 1,
+        "specVersion": "1.0.0",
         "study": {"name": "Test study"},
         "inputDir": "/in",
         "entities": [{"name": "p", "displayName": "P", "displayNamePlural": "Ps", "file": "p.csv",

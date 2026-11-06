@@ -1,5 +1,5 @@
 {
-  "specVersion": 1,
+  "specVersion": "1.0.0",
   "study": {
     "name": "Vallée du Kou Anopheles insecticide resistance survey",
     "description": "Synthetic entomological survey: mosquito collections at ten sites, species identification and insecticide resistance assays on the mosquitoes caught."

@@ -2,12 +2,12 @@ import copy
 
 import pytest
 
-from _spec import validate_spec
+from _spec import SPEC_VERSION, parse_version, validate_spec
 
 
 def minimal_spec():
     return {
-        "specVersion": 1,
+        "specVersion": "1.0.0",
         "study": {"name": "Demo"},
         "inputDir": "raw-data",
         "entities": [
@@ -193,14 +193,38 @@ def test_entity_name_message_keeps_js_regex_text():
     assert "entities[0].name: must match /^[a-z][a-z0-9_]*$/" in validate_spec(s)
 
 
-def test_spec_version_rejects_bool_and_other_values():
-    for bad in (True, 2, "1", None):
+def test_spec_version_accepts_any_1x_up_to_the_code_version():
+    for v in ("1.0.0", "1.0.5", SPEC_VERSION):
         s = minimal_spec()
-        s["specVersion"] = bad
-        assert "specVersion: must be 1" in validate_spec(s), bad
+        s["specVersion"] = v
+        assert validate_spec(s) == [], v
+
+
+@pytest.mark.parametrize("bad", [1, 1.0, True, None, "1", "1.0", "01.0.0", "1.0.0-rc1", " 1.0.0"])
+def test_spec_version_must_be_a_version_string(bad):
     s = minimal_spec()
-    s["specVersion"] = 1.0
-    assert validate_spec(s) == []
+    s["specVersion"] = bad
+    assert 'specVersion: must be a version string like "1.1.0"' in validate_spec(s)
+
+
+def test_spec_version_newer_than_the_code_is_refused():
+    s = minimal_spec()
+    s["specVersion"] = "1.2.0"
+    assert "specVersion: this spec needs 1.2.0, these scripts support up to 1.1.0" in validate_spec(s)
+
+
+@pytest.mark.parametrize("v", ["2.0.0", "0.9.0"])
+def test_spec_version_with_another_major_is_refused(v):
+    s = minimal_spec()
+    s["specVersion"] = v
+    assert (f"specVersion: major version {v[0]} is not supported "
+            f"(these scripts support 1.x, up to 1.1.0)") in validate_spec(s)
+
+
+def test_parse_version():
+    assert parse_version("1.10.0") == (1, 10, 0)
+    assert parse_version(1) is None
+    assert parse_version("1.0") is None
 
 
 def test_missing_op_and_entity_print_undefined_like_js():
