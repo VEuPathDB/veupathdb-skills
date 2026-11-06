@@ -283,6 +283,14 @@ def test_profile_rejects_bad_top_and_empty_directories(tmp_path):
     assert r.returncode == 1 and "Error: Usage: stf.py profile <inputDir>" in r.stderr
 
 
+def test_profile_of_a_non_utf8_file_exits_1_naming_the_file(tmp_path):
+    (tmp_path / "sites.csv").write_bytes("site_id,city\nS1,São Paulo\n".encode("cp1252"))
+    r = run_cli("profile", str(tmp_path))
+    assert r.returncode == 1
+    assert r.stderr.startswith("Error: sites.csv: line 2: not valid UTF-8;"), r.stderr
+    assert "Traceback" not in r.stderr
+
+
 def test_clinical_epi_compact_file_participants_is_well_under_20_kb():
     r = run_cli("profile", str(FIXTURES / "tabular/clinical-epi/inputs"), "--file", "participants.csv")
     assert r.returncode == 0, r.stderr

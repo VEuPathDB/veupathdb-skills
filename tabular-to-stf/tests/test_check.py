@@ -362,6 +362,17 @@ def test_yaml_parse_error_is_reported(good_stf):
     assert any(e.startswith("entity-sample.yaml: cannot parse YAML: line ") for e in errors), errors
 
 
+def test_non_utf8_files_are_reported_by_name_not_replaced(good_stf):
+    (good_stf / "entity-sample.tsv").write_bytes("sample_id \\\\ Descriptors\tnote\nS1\tx\nS2\tã\n".encode("cp1252"))
+    (good_stf / "study.yaml").write_bytes("name: São\nentities:\n  - sample\n".encode("cp1252"))
+    (good_stf / "curation-notes.md").write_bytes("# Notes\n\nã\n".encode("cp1252"))
+    result = check_stf(good_stf)
+    assert result["errors"] == ["study.yaml: cannot parse YAML: line 1: not valid UTF-8; re-save the file as UTF-8"]
+    assert result["warnings"] == ["curation-notes.md: line 3: not valid UTF-8; re-save the file as UTF-8"]
+    (good_stf / "study.yaml").write_text("name: s\nentities:\n  - sample\n", encoding="utf-8")
+    assert check_stf(good_stf)["errors"] == ["entity-sample.tsv: line 3: not valid UTF-8; re-save the file as UTF-8"]
+
+
 def test_entity_level_false_is_not_zero(good_stf):
     # JS `false !== 0`: a boolean is not an integer level
     edit(good_stf, "entity-sample.yaml", "    entity_name: sample\n", "    entity_name: sample\n    entity_level: false\n")

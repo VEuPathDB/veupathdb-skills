@@ -129,11 +129,30 @@ def _sniff_delimiter(text: str) -> str:
     return "," if commas > 0 else "\t"
 
 
+NOT_UTF8 = "not valid UTF-8; re-save the file as UTF-8"
+
+
+class NotUtf8Error(ValueError):
+    def __init__(self, line: int):
+        super().__init__(f"line {line}: {NOT_UTF8}")
+        self.line = line
+
+
+def decode_utf8(raw: bytes) -> str:
+    """Strict UTF-8 decode; a BOM is kept. Raises NotUtf8Error with the line of the first bad byte."""
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError as e:
+        raise NotUtf8Error(raw[:e.start].count(b"\n") + 1) from None
+
+
 def read_table(path: Path) -> Table:
     """Read a CSV/TSV file. Delimiter comes from the extension, else line 1."""
     path = Path(path)
-    with open(path, encoding="utf-8-sig", newline="") as f:
-        text = f.read()
+    try:
+        text = decode_utf8(path.read_bytes())  # parse_delimited strips a BOM
+    except NotUtf8Error as e:
+        raise TableError(path.name, e.line, f"{NOT_UTF8} (e.g. Excel's 'CSV UTF-8')") from None
     delimiter = DELIMITER_BY_EXT.get(path.suffix.lower()) or _sniff_delimiter(text)
     headers, rows = parse_delimited(text, delimiter, path.name)
     return Table(file=str(path), delimiter=delimiter, headers=headers, rows=rows)

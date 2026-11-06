@@ -89,6 +89,22 @@ def test_read_table_strips_bom_and_keeps_crlf_out_of_values(tmp_path):
     assert t.rows == [["1", "a"]]
 
 
+def test_non_utf8_input_is_a_table_error_naming_the_file_and_line(tmp_path):
+    p = tmp_path / "cp.csv"
+    p.write_bytes("id,city\r\nS1,Paris\r\nS2,São Paulo\r\n".encode("cp1252"))
+    with pytest.raises(TableError) as e:
+        read_table(p)
+    assert str(e.value) == ("cp.csv: line 3: not valid UTF-8; "
+                            "re-save the file as UTF-8 (e.g. Excel's 'CSV UTF-8')")
+
+
+def test_non_utf8_after_a_bom_counts_lines_from_the_start(tmp_path):
+    p = tmp_path / "b.tsv"
+    p.write_bytes(b"\xef\xbb\xbfid\n\xe3\n")
+    with pytest.raises(TableError, match=r"^b\.tsv: line 2: not valid UTF-8"):
+        read_table(p)
+
+
 def test_unterminated_quote_throws():
     with pytest.raises(TableError, match=r"(?i)unterminated"):
         parse_delimited('a,b\n"x,y\n', ",")

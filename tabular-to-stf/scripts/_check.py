@@ -23,7 +23,7 @@ from _common import is_valid_column_name
 from _constants import DATA_SHAPES, DATA_TYPES, DISPLAY_TYPES, HIDDEN
 from _container import STUDY_WRANGLER_VERSION
 from _geo import GEO, is_latitude_name, is_longitude_name, validator_sees_latitude, validator_sees_longitude
-from _read_table import parse_delimited
+from _read_table import NotUtf8Error, decode_utf8, parse_delimited
 from _spec import MISSING, js_json
 from _yaml import YamlError, load_stf_yaml
 
@@ -156,8 +156,8 @@ def _value_problem(value: str, v: dict) -> str | None:
 
 
 def _read_text(path: Path) -> str:
-    with open(path, encoding="utf-8", errors="replace", newline="") as f:
-        return f.read()
+    """Strict UTF-8; raises NotUtf8Error ("line N: not valid UTF-8; ...") so the caller can name the file."""
+    return decode_utf8(path.read_bytes())
 
 
 class _Entity:
@@ -183,7 +183,7 @@ class _Entity:
 def _load_yaml(directory: Path, name: str, errors: list, warnings: list) -> Any:
     try:
         data, yaml_warnings = load_stf_yaml(_read_text(directory / name))
-    except (YamlError, OSError) as err:
+    except (YamlError, NotUtf8Error, OSError) as err:
         errors.append(f"{name}: cannot parse YAML: {err}")
         return None
     warnings.extend(f"{name}: {w}" for w in yaml_warnings)
@@ -248,7 +248,12 @@ def _check_notes(directory: Path, warnings: list) -> None:
     path = directory / "curation-notes.md"
     if not path.exists():
         return
-    mentioned = dict.fromkeys(_RAW_MENTION.findall(_read_text(path)))
+    try:
+        text = _read_text(path)
+    except NotUtf8Error as err:  # the notes do not stop a load, so only a warning
+        warnings.append(f"curation-notes.md: {err}")
+        return
+    mentioned = dict.fromkeys(_RAW_MENTION.findall(text))
     for m in mentioned:
         p = _TRAILING_PUNCT.sub("", m)
         if not (directory / p).exists():
