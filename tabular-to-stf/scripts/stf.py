@@ -15,6 +15,15 @@ cut. Read-only on the inputs.
                  it (links are still found across all files)
   --out <path>   write the full profile to <path> and print one summary line
                  per file instead (name, rows, columns, size of its entry)
+
+  stf.py render <spec.json> <outDir> [--no-raw-data]
+
+render: renders a curation spec and its input tables to an STF directory:
+study.yaml, entity-<name>.{tsv,yaml}, curation-notes.md, a copy of the spec
+(curation-spec.json) and, by default, raw-data/ holding unmodified copies of
+the inputs. The saved spec then reads from raw-data/, so
+`stf.py render <outDir>/curation-spec.json <outDir>` re-renders from the folder
+alone. Input files are never modified.
 """
 
 from __future__ import annotations
@@ -27,6 +36,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
 PROFILE_USAGE = "Usage: stf.py profile <inputDir> [--top N] [--file <name>] [--out <path>]"
+RENDER_USAGE = "Usage: stf.py render <spec.json> <outDir> [--no-raw-data]"
 _TABLE_NAME = re.compile(r"\.(csv|tsv|txt)$", re.IGNORECASE)
 _NUMERIC = re.compile(r"\s*[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?\s*", re.ASCII)
 
@@ -89,6 +99,24 @@ def cmd_profile(args) -> int:
     return 0
 
 
+def cmd_render(args) -> int:
+    from _render import RenderError, render_to_dir
+
+    if len(args.paths) != 2:
+        raise ValueError(RENDER_USAGE)
+    spec_path, out_dir = args.paths
+    try:
+        written = render_to_dir(Path(spec_path), Path(out_dir), copy_raw=not args.no_raw_data)
+    except RenderError as err:
+        print("Error: the spec does not render:", file=sys.stderr)
+        for m in err.messages:
+            print(f"- {m}", file=sys.stderr)
+        return 1
+    for path in written:
+        print(path)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="stf.py", description="tabular-to-stf command line")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -101,6 +129,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--file", metavar="NAME", help="only this file's entry and the parent links involving it")
     p.add_argument("--out", metavar="PATH", help="write the full profile here; print a summary per file")
     p.set_defaults(func=cmd_profile)
+
+    r = sub.add_parser("render", usage=RENDER_USAGE.removeprefix("Usage: "),
+                       description="Render a curation spec and its input tables to an STF directory.")
+    r.add_argument("paths", nargs="*", metavar="spec.json outDir", help="the curation spec and the output directory")
+    r.add_argument("--no-raw-data", action="store_true", help="do not copy the inputs to <outDir>/raw-data/")
+    r.set_defaults(func=cmd_render)
     return parser
 
 
