@@ -159,6 +159,22 @@ def test_missing_image_prints_pull_commands_and_is_a_load_error(tmp_path):
         assert c in output
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="needs a #!/bin/sh fake engine")
+def test_cli_an_abbreviated_option_is_rejected_before_any_engine_runs(tmp_path):
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    called = tmp_path / "called"
+    for engine in ("docker", "podman"):
+        fake = bin_dir / engine
+        fake.write_text(f'#!/bin/sh\necho "$@" >> "{called}"\nexit 0\n', encoding="utf-8")
+        fake.chmod(fake.stat().st_mode | stat.S_IXUSR)
+    env = {**os.environ, "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}"}
+    r = run_cli("validate", str(tmp_path / "no-such-stf"), "--engin", "docker", env=env)
+    assert r.returncode == 1, r.stdout + r.stderr
+    assert r.stderr.startswith("Error: ") and "--engin" in r.stderr
+    assert not called.exists(), called.read_text()
+
+
 def test_cli_without_a_directory_prints_usage_and_fails():
     r = run_cli("validate")
     assert r.returncode == 1

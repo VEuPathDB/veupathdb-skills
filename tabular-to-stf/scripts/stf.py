@@ -46,6 +46,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from decimal import ROUND_HALF_UP, Decimal
@@ -89,7 +90,7 @@ def cmd_profile(args) -> int:
         raise ValueError(f'--top must be a positive integer, got "{args.top}"')
     if not directory.is_dir():
         raise ValueError(f"Not a directory: {directory}")
-    if args.out and Path(args.out).absolute().parent == directory.absolute():
+    if args.out and Path(os.path.abspath(args.out)).parent == Path(os.path.abspath(directory)):
         raise ValueError(f"--out must not be in the input directory {directory}; inputs are never modified")
 
     names = sorted(p.name for p in directory.iterdir() if _TABLE_NAME.search(p.name))
@@ -172,9 +173,21 @@ def cmd_validate(args) -> int:
     return _VALIDATE_EXIT[status]
 
 
+class _Parser(argparse.ArgumentParser):
+    """Usage errors print `Error: ...` and exit 1, as the Node scripts did (argparse would exit 2)."""
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("allow_abbrev", False)  # so --engin is not taken for --engine
+        super().__init__(*args, **kwargs)
+
+    def error(self, message: str):
+        print(f"Error: {message}", file=sys.stderr)
+        sys.exit(1)
+
+
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="stf.py", description="tabular-to-stf command line")
-    sub = parser.add_subparsers(dest="command", required=True)
+    parser = _Parser(prog="stf.py", description="tabular-to-stf command line")
+    sub = parser.add_subparsers(dest="command", required=True, parser_class=_Parser)
 
     p = sub.add_parser("profile", usage=PROFILE_USAGE.removeprefix("Usage: "),
                        description="Profile every .csv/.tsv/.txt file in a directory as compact JSON.")

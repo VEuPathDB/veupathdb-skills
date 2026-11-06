@@ -291,6 +291,32 @@ def test_profile_of_a_non_utf8_file_exits_1_naming_the_file(tmp_path):
     assert "Traceback" not in r.stderr
 
 
+def test_out_through_dot_dot_into_the_input_directory_is_refused(tmp_path):
+    d = tmp_path / "d2"
+    d.mkdir()
+    (d / "a.csv").write_text("id\n1\n", encoding="utf-8")
+    (tmp_path / "x").mkdir()
+    r = run_cli("profile", str(d), "--out", str(tmp_path / "x" / ".." / "d2" / "p.json"))
+    assert r.returncode == 1
+    assert "must not be in the input directory" in r.stderr
+    assert not (d / "p.json").exists()
+
+
+def test_usage_errors_exit_1_with_error_prefix_and_help_exits_0(tmp_path):
+    r = run_cli("profile", str(tmp_path), "--bogus")
+    assert r.returncode == 1 and r.stderr.startswith("Error: ") and "--bogus" in r.stderr
+    r = run_cli()
+    assert r.returncode == 1 and r.stderr.startswith("Error: ")
+    r = run_cli("frobnicate")
+    assert r.returncode == 1 and r.stderr.startswith("Error: ")
+    (tmp_path / "a.csv").write_text("id\n1\n", encoding="utf-8")
+    r = run_cli("profile", str(tmp_path), "--fil", "a.csv")  # no abbreviations
+    assert r.returncode == 1 and r.stderr.startswith("Error: ") and "--fil" in r.stderr
+    for args in (["--help"], ["profile", "--help"], ["validate", "--help"]):
+        r = run_cli(*args)
+        assert r.returncode == 0 and "usage:" in r.stdout, args
+
+
 def test_clinical_epi_compact_file_participants_is_well_under_20_kb():
     r = run_cli("profile", str(FIXTURES / "tabular/clinical-epi/inputs"), "--file", "participants.csv")
     assert r.returncode == 0, r.stderr
