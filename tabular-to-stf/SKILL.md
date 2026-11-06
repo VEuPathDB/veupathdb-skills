@@ -18,6 +18,9 @@ study-wrangler (see [SOURCE.md](resources/stf/SOURCE.md)).
 ## Scripts
 
 All scripts are in this skill's `scripts/` directory (next to this file).
+`scripts/stf.py` below means that path in this skill's folder; run it from
+the user's working directory with that path, so relative paths in the
+commands are the user's.
 Run them with `uv run`; uv installs the one dependency on first use. They
 never modify the input files and make no git changes.
 
