@@ -7,9 +7,9 @@ study.yaml does not name, as the loaders do.
 Handles the standard layout of full STF only. STF-lite and transposed entity
 files are reported, not checked: validate those in mode 2.
 
-Mirrors lib/tabular/check.js. A JS `x !== undefined` test on a YAML field means
-the key is present; JS strict equality and Set/Map membership go through _key,
-so true is not 1 and a list never equals another list.
+Presence of a YAML field means the key is present (a null value counts); strict
+equality and set/map membership go through _key, so true is not 1 and a list
+never equals another list.
 """
 
 from __future__ import annotations

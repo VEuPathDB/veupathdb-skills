@@ -3,7 +3,7 @@
 dump_yaml writes block-style YAML that R's yaml package (YAML 1.1) and a YAML 1.2
 reader both read back as the same text: a string is written plain unless
 needs_quoting says otherwise. load_stf_yaml reads the subset STF files use with
-yaml-lite's typing (yes/no stay text, dates stay text) and rejects anchors,
+the minimal STF typing (yes/no stay text, dates stay text) and rejects anchors,
 aliases, tags, extra documents and flow mappings with content.
 """
 
@@ -51,7 +51,7 @@ def yaml11_resolves(s: str) -> bool:
 
 
 def needs_quoting(s: str) -> bool:
-    """The yamlScalar rule from stf-common.js: whether s must be quoted to be read back as text."""
+    """The scalar quoting rule: whether s must be quoted to be read back as text."""
     return (
         s == ""
         or _CONTROL.search(s) is not None
@@ -128,7 +128,7 @@ _BOOL = re.compile(r"true|false", _A | re.IGNORECASE)
 
 
 def _plain_value(s: str) -> Any:
-    """yaml-lite's typing: numbers, booleans and null resolve; yes/no stay strings."""
+    """STF typing: numbers, booleans and null resolve; yes/no stay strings."""
     if s == "" or _NULL.fullmatch(s):
         return None
     if _BOOL.fullmatch(s):
@@ -217,7 +217,7 @@ def _indent(line: str) -> int:
 
 
 def _yaml_lite_error(e: YAMLError, text: str) -> YamlError:
-    """Converts a ruamel error to a YamlError with yaml-lite's message for the cases yaml-lite rejected."""
+    """Converts a ruamel error to a YamlError with the STF loader's message for the cases it rejects."""
     if isinstance(e, ReaderError):  # a character YAML does not allow; no mark, only a position
         line = text[:e.position].count("\n") + 1
         if isinstance(e.character, int):

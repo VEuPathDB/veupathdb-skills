@@ -1,8 +1,8 @@
 """Curation spec validator. Checks the JSON spec the curator writes; never
 reads files. Returns every error found, each naming its location.
 
-Mirrors lib/tabular/spec.js: a JS `x !== undefined` test on a spec field means
-the key is present (`"key" in d`), so a JSON null is a present value.
+A spec field counts as present when its key is present (`"key" in d`), so a JSON
+null is a present value.
 """
 
 import json
