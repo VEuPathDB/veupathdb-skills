@@ -14,12 +14,11 @@ never equals another list.
 
 from __future__ import annotations
 
-import datetime
 import re
 from pathlib import Path
 from typing import Any
 
-from _common import is_valid_column_name
+from _common import is_valid_column_name, is_valid_iso_date
 from _constants import DATA_SHAPES, DATA_TYPES, DISPLAY_TYPES, HIDDEN
 from _container import STUDY_WRANGLER_VERSION
 from _geo import GEO, is_latitude_name, is_longitude_name, validator_sees_latitude, validator_sees_longitude
@@ -32,7 +31,6 @@ MAX_PER_KIND = 5  # value errors reported per file, column and kind
 
 _NUMBER = re.compile(r"[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?", re.ASCII)
 _INTEGER = re.compile(r"[+-]?\d+", re.ASCII)
-_DATE = re.compile(r"(\d{4})-(\d{2})-(\d{2})", re.ASCII)
 _ENTITY_YAML = re.compile(r"entity-.*\.yaml")
 _RAW_MENTION = re.compile(r"raw-data/[^\s`'\"()<>\]]+")
 _TRAILING_PUNCT = re.compile(r"[.,;:]+$")
@@ -121,25 +119,11 @@ def geohash_warning(version: str = STUDY_WRANGLER_VERSION) -> str:
     return "geohash columns present; they will be recomputed by infer_geo_variables_for_eda()"
 
 
-def _valid_date(s: str) -> bool:
-    m = _DATE.fullmatch(s)
-    if not m:
-        return False
-    y, mo, d = (int(g) for g in m.groups())
-    if y < 100:  # JS Date.UTC maps years 0-99 to 1900-1999, so the round trip fails
-        return False
-    try:
-        datetime.date(y, mo, d)
-    except ValueError:
-        return False
-    return True
-
-
 def _value_problem(value: str, v: dict) -> str | None:
     """Why `value` is not valid for variable v, or None."""
     data_type = _get(v, "data_type")
     if _same(data_type, "date"):
-        return None if _valid_date(value) else "is not a valid YYYY-MM-DD date"
+        return None if is_valid_iso_date(value) else "is not a valid YYYY-MM-DD date"
     if _same(data_type, "integer"):
         return None if _INTEGER.fullmatch(value) else "is not an integer"
     if _same(data_type, "number") or _same(data_type, "longitude"):

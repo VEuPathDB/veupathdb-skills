@@ -1,5 +1,16 @@
 import _constants
-from _common import infer_type, is_valid_column_name, to_column_name, unique_column_names
+from _common import infer_type, is_valid_column_name, is_valid_iso_date, to_column_name, unique_column_names
+
+
+def test_is_valid_iso_date_is_shared_by_check_and_render():
+    import _check
+    import _render
+    for s in ["2020-02-29", "0100-01-01", "9999-12-31"]:
+        assert is_valid_iso_date(s), s
+    for s in ["2023-02-30", "2021-02-29", "0050-01-01", "2020-1-01", "2020-01-01 ", "２０２０-01-01", ""]:
+        assert not is_valid_iso_date(s), s
+    assert _render.PARSES["date"] is is_valid_iso_date
+    assert _check.is_valid_iso_date is is_valid_iso_date
 
 
 def test_to_column_name_gives_snake_case_names_that_need_no_quoting():

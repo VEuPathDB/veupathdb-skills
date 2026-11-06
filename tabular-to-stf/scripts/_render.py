@@ -6,7 +6,6 @@ it reads the inputs, writes the STF directory, the saved spec and raw-data/.
 
 from __future__ import annotations
 
-import datetime
 import json
 import math
 import os
@@ -15,7 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from _common import infer_type, to_column_name, unique_column_names
+from _common import infer_type, is_valid_iso_date, to_column_name, unique_column_names
 from _constants import RAW_DIR, SAVED_SPEC
 from _geo import GEO, is_latitude_name, is_longitude_name, validator_sees_latitude, validator_sees_longitude
 from _notes import render_notes
@@ -54,21 +53,6 @@ def _passes_lng(s: str) -> bool:
 _A = re.ASCII
 _NUMBER = re.compile(r"-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?", _A)
 _INTEGER = re.compile(r"-?(0|[1-9]\d*)", _A)
-_ISO_DATE = re.compile(r"(\d{4})-(\d{2})-(\d{2})", _A)
-
-
-def _is_iso_date(v: str) -> bool:
-    m = _ISO_DATE.fullmatch(v)
-    if not m:
-        return False
-    y, mo, d = (int(x) for x in m.groups())
-    if y < 100:  # JS Date.UTC maps years 0-99 to 1900-1999, so the round trip fails
-        return False
-    try:
-        datetime.date(y, mo, d)
-    except ValueError:
-        return False
-    return True
 
 
 # Leading zeros are refused for numbers: the loader reads such a column as text
@@ -77,7 +61,7 @@ PARSES = {
     "integer": lambda v: _INTEGER.fullmatch(v) is not None,
     "number": lambda v: _NUMBER.fullmatch(v) is not None,
     "longitude": lambda v: _NUMBER.fullmatch(v) is not None,
-    "date": _is_iso_date,
+    "date": is_valid_iso_date,
 }
 
 

@@ -1,5 +1,6 @@
-"""Helpers shared by the STF writers: type inference and column naming. Pure."""
+"""Helpers shared by the STF writers and the checker: type inference, date validity and column naming. Pure."""
 
+import datetime
 import re
 from typing import Iterable
 
@@ -26,6 +27,24 @@ def infer_type(values: Iterable[str]) -> dict[str, str]:
     if all(_DATE.fullmatch(v) for v in non_null):
         return {"data_type": "date", "data_shape": "continuous"}
     return dict(_STRING)
+
+
+_ISO_DATE = re.compile(r"(\d{4})-(\d{2})-(\d{2})", _A)
+
+
+def is_valid_iso_date(s: str) -> bool:
+    """YYYY-MM-DD naming a real calendar day."""
+    m = _ISO_DATE.fullmatch(s)
+    if not m:
+        return False
+    y, mo, d = (int(g) for g in m.groups())
+    if y < 100:  # JS Date.UTC maps years 0-99 to 1900-1999, so the round trip fails
+        return False
+    try:
+        datetime.date(y, mo, d)
+    except ValueError:
+        return False
+    return True
 
 
 def is_valid_column_name(name: str) -> bool:
