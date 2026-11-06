@@ -1,4 +1,4 @@
-"""Port of study-wrangler v1.0.56's two latitude/longitude name matchers, plus the geo constants.
+"""Port of the pinned study-wrangler version's two latitude/longitude name matchers, plus the geo constants.
 
 - inference (`infer_geo_variables_for_eda`): `(\\b|_)token(\\b|_)` on the variable name.
 - validator (`validate_geocoordinate_variables`): `\\btoken\\b` on the name and each provider_label.

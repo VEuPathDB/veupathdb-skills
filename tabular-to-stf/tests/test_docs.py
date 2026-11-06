@@ -49,6 +49,12 @@ def test_version_number_appears_only_in_source_md():
     assert hits == ["resources/stf/SOURCE.md"]
 
 
+def test_version_number_is_written_once_in_the_scripts():
+    hits = sorted(p.name for p in (SKILL / "scripts").iterdir()
+                  if p.is_file() and STUDY_WRANGLER_VERSION in p.read_text(encoding="utf-8"))
+    assert hits == ["_container.py"]
+
+
 def test_every_relative_link_in_skill_md_and_resources_resolves_inside_the_skill():
     broken = []
     for doc in docs():
