@@ -24,6 +24,12 @@ study.yaml, entity-<name>.{tsv,yaml}, curation-notes.md, a copy of the spec
 the inputs. The saved spec then reads from raw-data/, so
 `stf.py render <outDir>/curation-spec.json <outDir>` re-renders from the folder
 alone. Input files are never modified.
+
+  stf.py check <stfDir> [--json]
+
+check: checks an STF directory (study.yaml, entity-<name>.{tsv,yaml}) for the
+problems that stop study-wrangler loading it. Read-only. Prints ERROR:/WARNING:
+lines, or JSON with --json, and exits 1 if there are errors.
 """
 
 from __future__ import annotations
@@ -37,6 +43,7 @@ from pathlib import Path
 
 PROFILE_USAGE = "Usage: stf.py profile <inputDir> [--top N] [--file <name>] [--out <path>]"
 RENDER_USAGE = "Usage: stf.py render <spec.json> <outDir> [--no-raw-data]"
+CHECK_USAGE = "Usage: stf.py check <stfDir> [--json]"
 _TABLE_NAME = re.compile(r"\.(csv|tsv|txt)$", re.IGNORECASE)
 _NUMERIC = re.compile(r"\s*[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?\s*", re.ASCII)
 
@@ -117,6 +124,22 @@ def cmd_render(args) -> int:
     return 0
 
 
+def cmd_check(args) -> int:
+    from _check import check_stf
+
+    if len(args.stfDir) != 1:
+        raise ValueError(CHECK_USAGE)
+    result = check_stf(Path(args.stfDir[0]))
+    if args.json:
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+    else:
+        for m in result["errors"]:
+            print(f"ERROR: {m}")
+        for m in result["warnings"]:
+            print(f"WARNING: {m}")
+    return 1 if result["errors"] else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="stf.py", description="tabular-to-stf command line")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -135,6 +158,12 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("paths", nargs="*", metavar="spec.json outDir", help="the curation spec and the output directory")
     r.add_argument("--no-raw-data", action="store_true", help="do not copy the inputs to <outDir>/raw-data/")
     r.set_defaults(func=cmd_render)
+
+    c = sub.add_parser("check", usage=CHECK_USAGE.removeprefix("Usage: "),
+                       description="Check an STF directory for problems that stop study-wrangler loading it.")
+    c.add_argument("stfDir", nargs="*", metavar="stfDir", help="the STF directory")
+    c.add_argument("--json", action="store_true", help="print {errors, warnings} as JSON")
+    c.set_defaults(func=cmd_check)
     return parser
 
 
