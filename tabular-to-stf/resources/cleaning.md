@@ -124,6 +124,14 @@ Common cases and the fix to propose:
   settle it, for example if no day is above 12. Impossible dates, such as
   `2023-13-01`, need the user. The month and day may be swapped, or it may
   be a slip, so propose a `replace-cells` and ask.
+- **Mixed date formats in one column**, such as `2024-07-07`, `15/03/2024`
+  and `15/03/24`. Use one `parse-dates` with every format the column uses,
+  e.g. `"formats": ["DD/MM/YYYY", "DD/MM/YY"]`. ISO cells pass through, so
+  leave `YYYY-MM-DD` out. Do not turn dates into ISO yourself with
+  `map-values`: `parse-dates` checks every result is a real date. Tell the
+  user that two-digit years become 20YY. If a cell belongs to the 1900s, or
+  fits more than one format with different results, ask, then fix it with
+  `replace-cells` before the `parse-dates`.
 - **Stray text in a numeric column**, such as `see notes` or `>5`. Propose
   blanking it (`replace-cells` to `""`) or a censored treatment, as above.
 - **Implausible values**, such as a weight of 250 kg next to a height of

@@ -93,6 +93,23 @@ def test_blank_placeholders_auto_only_for_unambiguous_values():
     assert validate_spec(s) == []
 
 
+@pytest.mark.parametrize("fields, error", [
+    ({"format": "DD/MM/YYYY"}, None),
+    ({"formats": ["DD/MM/YYYY", "DD/MM/YY"]}, None),
+    ({}, "transforms[0].formats: give either format (a string) or formats (a non-empty array of strings)"),
+    ({"format": "DD/MM/YYYY", "formats": ["DD/MM/YY"]},
+     "transforms[0].formats: give either format (a string) or formats (a non-empty array of strings)"),
+    ({"formats": []}, "transforms[0].formats: required non-empty array of strings"),
+    ({"formats": ["DD/MM/YYYY", ""]}, "transforms[0].formats: required non-empty array of strings"),
+    ({"format": ""}, "transforms[0].format: required string"),
+])
+def test_parse_dates_takes_format_or_formats(fields, error):
+    s = minimal_spec()
+    s["transforms"] = [{"op": "parse-dates", "entity": "participant", "column": "dob", "reason": "r",
+                        "approval": "user", **fields}]
+    assert validate_spec(s) == ([] if error is None else [error])
+
+
 def test_bad_data_type_name_approval_missing_instead_unknown_entity():
     s = minimal_spec()
     s["entities"][1]["variables"][0]["dataType"] = "float"

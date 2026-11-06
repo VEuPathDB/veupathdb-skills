@@ -173,7 +173,13 @@ def _check_transform(t: Any, i: int, entity_names: set[str], errors: list[str]) 
              "required array of { id, from, to } strings")
     elif op_name == "parse-dates":
         need_str("column")
-        need_str("format")
+        if ("format" in t) == ("formats" in t):
+            errors.append(f"{at}.formats: give either format (a string) or formats (a non-empty array of strings)")
+        elif "format" in t:
+            need_str("format")
+        else:
+            need("formats", lambda v: isinstance(v, list) and len(v) > 0 and all(_is_str(x) for x in v),
+                 "required non-empty array of strings")
     elif op_name == "derive-column":
         need_str("column")
         need_str("from")

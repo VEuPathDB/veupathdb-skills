@@ -150,7 +150,13 @@ def cmd_check(args) -> int:
             print(f"ERROR: {m}")
         for m in result["warnings"]:
             print(f"WARNING: {m}")
+        print(f"Checked {args.stfDir[0]}: {_count(len(result['errors']), 'error')}, "
+              f"{_count(len(result['warnings']), 'warning')}")
     return 1 if result["errors"] else 0
+
+
+def _count(n: int, word: str) -> str:
+    return f"{n} {word}{'' if n == 1 else 's'}"
 
 
 def cmd_validate(args) -> int:

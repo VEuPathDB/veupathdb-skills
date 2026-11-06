@@ -7,6 +7,7 @@ import json
 from typing import Iterable
 
 from _constants import SAVED_SPEC
+from _transforms import date_formats
 
 COUNTED = ("trim", "blank-placeholders", "map-values", "parse-dates")
 MAX_IDS = 10
@@ -52,7 +53,7 @@ def _describe(t: dict) -> tuple[str, str]:
         text = "; ".join(f"{k} ({'row' if len(ids) == 1 else 'rows'} {', '.join(ids)})" for k, ids in groups.items())
         return column, text
     if op == "parse-dates":
-        return column, f"parse dates {t['format']} → YYYY-MM-DD"
+        return column, f"parse dates {' or '.join(date_formats(t))} → YYYY-MM-DD"
     if op == "derive-column":
         m = f"{_pairs(t['map'])}, otherwise {q(t['default'])}" if t["map"] else f"always {q(t['default'])}"
         return column, f"new column from `{t['from']}`: {m}"

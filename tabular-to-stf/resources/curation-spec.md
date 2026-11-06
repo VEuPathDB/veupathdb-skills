@@ -62,7 +62,7 @@ Every transform has `op`, `entity`, `reason` and `approval` (`"auto"` | `"user"`
 | `map-values` | `column`, `map` `{from: to}` | yes (the skill docs restrict it to the same value written differently: case, whitespace, conventional abbreviations, dictionary-defined codes; typos and similarity matches are `user`) |
 | `rename-column` | `from`, `to` | yes |
 | `replace-cells` | `column`, `cells: [{ id, from, to }]` | no |
-| `parse-dates` | `column`, `format` (tokens `DD`, `D`, `MM`, `M`, `YYYY`, any separators) | no |
+| `parse-dates` | `column`, and either `format` or `formats` (a list) (tokens `DD`, `D`, `MM`, `M`, `YYYY`, `YY`, any separators) | no |
 | `derive-column` | `column` (new), `from`, `map`, `default` | no |
 | `drop-column` | `column` | no |
 
@@ -98,9 +98,14 @@ transforms.
 - `replace-cells` finds rows by the value in the entity's `idColumn`. It
   fails if a row ID is missing or a cell no longer holds `from`, which means
   the spec is stale. Re-profile and fix the spec, do not force it.
-- `parse-dates` turns every non-empty cell into `YYYY-MM-DD`. It fails,
-  listing the row IDs, if any cell does not match `format` or is not a real
-  date (`31/02/2023`).
+- `parse-dates` turns every non-empty cell into `YYYY-MM-DD`. Cells that
+  are already valid `YYYY-MM-DD` dates are left as they are, so a column
+  that is only partly ISO needs just the other formats. `YY` always means
+  20YY. It fails, listing the row IDs, if a cell matches none of the formats
+  (and is not ISO) or is not a real date (`31/02/2023`). It also fails if two
+  formats, or a format and ISO, read a cell as different dates (`03/04/23`
+  under both `DD/MM/YY` and `MM/DD/YY`). Settle those cells with
+  `replace-cells` first.
 - `derive-column` adds a column, using `map[value]` for each value of `from`
   and `default` for everything else. It reads `from` as it is at that point,
   so put it **before** any transform that changes those values. For example,

@@ -185,7 +185,7 @@ lists every problem in the spec. Fix the spec and render again.
 
 Run `uv run scripts/stf.py check <out>`. It checks ID integrity, the variable
 tree, that the files load, allowed values, data types and the EDA geo rules.
-Each `ERROR:` line is fixed in the spec, followed by a re-render and a
+It ends with a line counting the errors and warnings. Each `ERROR:` line is fixed in the spec, followed by a re-render and a
 re-check, until there are none. Read every `WARNING:` line and act on it or
 record it in `notes.flagged`. Then offer mode 2 if a container engine was
 found.

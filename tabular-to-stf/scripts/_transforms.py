@@ -18,6 +18,7 @@ import dataclasses
 import datetime
 import re
 
+from _common import is_valid_iso_date
 from _read_table import Table
 from _spec import js_json
 
@@ -29,12 +30,21 @@ _JS_WHITESPACE = (
     "       　﻿"
 )
 
-_TOKENS = {"YYYY": "([0-9]{4})", "DD": "([0-9]{2})", "MM": "([0-9]{2})", "D": "([0-9]{1,2})", "M": "([0-9]{1,2})"}
-_TOKEN_ORDER = ("YYYY", "DD", "MM", "D", "M")
+_TOKENS = {
+    "YYYY": "([0-9]{4})", "YY": "([0-9]{2})",
+    "DD": "([0-9]{2})", "MM": "([0-9]{2})", "D": "([0-9]{1,2})", "M": "([0-9]{1,2})",
+}
+_TOKEN_ORDER = ("YYYY", "YY", "DD", "MM", "D", "M")
+ISO_FORMAT = "YYYY-MM-DD"
 
 
 class TransformError(ValueError):
     pass
+
+
+def date_formats(t: dict) -> list[str]:
+    """A parse-dates transform's formats: `formats`, or the single `format`."""
+    return list(t["formats"]) if "formats" in t else [t["format"]]
 
 
 def _copy_table(t: Table) -> Table:
@@ -76,7 +86,7 @@ def _date_parser(fmt):
         tok = next((t for t in _TOKEN_ORDER if fmt.startswith(t, i)), None)
         if tok:
             pattern += _TOKENS[tok]
-            order.append(tok[0])
+            order.append(tok)
             i += len(tok)
         else:
             pattern += re.escape(fmt[i])
@@ -87,7 +97,10 @@ def _date_parser(fmt):
         m = rx.fullmatch(value)
         if not m:
             return None
-        p = {k: int(m.group(i + 1)) for i, k in enumerate(order)}
+        p = {}
+        for i, tok in enumerate(order):
+            n = int(m.group(i + 1))
+            p[tok[0]] = 2000 + n if tok == "YY" else n  # YY always means 20YY
         if "Y" not in p or "M" not in p or "D" not in p:
             return None
         y, mo, d = p["Y"], p["M"], p["D"]
@@ -180,23 +193,42 @@ def _apply_one(t, index, table, id_column, renames):
         return with_ids({"column": t["column"], "cellsChanged": n})
     if op == "parse-dates":
         c = col(t["column"])
-        parse = _date_parser(t["format"])
+        formats = date_formats(t)
+        parsers = [_date_parser(f) for f in formats]
         rid = _id_index(table, id_column, renames)
         bad = []
+        ambiguous = []
         out = []
         for r, row in enumerate(table.rows):
-            if row[c] == "":
+            v = row[c]
+            if v == "":
                 out.append("")
                 continue
-            iso = parse(row[c])
-            if iso is None:
-                bad.append(row[rid] if rid >= 0 else f"row {r + 1}")
-            out.append(iso)
+            # A cell already in ISO form counts as one more reading, so a listed
+            # format that reads it as a different date makes it ambiguous.
+            readings = {v} if is_valid_iso_date(v) else set()
+            readings.update(iso for iso in (p(v) for p in parsers) if iso is not None)
+            row_id = row[rid] if rid >= 0 else f"row {r + 1}"
+            if not readings:
+                bad.append(row_id)
+            elif len(readings) > 1:
+                ambiguous.append(row_id)
+            out.append(next(iter(readings)) if len(readings) == 1 else None)
+        problems = []
         if bad:
-            raise TransformError(
-                f"{where}: values in column {js_json(t['column'])} do not match format "
-                f"{t['format']} for row IDs: {', '.join(bad)}"
+            which = f"format {formats[0]}" if len(formats) == 1 else f"any of the formats {', '.join(formats)}"
+            problems.append(
+                f"values in column {js_json(t['column'])} do not match {which} and are not "
+                f"{ISO_FORMAT} dates for row IDs: {', '.join(bad)}"
             )
+        if ambiguous:
+            problems.append(
+                f"values in column {js_json(t['column'])} read as different dates under more than one "
+                f"format (counting {ISO_FORMAT}) for row IDs: {', '.join(ambiguous)}; "
+                f"settle them with replace-cells before this transform"
+            )
+        if problems:
+            raise TransformError(f"{where}: {'; '.join(problems)}")
         n = 0
         for r, row in enumerate(table.rows):
             if row[c] != out[r]:

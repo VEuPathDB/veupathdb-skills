@@ -241,6 +241,21 @@ def test_render_notes_lists_row_ids_for_user_value_changes_capped_at_10_and_not_
     assert "Q1" not in notes
 
 
+def test_render_notes_names_every_parse_dates_format():
+    s = spec([{"column": "a"}])
+    s["transforms"] = [
+        {"op": "parse-dates", "entity": "p", "column": "a", "format": "DD/MM/YYYY", "approval": "user", "reason": "uk"},
+        {"op": "parse-dates", "entity": "p", "column": "a", "formats": ["DD/MM/YYYY", "DD/MM/YY"],
+         "approval": "user", "reason": "mixed"},
+    ]
+    notes = render_notes(s, [
+        {"index": 0, "op": "parse-dates", "entity": "p", "column": "a", "approval": "user", "cellsChanged": 0, "ids": []},
+        {"index": 1, "op": "parse-dates", "entity": "p", "column": "a", "approval": "user", "cellsChanged": 0, "ids": []},
+    ])
+    assert "`p.a`: parse dates DD/MM/YYYY → YYYY-MM-DD" in notes
+    assert "`p.a`: parse dates DD/MM/YYYY or DD/MM/YY → YYYY-MM-DD" in notes
+
+
 @pytest.mark.parametrize("ds", DATASETS)
 def test_golden_yaml_round_trips_display_names_and_definitions(ds):
     s, tables = load_fixture(ds)
