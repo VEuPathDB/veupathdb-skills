@@ -221,6 +221,19 @@ issues, the user's answers and decisions, PII, and, after mode 2, the
 validation runs. Then re-render. See
 [curation-notes.md](resources/curation-notes.md).
 
+### 10. Zip (only if asked)
+
+If the user asks for the STF as a `.zip` file, zip the files flat, with no
+directory structure (`-j`), and leave out `raw-data/`. Write the zip outside
+`<out>`, because the next render refuses a directory that holds files it
+did not write. From inside `<out>`:
+
+```
+zip -j ../<name>.zip study.yaml entity-*.tsv entity-*.yaml curation-notes.md curation-spec.json
+```
+
+Check it with `unzip -l ../<name>.zip`.
+
 ## Personal data
 
 If a column looks like it identifies people, such as names, phone numbers,
