@@ -58,12 +58,17 @@ def pull_commands() -> list[str]:
     return [f"docker pull {STUDY_WRANGLER_IMAGE}", f"podman pull docker.io/{STUDY_WRANGLER_IMAGE}"]
 
 
-def image_present(engine: str, exec: Exec = default_exec) -> bool:
+def image_missing_reason(engine: str, exec: Exec = default_exec) -> str | None:
+    """None if `image inspect` finds the pinned image, else what the engine said (no image, daemon down, ...)."""
     try:
         exec([engine, "image", "inspect", STUDY_WRANGLER_IMAGE])
-        return True
-    except (subprocess.CalledProcessError, OSError):
-        return False
+        return None
+    except (subprocess.CalledProcessError, OSError) as e:
+        return failure_output(e)
+
+
+def image_present(engine: str, exec: Exec = default_exec) -> bool:
+    return image_missing_reason(engine, exec) is None
 
 
 def validate_study_in_container(stf_dir: Path, engine: str, exec: Exec = default_exec) -> tuple[str, str]:
@@ -81,12 +86,15 @@ def validate_study_in_container(stf_dir: Path, engine: str, exec: Exec = default
     if not SCRIPT.exists():
         raise ValueError(f"Validator script not found: {SCRIPT}")
     header = f"Image: {STUDY_WRANGLER_IMAGE}"
-    if not image_present(engine, exec):
+    reason = image_missing_reason(engine, exec)
+    if reason is not None:
         lines = [
             header,
             "The image is not present, and this script never downloads it. "
             "Ask the user before pulling it (about 6 GB), with one of:",
             *(f"  {c}" for c in pull_commands()),
+            "Engine said:",
+            reason,
         ]
         return "load-error", "\n".join(lines)
     try:

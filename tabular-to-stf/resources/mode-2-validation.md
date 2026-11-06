@@ -48,7 +48,7 @@ under an `== entity: <name> ==` heading. The last line is `Result: <status>`.
 | 0 | `pass` | Loads and validates |
 | 1 | `fail` | Loads, but validation reported problems. Read the per-entity output |
 | 2 | `error` | With `STF_VALIDATION_ERROR: <message>`: the study loaded, but geo inference or `validate()` stopped with an R error instead of a verdict. Treat the message like a validation problem: it names what study-wrangler could not handle, such as a parent ID column it cannot join on. Run `stf.py check`, which catches the known causes |
-| 2 | `load-error` | With `STF_LOAD_ERROR: <message>`: `study_from_stf()` could not load the study. Without any marker line: the container ran no further than that, for example because the image is missing (the output then lists the pull commands), the daemon is down or R failed to start. Any engine message is in the output |
+| 2 | `load-error` | With `STF_LOAD_ERROR: <message>`: `study_from_stf()` could not load the study. Without any marker line: the container ran no further than that, for example because R failed to start, or the engine could not find the image (the output then lists the pull commands, then `Engine said:` and the engine's own message, which tells a missing image from a daemon that stopped answering). An engine that is not running at all is usually caught earlier, as exit 3. The engine's message is always in the output |
 | 3 | | No docker or podman found. Mode 2 is not possible here |
 | 1 | | With `Error: ...` on stderr and no `Result:`: bad arguments, or the directory does not exist |
 

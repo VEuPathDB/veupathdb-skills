@@ -154,9 +154,25 @@ def test_missing_image_prints_pull_commands_and_is_a_load_error(tmp_path):
 
     status, output = validate_study_in_container(tmp_path, "docker", exec=fake)
     assert status == "load-error"
-    assert output.splitlines()[0] == f"Image: {STUDY_WRANGLER_IMAGE}"
+    lines = output.splitlines()
+    assert lines[0] == f"Image: {STUDY_WRANGLER_IMAGE}"
     for c in pull_commands():
-        assert c in output
+        assert f"  {c}" in lines
+    # the engine's own words follow the pull commands, so a down daemon is told apart from a missing image
+    assert lines[-2:] == ["Engine said:", "No such image"]
+
+
+def test_an_engine_that_cannot_run_shows_its_own_message_after_the_pull_commands(tmp_path):
+    def fake(cmd):
+        if cmd[1:3] == ["image", "inspect"]:
+            raise subprocess.CalledProcessError(
+                1, cmd, "", "Cannot connect to the Docker daemon at unix:///var/run/docker.sock.")
+        raise AssertionError("container must not run")
+
+    status, output = validate_study_in_container(tmp_path, "docker", exec=fake)
+    assert status == "load-error"
+    assert output.endswith("Engine said:\nCannot connect to the Docker daemon at unix:///var/run/docker.sock.")
+    assert output.index(pull_commands()[-1]) < output.index("Engine said:")
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="needs a #!/bin/sh fake engine")
