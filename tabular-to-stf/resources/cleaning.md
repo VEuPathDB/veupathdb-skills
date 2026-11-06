@@ -12,7 +12,9 @@ Changes fall into three kinds, and they are handled differently.
 
 `stf.py render` refuses `auto` for `replace-cells`, `parse-dates`,
 `derive-column` and `drop-column`. It also refuses `auto` for
-`blank-placeholders` whose values are not all unambiguous placeholders.
+`blank-placeholders` whose values are not all unambiguous placeholders, and
+for any transform with `"match": "regex"` (see "Patterns instead of long
+maps" below).
 
 ## What the profile tells you
 
@@ -121,13 +123,23 @@ Common cases and the fix to propose:
   The provider wrote a value but was unsure of it. Say which marker you saw
   and how many cells have it, then offer these options. Recommend the first
   when the column will be analysed.
-  1. Keep the value and add a flag column named `<variable>_uncertain` with
-     `derive-column`, for example `{ "op": "derive-column", "column":
-     "hours_uncertain", "from": "hours", "map": { "40?": "Yes", "35?":
-     "Yes" }, "default": "No" }`. Then strip the marker with `replace-cells`
-     (`40?` → `40`). As with censored values, the derive must come first,
-     and the flag column gets `dataShape` `binary`. In EDA this lets people
-     filter the uncertain values out, or compare them with the rest.
+  1. Keep the value and add a flag column named `<variable>_uncertain`.
+     With patterns, this takes one `derive-column` and one `map-values` per
+     marker, in this order:
+     - `{ "op": "derive-column", "column": "hours_uncertain", "from":
+       "hours", "match": "regex", "map": { "~.*": "Yes", ".*\\?": "Yes" },
+       "default": "No" }`
+     - `{ "op": "map-values", "column": "hours", "match": "regex", "map":
+       { "(\\d+)\\?": "$1" } }`
+     - `{ "op": "map-values", "column": "hours", "match": "regex", "map":
+       { "~(\\d+)": "$1" } }`
+
+     As with censored values, the derive must come first, and the flag
+     column gets `dataShape` `binary`. Write them as `proposed`, preview
+     each, and set them to `user` once the user accepts. For one or two
+     cells, `replace-cells` (`40?` → `40`) and a plain `derive-column` map
+     are simpler. In EDA the flag lets people filter the uncertain values
+     out, or compare them with the rest.
   2. Keep the value, and list the row IDs only in `notes.flagged`. The
      uncertainty is then not in the data, and EDA users will not see it.
   3. Blank the value.
@@ -169,6 +181,26 @@ applied". When the user answers:
 
 Keep rejected and still-proposed transforms in the spec. They are not applied,
 but they are part of the record.
+
+## Patterns instead of long maps
+
+`map-values`, `derive-column` and `blank-placeholders` match whole cells
+exactly by default. With `"match": "regex"`, their `map` keys (or `values`)
+are Python regular expressions. Use this when many values share a shape, so
+that a map would need a key for each one.
+
+- A pattern must match the whole cell, as an exact key does. `\d+` does not
+  match `40?`.
+- A replacement can reuse what a group captured: `"(\\d+)\\?": "$1"` turns
+  `40?` into `40`. `$$` is a literal `$`.
+- If a cell matches two keys that give different results, the render fails
+  and names the rows. Tighten the patterns, or fix those cells with
+  `replace-cells` first.
+- Keep patterns simple, one marker or shape per transform, and avoid nested
+  repeats such as `(a+)+`.
+- Never `auto`. Write the transform as `proposed`, run
+  `stf.py preview <spec> <n>`, and show the user what it changes before
+  setting `user`. Use `--bottom N` to see the rare values it leaves alone.
 
 ## Order of transforms
 

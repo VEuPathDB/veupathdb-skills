@@ -1,7 +1,8 @@
 # The curation spec
 
-The curation spec is one JSON file. Draft it outside the output directory
-(for example `<work>/curation-spec.json`) for the first render, which saves
+The curation spec is one JSON file. Start the draft once the entity tree is
+settled (SKILL.md step 2), outside the output directory (for example
+`<work>/curation-spec.json`), and add to it until the first render, which saves
 it as `<out>/curation-spec.json`. From then on, that saved copy is the spec:
 edit it and re-render from it.
 `stf.py render` reads it with the input tables and writes the STF directory.
@@ -70,16 +71,21 @@ Every transform has `op`, `entity`, `reason` and `approval` (`"auto"` | `"user"`
 | op | fields | `auto` allowed |
 |---|---|---|
 | `trim` | `columns?` (default all) | yes |
-| `blank-placeholders` | `columns?`, `values` | only if `values ⊆ UNAMBIGUOUS_PLACEHOLDERS` |
-| `map-values` | `column`, `map` `{from: to}` | yes (the skill docs restrict it to the same value written differently: case, whitespace, conventional abbreviations, dictionary-defined codes; typos and similarity matches are `user`) |
+| `blank-placeholders` | `columns?`, `values`, `match?` | only if `values ⊆ UNAMBIGUOUS_PLACEHOLDERS` and not regex |
+| `map-values` | `column`, `map` `{from: to}`, `match?` | yes, unless regex (the skill docs restrict it to the same value written differently: case, whitespace, conventional abbreviations, dictionary-defined codes; typos and similarity matches are `user`) |
 | `rename-column` | `from`, `to` | yes |
 | `replace-cells` | `column`, `cells: [{ id, from, to }]` | no |
 | `parse-dates` | `column`, and either `format` or `formats` (a list) (tokens `DD`, `D`, `MM`, `M`, `YYYY`, `YY`, any separators) | no |
-| `derive-column` | `column` (new), `from`, `map`, `default` | no |
+| `derive-column` | `column` (new), `from`, `map`, `default`, `match?` | no |
 | `drop-column` | `column` | no |
 
 `UNAMBIGUOUS_PLACEHOLDERS` are `NA`, `N/A`, `n/a`, `na`, `-`, `--`, `.`,
 `null` and `NULL`.
+
+`match` (spec version 1.1.0 or later) is `"exact"`, the default, or
+`"regex"`. With `"regex"`, the `map` keys (or `values`) are Python regular
+expressions, and the transform's `approval` may not be `auto`. See below for
+how they match.
 
 What the approvals mean:
 
@@ -91,6 +97,19 @@ What the approvals mean:
   "Proposed, not applied".
 - `rejected`: the user said no. It is not applied, and is listed with its
   `instead`.
+
+## Previewing a transform
+
+`uv run scripts/stf.py preview <spec.json> <n> [--top N] [--bottom N]` shows
+what `transforms[n]` does, whatever its `approval`, and writes nothing. It
+first runs that entity's earlier `auto` and `user` transforms, so it sees the
+cells the transform will see. For `map-values`, `derive-column` and
+`blank-placeholders` it lists, per column, the values it changes (with the
+result and, for regex, the key), every ambiguous value, and the values it
+leaves alone (with `derive-column`'s default). Lists are cut to the `--top`
+most and `--bottom` least common values (10 each by default), with a line
+counting the rest. For other ops it gives the number of cells changed, the
+columns before and after, or why the transform fails.
 
 ## How the renderer reads the spec
 
@@ -107,6 +126,17 @@ transforms.
   first when a placeholder has stray spaces (`"NA "`).
 - `map-values` replaces whole cells that equal a key. Other cells are left
   alone.
+- With `"match": "regex"`, a key matches a cell when the pattern matches the
+  **whole** cell (`\d+` does not match `40?`). Empty cells are matched like
+  any other. In a `map` value, `$1`, `$2`, … insert what that group captured
+  (`$10` is group 10), a group that took no part gives an empty string, and
+  `$$` is a literal `$`. Any other `$` is a spec error, as is a group the
+  pattern does not have. Backslashes in a value are literal. Without regex,
+  `map` values are literal text, `$` included. `derive-column`'s `default`
+  is always literal.
+- A cell that two keys match with **different** results fails the render,
+  listing the row IDs. Keys that agree are fine. Tighten the patterns, or
+  settle those cells with `replace-cells` first.
 - `replace-cells` finds rows by the value in the entity's `idColumn`. It
   fails if a row ID is missing or a cell no longer holds `from`, which means
   the spec is stale. Re-profile and fix the spec, do not force it.

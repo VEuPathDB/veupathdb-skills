@@ -120,6 +120,12 @@ continuing about anything you would be guessing at. Examples are two
 plausible parents, no clear ID column, or an entity name the data does not
 suggest. Ask these in one message.
 
+Once the tree is settled, write the first draft of the spec to
+`<work>/curation-spec.json`, beside `profile.json` and outside `<out>`,
+following [curation-spec.md](resources/curation-spec.md): `specVersion`,
+`study`, `inputDir` (the input folder's absolute path) and the entities, each
+with `"variables": []` for now. Steps 3 to 6 add to this file.
+
 ### 3. Cleaning
 
 Look for whitespace, placeholders, the same value written differently
@@ -131,6 +137,18 @@ typos and anything else that is a judgement about what was meant are shown
 to the user, never fixed silently. Data-altering fixes are batched per entity, shown with a proposed
 fix, and applied only when the user approves. Record a rejected fix, and what
 was done instead. See [cleaning.md](resources/cleaning.md).
+
+When many values share a shape, such as `40?`, `35?` and `24?`, a transform
+can use a pattern instead of listing each value (`"match": "regex"`). A
+pattern can match more than you meant, so such a transform is never `auto`.
+Write it into the spec as `proposed`, then run
+`uv run scripts/stf.py preview <work>/curation-spec.json <n>`, where `<n>` is
+its index in `transforms`. Read the output: the values it would change, any
+ambiguous ones, and the values it leaves alone. Use `--bottom N` to look for
+rare values the pattern missed. Show the user what it changes and anything
+suspicious it leaves, then set it to `user` if they accept, or `rejected`
+with `instead`. You may preview any other transform the same way before
+asking about it.
 
 ### 4. Variable metadata
 
@@ -161,12 +179,11 @@ outline, apply their edits, then put it in the spec. For each entity you
 skip, name it and give the reason. See
 [category-tree.md](resources/category-tree.md).
 
-### 7. Write the spec and render
+### 7. Finish the spec and render
 
-Write the first draft of the spec to `<work>/curation-spec.json`, beside
-`profile.json` and outside `<out>`, following
-[curation-spec.md](resources/curation-spec.md). Set `inputDir` to the input
-folder's absolute path. Then run
+The draft in `<work>/curation-spec.json` has been growing since step 2.
+Check that it holds everything from steps 3 to 6, following
+[curation-spec.md](resources/curation-spec.md). Then run
 `uv run scripts/stf.py render <work>/curation-spec.json <out>`. Writing the
 draft into `<out>` instead would defeat the renderer's guard against
 rendering into a directory that holds other files.
