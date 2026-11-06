@@ -152,10 +152,13 @@ apparent lat/long swap. See the geocoordinates section of
 
 ### 6. Category tree
 
-For each entity with about 10 or more variables, draft a variable tree. That
-is named categories with short definitions, nested if that helps. Show it to
-the user as an indented outline, apply their edits, then put it in the spec.
-See [category-tree.md](resources/category-tree.md).
+For each entity whose variables fall into themes (about three or more that
+belong together, such as money columns or test results), draft a variable
+tree, whatever the number of variables. That is named categories with short
+definitions, nested if that helps. Show it to the user as an indented
+outline, apply their edits, then put it in the spec. For each entity you
+skip, name it and give the reason. See
+[category-tree.md](resources/category-tree.md).
 
 ### 7. Write the spec and render
 

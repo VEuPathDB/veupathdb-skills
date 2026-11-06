@@ -8,11 +8,17 @@ variables, but hard to browse for many. See "Variable categories" in
 
 ## When
 
-Draft a tree for each entity with **about 10 or more variables**. Below that,
-skip it unless the variables fall into obvious groups that the dictionary
-already uses. Entities with only a few variables, such as a site with
-coordinates and a habitat, need none. Use your judgement near the threshold,
-and do not invent categories with one variable each.
+Draft a tree for an entity when its variables fall into **themes**: about
+three or more variables that a researcher would look for together, such as
+money columns, dates, test results or the parts of an address. Most entities
+with 10 or more variables qualify, and a smaller entity often does too.
+Skip entities whose variables have no common theme, such as a site with
+coordinates and a habitat. Do not make a category for one variable, and
+leave a variable at the top level when it fits no theme.
+
+When you skip an entity, say so in your message to the user, with the
+entity and the reason (for example "Team: 3 unrelated variables"), so they
+can ask for a tree anyway.
 
 ## How to draft it
 

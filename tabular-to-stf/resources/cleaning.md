@@ -117,6 +117,20 @@ Common cases and the fix to propose:
   this as a proposal and wait for approval. Do not apply it. Left-censored
   values (`<0.1`, below a detection limit) work the same way, with the
   value set to the limit.
+- **Uncertain values**, such as `40?`, `~35`, `approx. 12` or `c. 1990`.
+  The provider wrote a value but was unsure of it. Say which marker you saw
+  and how many cells have it, then offer these options. Recommend the first
+  when the column will be analysed.
+  1. Keep the value and add a flag column named `<variable>_uncertain` with
+     `derive-column`, for example `{ "op": "derive-column", "column":
+     "hours_uncertain", "from": "hours", "map": { "40?": "Yes", "35?":
+     "Yes" }, "default": "No" }`. Then strip the marker with `replace-cells`
+     (`40?` → `40`). As with censored values, the derive must come first,
+     and the flag column gets `dataShape` `binary`. In EDA this lets people
+     filter the uncertain values out, or compare them with the rest.
+  2. Keep the value, and list the row IDs only in `notes.flagged`. The
+     uncertainty is then not in the data, and EDA users will not see it.
+  3. Blank the value.
 - **Malformed numbers**, such as `12..5` or `1,5`. Propose `replace-cells`
   to the likely value (`12.5`, `1.5`) and say why you think so.
 - **Dates not in ISO format**, such as `03/04/2023`. Propose `parse-dates`
