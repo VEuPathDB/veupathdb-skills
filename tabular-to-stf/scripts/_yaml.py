@@ -13,11 +13,12 @@ import re
 from typing import Any
 
 from ruamel.yaml import YAML
-from ruamel.yaml.error import MarkedYAMLError
+from ruamel.yaml.error import MarkedYAMLError, YAMLError
 from ruamel.yaml.events import (
     AliasEvent, DocumentStartEvent, MappingEndEvent, MappingStartEvent, ScalarEvent,
     SequenceEndEvent, SequenceStartEvent, StreamEndEvent,
 )
+from ruamel.yaml.reader import ReaderError
 from ruamel.yaml.representer import RoundTripRepresenter
 from ruamel.yaml.resolver import BaseResolver
 
@@ -207,12 +208,43 @@ class _Builder:
             out[event.value] = self.node(self.next())
 
 
-def _error_line(e: MarkedYAMLError) -> int:
-    # An unterminated quoted string is reported at the end of the stream; point at its start
-    if e.context_mark is not None and e.context and "quoted scalar" in e.context:
-        return e.context_mark.line + 1
+_UNKNOWN_ESCAPE = re.compile(r"found unknown escape character '?(.)'?")
+_LEADING_WS = re.compile(r"[ \t]*")
+
+
+def _indent(line: str) -> int:
+    return len(_LEADING_WS.match(line).group())
+
+
+def _yaml_lite_error(e: YAMLError, text: str) -> YamlError:
+    """Converts a ruamel error to a YamlError with yaml-lite's message for the cases yaml-lite rejected."""
+    if isinstance(e, ReaderError):  # a character YAML does not allow; no mark, only a position
+        line = text[:e.position].count("\n") + 1
+        if isinstance(e.character, int):
+            return YamlError(f"unacceptable character #x{e.character:04x}: {e.reason}", line)
+        return YamlError(str(e).split("\n")[0], line)
+    if not isinstance(e, MarkedYAMLError):
+        return YamlError(str(e), 1)
+    problem = e.problem or ""
+    context = e.context or ""
     mark = e.problem_mark or e.context_mark
-    return mark.line + 1 if mark is not None else 1
+    line = mark.line + 1 if mark is not None else 1
+    lines = text.split("\n")
+    source = lines[line - 1] if line <= len(lines) else ""
+
+    # An unterminated quoted string is reported at the end of the stream; point at its start
+    if "quoted scalar" in context and "end of stream" in problem and e.context_mark is not None:
+        return YamlError("unterminated quoted string", e.context_mark.line + 1)
+    m = _UNKNOWN_ESCAPE.search(problem)
+    if m:
+        return YamlError(f"unsupported escape \\{m.group(1)}", line)
+    if "\t" in _LEADING_WS.match(source).group():
+        return YamlError("tabs are not allowed in indentation", line)
+    if problem == "mapping values are not allowed here":
+        previous = [x for x in lines[:line - 1] if x.strip() and not x.lstrip().startswith("#")]
+        if previous and _indent(source) > _indent(previous[-1]):
+            return YamlError("unexpected indentation", line)
+    return YamlError(problem or str(e), line)
 
 
 def load_stf_yaml(text: str) -> tuple[Any, list[str]]:
@@ -230,5 +262,5 @@ def load_stf_yaml(text: str) -> tuple[Any, list[str]]:
                 if documents > 1:
                     raise YamlError("multiple documents are not supported", _line(event))
                 data = builder.node(builder.next())
-    except MarkedYAMLError as e:
-        raise YamlError(e.problem or str(e), _error_line(e)) from None
+    except YAMLError as e:
+        raise _yaml_lite_error(e, text) from None

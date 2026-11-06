@@ -311,6 +311,25 @@ def test_unsupported_constructs_throw_yaml_error_with_the_line(text, line):
     assert str(e.value).startswith(f"line {line}: ")
 
 
+@pytest.mark.parametrize("text,message", [
+    ("a: 1\nb: \"unterminated\n", "line 2: unterminated quoted string"),
+    ("a: 1\nb: \"bad \\q\"\n", "line 2: unsupported escape \\q"),
+    ("a: 1\n\tb: 2\n", "line 2: tabs are not allowed in indentation"),
+    ("a: 1\n  b: 2\n", "line 2: unexpected indentation"),
+])
+def test_rejections_use_yaml_lite_messages(text, message):
+    with pytest.raises(YamlError) as e:
+        load_stf_yaml(text)
+    assert str(e.value) == message
+
+
+def test_disallowed_characters_raise_yaml_error_with_the_line():
+    with pytest.raises(YamlError) as e:
+        load_stf_yaml("a: 1\nb: x\x07y\n")
+    assert e.value.line == 2
+    assert "#x0007" in str(e.value)
+
+
 ROUND_TRIP = ["yes", "no", "on", "off", "null", "Null", "~", "true", "False", "1.0", "007", "12", "-3", ".5",
               "a: b", "a:", "#x", "-x", "- x", "- ", "x #y", "it's", "", " lead", "trail ", "[a]", "{a}", "&a", "*a", "!t",
               "%x", "@x", "`x", "|", ">", "?", ",x", "'q'", '"q"', "line1\nline2", "a\tb", 'say "hi"\nnext', "cr\r\nlf\\",
