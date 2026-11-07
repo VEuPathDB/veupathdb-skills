@@ -1,7 +1,8 @@
 # The curation spec
 
-The curation spec is one JSON file. Draft it outside the output directory
-(for example `<work>/curation-spec.json`) for the first render, which saves
+The curation spec is one JSON file. Start the draft once the entity tree is
+settled (SKILL.md step 2), outside the output directory (for example
+`<work>/curation-spec.json`), and add to it until the first render, which saves
 it as `<out>/curation-spec.json`. From then on, that saved copy is the spec:
 edit it and re-render from it.
 `stf.py render` reads it with the input tables and writes the STF directory.
@@ -14,7 +15,7 @@ to it.
 
 ```jsonc
 {
-  "specVersion": 1,
+  "specVersion": "1.1.0",                  // see "Spec version" below
   "study": { "name": "string", "description": "string?" },
   "inputDir": "path, relative to the spec file or absolute",   // the saved copy in <out> always says "raw-data" unless --no-raw-data
   "extraFiles": ["dictionary.xlsx", "description.md"],        // optional; other supplied files (data dictionary, study description), relative to inputDir, copied into raw-data/ too
@@ -45,6 +46,18 @@ to it.
 }
 ```
 
+## Spec version
+
+`specVersion` is a version string, `MAJOR.MINOR.PATCH`. Write new specs with
+the version in the schema above, which is the one these scripts support. The
+scripts read any spec with the same major version and a version no newer than
+theirs, and refuse others with a message naming both versions. A minor
+version adds ops or fields, a patch only clarifies without changing
+behaviour, and a major version removes something or changes what it means.
+Version 1.1.0 added `match` (see Transforms).
+
+## Allowed values
+
 Allowed values, which are the same ones `stf.py check` enforces:
 
 - `dataType`: `string`, `number`, `integer`, `date`, `longitude`
@@ -58,16 +71,21 @@ Every transform has `op`, `entity`, `reason` and `approval` (`"auto"` | `"user"`
 | op | fields | `auto` allowed |
 |---|---|---|
 | `trim` | `columns?` (default all) | yes |
-| `blank-placeholders` | `columns?`, `values` | only if `values ⊆ UNAMBIGUOUS_PLACEHOLDERS` |
-| `map-values` | `column`, `map` `{from: to}` | yes (the skill docs restrict it to the same value written differently: case, whitespace, conventional abbreviations, dictionary-defined codes; typos and similarity matches are `user`) |
+| `blank-placeholders` | `columns?`, `values`, `match?` | only if `values ⊆ UNAMBIGUOUS_PLACEHOLDERS` and not regex |
+| `map-values` | `column`, `map` `{from: to}`, `match?` | yes, unless regex (the skill docs restrict it to the same value written differently: case, whitespace, conventional abbreviations, dictionary-defined codes; typos and similarity matches are `user`) |
 | `rename-column` | `from`, `to` | yes |
 | `replace-cells` | `column`, `cells: [{ id, from, to }]` | no |
-| `parse-dates` | `column`, `format` (tokens `DD`, `D`, `MM`, `M`, `YYYY`, any separators) | no |
-| `derive-column` | `column` (new), `from`, `map`, `default` | no |
+| `parse-dates` | `column`, and either `format` or `formats` (a list) (tokens `DD`, `D`, `MM`, `M`, `YYYY`, `YY`, any separators) | no |
+| `derive-column` | `column` (new), `from`, `map`, `default`, `match?` | no |
 | `drop-column` | `column` | no |
 
 `UNAMBIGUOUS_PLACEHOLDERS` are `NA`, `N/A`, `n/a`, `na`, `-`, `--`, `.`,
 `null` and `NULL`.
+
+`match` (spec version 1.1.0 or later) is `"exact"`, the default, or
+`"regex"`. With `"regex"`, the `map` keys (or `values`) are Python regular
+expressions, and the transform's `approval` may not be `auto`. See below for
+how they match.
 
 What the approvals mean:
 
@@ -79,6 +97,19 @@ What the approvals mean:
   "Proposed, not applied".
 - `rejected`: the user said no. It is not applied, and is listed with its
   `instead`.
+
+## Previewing a transform
+
+`uv run scripts/stf.py preview <spec.json> <n> [--top N] [--bottom N]` shows
+what `transforms[n]` does, whatever its `approval`, and writes nothing. It
+first runs that entity's earlier `auto` and `user` transforms, so it sees the
+cells the transform will see. For `map-values`, `derive-column` and
+`blank-placeholders` it lists, per column, the values it changes (with the
+result and, for regex, the key), every ambiguous value, and the values it
+leaves alone (with `derive-column`'s default). Lists are cut to the `--top`
+most and `--bottom` least common values (10 each by default), with a line
+counting the rest. For other ops it gives the number of cells changed, the
+columns before and after, or why the transform fails.
 
 ## How the renderer reads the spec
 
@@ -95,12 +126,31 @@ transforms.
   first when a placeholder has stray spaces (`"NA "`).
 - `map-values` replaces whole cells that equal a key. Other cells are left
   alone.
+- With `"match": "regex"`, a key matches a cell when the pattern matches the
+  **whole** cell (`\d+` does not match `40?`). Empty cells are matched like
+  any other. In a `map` value, `$1`, `$2`, … insert what that group captured
+  (`$10` is group 10), a group that took no part gives an empty string, and
+  `$$` is a literal `$`. Any other `$` is a spec error, as is a group the
+  pattern does not have. Backslashes in a value are literal. Without regex,
+  `map` values are literal text, `$` included. `derive-column`'s `default`
+  is always literal.
+- A cell that two keys match with **different** results fails the render,
+  listing the row IDs and values (the first ten of each, then how many
+  more). Keys that agree are fine. Tighten the patterns, or settle those
+  cells with `replace-cells` first. `stf.py preview` lists every ambiguous
+  value, with counts.
 - `replace-cells` finds rows by the value in the entity's `idColumn`. It
   fails if a row ID is missing or a cell no longer holds `from`, which means
   the spec is stale. Re-profile and fix the spec, do not force it.
-- `parse-dates` turns every non-empty cell into `YYYY-MM-DD`. It fails,
-  listing the row IDs, if any cell does not match `format` or is not a real
-  date (`31/02/2023`).
+- `parse-dates` turns every non-empty cell into `YYYY-MM-DD`. Cells that
+  are already valid `YYYY-MM-DD` dates are left as they are, so a column
+  that is only partly ISO needs just the other formats. `YY` always means
+  20YY. It fails, listing the row IDs (the first ten, then how many more),
+  if a cell matches none of the formats
+  (and is not ISO) or is not a real date (`31/02/2023`). It also fails if two
+  formats, or a format and ISO, read a cell as different dates (`03/04/23`
+  under both `DD/MM/YY` and `MM/DD/YY`). Settle those cells with
+  `replace-cells` first.
 - `derive-column` adds a column, using `map[value]` for each value of `from`
   and `default` for everything else. It reads `from` as it is at that point,
   so put it **before** any transform that changes those values. For example,

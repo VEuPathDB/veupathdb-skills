@@ -11,7 +11,11 @@ from typing import Any, Callable
 
 from _common import is_valid_column_name
 from _constants import DATA_SHAPES, DATA_TYPES, DISPLAY_TYPES, UNAMBIGUOUS_PLACEHOLDERS
+from _match import TemplateError, parse_template, template_groups
 
+SPEC_VERSION = "1.1.0"
+MATCH_OPS = ("map-values", "derive-column", "blank-placeholders")
+_VERSION = re.compile(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)", re.ASCII)
 APPROVALS = ("auto", "user", "proposed", "rejected")
 ENTITY_NAME_TEXT = "/^[a-z][a-z0-9_]*$/"
 _ENTITY_NAME = re.compile(r"[a-z][a-z0-9_]*")
@@ -90,6 +94,28 @@ def _has_cycle(parent_of: dict, start: Any) -> bool:
     return False
 
 
+def parse_version(v: Any) -> tuple[int, int, int] | None:
+    """(major, minor, patch) for a "MAJOR.MINOR.PATCH" string, else None."""
+    m = _VERSION.fullmatch(v) if isinstance(v, str) else None
+    return (int(m[1]), int(m[2]), int(m[3])) if m else None
+
+
+def _check_version(v: Any, errors: list[str]) -> tuple[int, int, int] | None:
+    """The spec's version if these scripts can read it; otherwise records why not."""
+    have = parse_version(SPEC_VERSION)
+    got = parse_version(v)
+    if got is None:
+        errors.append(f'specVersion: must be a version string like "{SPEC_VERSION}"')
+    elif got[0] != have[0]:
+        errors.append(f"specVersion: major version {got[0]} is not supported "
+                      f"(these scripts support {have[0]}.x, up to {SPEC_VERSION})")
+    elif got > have:
+        errors.append(f"specVersion: this spec needs {v}, these scripts support up to {SPEC_VERSION}")
+    else:
+        return got
+    return None
+
+
 def _all_unambiguous(t: dict) -> bool:
     values = t.get("values")
     return isinstance(values, list) and all(v in UNAMBIGUOUS_PLACEHOLDERS for v in values)
@@ -117,7 +143,51 @@ def _is_cell(x: Any) -> bool:
             and isinstance(x.get("from"), str) and isinstance(x.get("to"), str))
 
 
-def _check_transform(t: Any, i: int, entity_names: set[str], errors: list[str]) -> None:
+def _check_match(t: dict, at: str, op_name: str, version: tuple[int, int, int] | None,
+                 errors: list[str]) -> None:
+    """`match`, and in regex mode the patterns and $n replacements (fields already type-checked)."""
+    if "match" not in t:
+        return
+    if op_name not in MATCH_OPS:
+        errors.append(f"{at}.match: only map-values, derive-column and blank-placeholders take match")
+        return
+    if t["match"] not in ("exact", "regex"):
+        errors.append(f'{at}.match: must be "exact" or "regex"')
+        return
+    if version is not None and version < (1, 1, 0):
+        errors.append(f"{at}.match: needs specVersion 1.1.0 or later")
+    if t["match"] != "regex":
+        return
+    field = "values" if op_name == "blank-placeholders" else "map"
+    raw = t.get(field)
+    if field == "values":
+        if not _is_str_array(raw):
+            return
+        rules = {p: None for p in raw}
+    else:
+        if not _is_string_map(raw):
+            return
+        rules = raw
+    for pattern, replacement in rules.items():
+        try:
+            groups = re.compile(pattern).groups
+        except re.error as err:
+            errors.append(f"{at}.{field}: invalid pattern {js_json(pattern)}: {err}")
+            continue
+        if replacement is None:
+            continue
+        try:
+            used = template_groups(parse_template(replacement))
+        except TemplateError as err:
+            errors.append(f"{at}.map: replacement {js_json(replacement)}: {err}")
+            continue
+        for n in sorted(g for g in used if g > groups):
+            errors.append(f"{at}.map: replacement {js_json(replacement)} refers to group {n}, "
+                          f"but pattern {js_json(pattern)} has {groups} group(s)")
+
+
+def _check_transform(t: Any, i: int, entity_names: set[str], errors: list[str],
+                     version: tuple[int, int, int] | None = None) -> None:
     at = f"transforms[{i}]"
     if not _is_obj(t):
         errors.append(f"{at}: must be an object")
@@ -136,7 +206,9 @@ def _check_transform(t: Any, i: int, entity_names: set[str], errors: list[str]) 
     else:
         if approval == "rejected" and not _is_str(t.get("instead")):
             errors.append(f'{at}.instead: required when approval is "rejected"')
-        if approval == "auto" and auto is not None and not auto(t):
+        if approval == "auto" and t.get("match") == "regex":
+            errors.append(f'{at}.approval: "auto" is not allowed with match "regex"; use "user"')
+        elif approval == "auto" and auto is not None and not auto(t):
             suffix = " unless values are all unambiguous placeholders" if op_name == "blank-placeholders" else ""
             errors.append(f'{at}.approval: "auto" is not allowed for {op_name}{suffix}; use "user"')
     if auto is None:
@@ -173,7 +245,13 @@ def _check_transform(t: Any, i: int, entity_names: set[str], errors: list[str]) 
              "required array of { id, from, to } strings")
     elif op_name == "parse-dates":
         need_str("column")
-        need_str("format")
+        if ("format" in t) == ("formats" in t):
+            errors.append(f"{at}.formats: give either format (a string) or formats (a non-empty array of strings)")
+        elif "format" in t:
+            need_str("format")
+        else:
+            need("formats", lambda v: isinstance(v, list) and len(v) > 0 and all(_is_str(x) for x in v),
+                 "required non-empty array of strings")
     elif op_name == "derive-column":
         need_str("column")
         need_str("from")
@@ -181,6 +259,7 @@ def _check_transform(t: Any, i: int, entity_names: set[str], errors: list[str]) 
         need("default", lambda d: isinstance(d, str), "required string")
     elif op_name == "drop-column":
         need_str("column")
+    _check_match(t, at, op_name, version, errors)
 
 
 def _check_entity(e: Any, i: int, entity_names: set[str], errors: list[str]) -> None:
@@ -262,9 +341,7 @@ def validate_spec(spec: Any) -> list[str]:
     errors: list[str] = []
     if not _is_obj(spec):
         return ["spec: must be an object"]
-    sv = spec.get("specVersion")
-    if isinstance(sv, bool) or not isinstance(sv, (int, float)) or sv != 1:
-        errors.append("specVersion: must be 1")
+    version = _check_version(spec.get("specVersion"), errors)
     study = spec.get("study")
     if not _is_obj(study) or not _is_str(study.get("name")):
         errors.append("study.name: required string")
@@ -314,5 +391,5 @@ def validate_spec(spec: Any) -> list[str]:
         errors.append("transforms: must be an array")
     else:
         for i, t in enumerate(transforms):
-            _check_transform(t, i, entity_names, errors)
+            _check_transform(t, i, entity_names, errors, version)
     return errors

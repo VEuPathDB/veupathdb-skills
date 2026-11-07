@@ -72,7 +72,7 @@ def test_scale_profile_render_check_1m_child_rows(tmp_path):
     t = stage("profile --file", t)
 
     spec = {
-        "specVersion": 1,
+        "specVersion": "1.0.0",
         "study": {"name": "Scale test"},
         "inputDir": str(inputs),
         "entities": [

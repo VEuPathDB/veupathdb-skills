@@ -2,12 +2,12 @@ import copy
 
 import pytest
 
-from _spec import validate_spec
+from _spec import SPEC_VERSION, parse_version, validate_spec
 
 
 def minimal_spec():
     return {
-        "specVersion": 1,
+        "specVersion": "1.0.0",
         "study": {"name": "Demo"},
         "inputDir": "raw-data",
         "entities": [
@@ -90,6 +90,102 @@ def test_blank_placeholders_auto_only_for_unambiguous_values():
     assert validate_spec(s) == []
     s["transforms"][0]["values"] = ["unknown"]
     s["transforms"][0]["approval"] = "user"
+    assert validate_spec(s) == []
+
+
+@pytest.mark.parametrize("fields, error", [
+    ({"format": "DD/MM/YYYY"}, None),
+    ({"formats": ["DD/MM/YYYY", "DD/MM/YY"]}, None),
+    ({}, "transforms[0].formats: give either format (a string) or formats (a non-empty array of strings)"),
+    ({"format": "DD/MM/YYYY", "formats": ["DD/MM/YY"]},
+     "transforms[0].formats: give either format (a string) or formats (a non-empty array of strings)"),
+    ({"formats": []}, "transforms[0].formats: required non-empty array of strings"),
+    ({"formats": ["DD/MM/YYYY", ""]}, "transforms[0].formats: required non-empty array of strings"),
+    ({"format": ""}, "transforms[0].format: required string"),
+])
+def test_parse_dates_takes_format_or_formats(fields, error):
+    s = minimal_spec()
+    s["transforms"] = [{"op": "parse-dates", "entity": "participant", "column": "dob", "reason": "r",
+                        "approval": "user", **fields}]
+    assert validate_spec(s) == ([] if error is None else [error])
+
+
+def regex_spec(*transforms, version="1.1.0"):
+    s = minimal_spec()
+    s["specVersion"] = version
+    s["transforms"] = [{"entity": "participant", "reason": "r", "approval": "user", **t} for t in transforms]
+    return s
+
+
+MAP = {"op": "map-values", "column": "age", "match": "regex"}
+
+
+def test_regex_transforms_with_user_approval_are_valid():
+    s = regex_spec(
+        {**MAP, "map": {"(\\d+)\\?": "$1"}},
+        {"op": "derive-column", "column": "age_uncertain", "from": "age", "match": "regex",
+         "map": {"~.*": "Yes"}, "default": "No"},
+        {"op": "blank-placeholders", "match": "regex", "values": ["n\\.?a\\.?"]},
+        {"op": "map-values", "column": "age", "match": "exact", "map": {"a": "b"}},
+    )
+    assert validate_spec(s) == []
+
+
+def test_exact_map_value_with_dollar_is_valid():
+    s = regex_spec({"op": "map-values", "column": "age", "map": {"80+": "$80"}, "approval": "auto"})
+    assert validate_spec(s) == []
+
+
+def test_match_must_be_exact_or_regex():
+    s = regex_spec({**MAP, "match": "glob", "map": {}})
+    assert validate_spec(s) == ['transforms[0].match: must be "exact" or "regex"']
+
+
+def test_match_only_on_the_three_ops():
+    s = regex_spec({"op": "trim", "match": "regex"})
+    assert validate_spec(s) == [
+        "transforms[0].match: only map-values, derive-column and blank-placeholders take match"]
+
+
+def test_match_on_a_1_0_0_spec_is_refused():
+    s = regex_spec({**MAP, "map": {"a": "b"}}, version="1.0.0")
+    assert validate_spec(s) == ["transforms[0].match: needs specVersion 1.1.0 or later"]
+
+
+def test_regex_cannot_be_auto():
+    s = regex_spec({**MAP, "map": {"a": "b"}, "approval": "auto"})
+    assert validate_spec(s) == ['transforms[0].approval: "auto" is not allowed with match "regex"; use "user"']
+
+
+def test_regex_blank_placeholders_of_unambiguous_values_still_cannot_be_auto():
+    s = regex_spec({"op": "blank-placeholders", "match": "regex", "values": ["NA"], "approval": "auto"})
+    assert validate_spec(s) == ['transforms[0].approval: "auto" is not allowed with match "regex"; use "user"']
+
+
+def test_invalid_pattern_is_reported():
+    s = regex_spec({**MAP, "map": {"(\\d+": "x"}},
+                   {"op": "blank-placeholders", "match": "regex", "values": ["["]})
+    errors = validate_spec(s)
+    assert len(errors) == 2
+    assert errors[0].startswith('transforms[0].map: invalid pattern "(\\\\d+": missing )')
+    assert errors[1].startswith('transforms[1].values: invalid pattern "[": ')
+
+
+def test_bad_replacement_is_reported():
+    s = regex_spec({**MAP, "map": {"(\\d+)": "x$"}})
+    assert validate_spec(s) == [
+        'transforms[0].map: replacement "x$": "$" must be followed by a group number or "$"']
+
+
+def test_replacement_group_beyond_the_pattern_is_reported():
+    s = regex_spec({**MAP, "map": {"(\\d+)\\?": "$2"}})
+    assert validate_spec(s) == [
+        'transforms[0].map: replacement "$2" refers to group 2, but pattern "(\\\\d+)\\\\?" has 1 group(s)']
+
+
+def test_derive_column_default_is_not_a_template():
+    s = regex_spec({"op": "derive-column", "column": "u", "from": "age", "match": "regex",
+                    "map": {"~.*": "Yes"}, "default": "$"})
     assert validate_spec(s) == []
 
 
@@ -176,14 +272,38 @@ def test_entity_name_message_keeps_js_regex_text():
     assert "entities[0].name: must match /^[a-z][a-z0-9_]*$/" in validate_spec(s)
 
 
-def test_spec_version_rejects_bool_and_other_values():
-    for bad in (True, 2, "1", None):
+def test_spec_version_accepts_any_1x_up_to_the_code_version():
+    for v in ("1.0.0", "1.0.5", SPEC_VERSION):
         s = minimal_spec()
-        s["specVersion"] = bad
-        assert "specVersion: must be 1" in validate_spec(s), bad
+        s["specVersion"] = v
+        assert validate_spec(s) == [], v
+
+
+@pytest.mark.parametrize("bad", [1, 1.0, True, None, "1", "1.0", "01.0.0", "1.0.0-rc1", " 1.0.0"])
+def test_spec_version_must_be_a_version_string(bad):
     s = minimal_spec()
-    s["specVersion"] = 1.0
-    assert validate_spec(s) == []
+    s["specVersion"] = bad
+    assert 'specVersion: must be a version string like "1.1.0"' in validate_spec(s)
+
+
+def test_spec_version_newer_than_the_code_is_refused():
+    s = minimal_spec()
+    s["specVersion"] = "1.2.0"
+    assert "specVersion: this spec needs 1.2.0, these scripts support up to 1.1.0" in validate_spec(s)
+
+
+@pytest.mark.parametrize("v", ["2.0.0", "0.9.0"])
+def test_spec_version_with_another_major_is_refused(v):
+    s = minimal_spec()
+    s["specVersion"] = v
+    assert (f"specVersion: major version {v[0]} is not supported "
+            f"(these scripts support 1.x, up to 1.1.0)") in validate_spec(s)
+
+
+def test_parse_version():
+    assert parse_version("1.10.0") == (1, 10, 0)
+    assert parse_version(1) is None
+    assert parse_version("1.0") is None
 
 
 def test_missing_op_and_entity_print_undefined_like_js():

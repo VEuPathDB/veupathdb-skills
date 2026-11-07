@@ -1,5 +1,5 @@
 {
-  "specVersion": 1,
+  "specVersion": "1.0.0",
   "study": {
     "name": "Coffee shops 2025",
     "description": "Fictional data on twelve coffee shops in four regions of England: the teams and staff working in each shop, the seasonal menus and menu items, and monthly accounts, January to October 2025. Money is in pounds sterling (GBP)."

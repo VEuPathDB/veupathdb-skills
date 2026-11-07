@@ -298,11 +298,13 @@ def test_raw_data_and_unlisted_files_are_ignored(tmp_path):
 def test_cli_exits_0_on_a_good_dir_exits_1_with_error_lines_on_a_bad_one_json(tmp_path):
     good = run_cli("check", str(TABULAR / "mosquito" / "expected"))
     assert good.returncode == 0, good.stderr
+    assert good.stdout.splitlines()[-1].endswith("expected: 0 errors, 0 warnings")
     d = copy_of("mosquito", tmp_path)
     edit(d, "entity-collection.yaml", "data_type: integer", "data_type: integr")
     bad = run_cli("check", str(d))
     assert bad.returncode == 1
     assert re.search(r"(?m)^ERROR: entity-collection\.yaml", bad.stdout)
+    assert re.search(r": [1-9]\d* errors?, \d+ warnings?$", bad.stdout.splitlines()[-1])
     as_json = run_cli("check", str(d), "--json")
     assert as_json.returncode == 1
     parsed = json.loads(as_json.stdout)

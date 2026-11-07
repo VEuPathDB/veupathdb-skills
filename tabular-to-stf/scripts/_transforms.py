@@ -18,10 +18,13 @@ import dataclasses
 import datetime
 import re
 
+from _common import is_valid_iso_date
+from _match import ValueMatcher
 from _read_table import Table
 from _spec import js_json
 
 SKIPPED = ("proposed", "rejected")
+_AMBIGUOUS = object()
 
 # What JavaScript's String.prototype.trim strips (differs from str.strip).
 _JS_WHITESPACE = (
@@ -29,12 +32,49 @@ _JS_WHITESPACE = (
     "       　﻿"
 )
 
-_TOKENS = {"YYYY": "([0-9]{4})", "DD": "([0-9]{2})", "MM": "([0-9]{2})", "D": "([0-9]{1,2})", "M": "([0-9]{1,2})"}
-_TOKEN_ORDER = ("YYYY", "DD", "MM", "D", "M")
+_TOKENS = {
+    "YYYY": "([0-9]{4})", "YY": "([0-9]{2})",
+    "DD": "([0-9]{2})", "MM": "([0-9]{2})", "D": "([0-9]{1,2})", "M": "([0-9]{1,2})",
+}
+_TOKEN_ORDER = ("YYYY", "YY", "DD", "MM", "D", "M")
+ISO_FORMAT = "YYYY-MM-DD"
 
 
 class TransformError(ValueError):
     pass
+
+
+LIST_CAP = 10
+
+
+def _listed(items: list[str]) -> str:
+    """The first LIST_CAP items, comma-separated, then "and N more", so an error
+    stays readable when a transform fails on thousands of rows."""
+    shown = ", ".join(items[:LIST_CAP])
+    return shown if len(items) <= LIST_CAP else f"{shown} and {len(items) - LIST_CAP:,} more"
+
+
+def date_formats(t: dict) -> list[str]:
+    """A parse-dates transform's formats: `formats`, or the single `format`."""
+    return list(t["formats"]) if "formats" in t else [t["format"]]
+
+
+def value_rule(t: dict) -> tuple[ValueMatcher, str | None]:
+    """The matcher for a MATCH_OPS transform, and the value for cells no key matches
+    (derive-column's default; None means the cell stays as it is)."""
+    regex = t.get("match") == "regex"
+    if t["op"] == "blank-placeholders":
+        return ValueMatcher({v: "" for v in t["values"]}, regex), None
+    return ValueMatcher(t["map"], regex), t["default"] if t["op"] == "derive-column" else None
+
+
+def value_columns(t: dict, headers: list[str]) -> list[str]:
+    """The columns a MATCH_OPS transform reads."""
+    if t["op"] == "map-values":
+        return [t["column"]]
+    if t["op"] == "derive-column":
+        return [t["from"]]
+    return list(t["columns"]) if t.get("columns") is not None else list(headers)
 
 
 def _copy_table(t: Table) -> Table:
@@ -76,7 +116,7 @@ def _date_parser(fmt):
         tok = next((t for t in _TOKEN_ORDER if fmt.startswith(t, i)), None)
         if tok:
             pattern += _TOKENS[tok]
-            order.append(tok[0])
+            order.append(tok)
             i += len(tok)
         else:
             pattern += re.escape(fmt[i])
@@ -87,7 +127,10 @@ def _date_parser(fmt):
         m = rx.fullmatch(value)
         if not m:
             return None
-        p = {k: int(m.group(i + 1)) for i, k in enumerate(order)}
+        p = {}
+        for i, tok in enumerate(order):
+            n = int(m.group(i + 1))
+            p[tok[0]] = 2000 + n if tok == "YY" else n  # YY always means 20YY
         if "Y" not in p or "M" not in p or "D" not in p:
             return None
         y, mo, d = p["Y"], p["M"], p["D"]
@@ -142,15 +185,53 @@ def _apply_one(t, index, table, id_column, renames):
                 note_row(row, r)
         return n
 
+    def value_rule_for(indexes):
+        """A cached cell -> new value function for a MATCH_OPS transform; fails on ambiguous cells."""
+        matcher, fallback = value_rule(t)
+        if not matcher.regex:
+            # Exact keys are unique, so no cell is ambiguous: a plain lookup, no extra pass.
+            m = matcher.mapping
+            return lambda v: m[v] if v in m else (v if fallback is None else fallback)
+        cache = {}
+        # Keys that all give one result cannot disagree, so skip the ambiguity pass.
+        can_disagree = len(set(matcher.mapping.values())) > 1 or any("$" in v for v in matcher.mapping.values())
+
+        def resolve(v):
+            if v not in cache:
+                hits = matcher.hits(v)
+                if can_disagree and ValueMatcher.is_ambiguous(hits):
+                    cache[v] = _AMBIGUOUS
+                else:
+                    cache[v] = hits[0][1] if hits else (v if fallback is None else fallback)
+            return cache[v]
+
+        if not can_disagree:
+            return resolve
+        rid = _id_index(table, id_column, renames)
+        ambiguous, values = [], {}
+        for r, row in enumerate(table.rows):
+            bad = [row[c] for c in indexes if resolve(row[c]) is _AMBIGUOUS]
+            if bad:
+                ambiguous.append(row[rid] if rid >= 0 else f"row {r + 1}")
+                values.update(dict.fromkeys(bad))
+        if ambiguous:
+            name = table.headers[indexes[0]] if len(indexes) == 1 else ", ".join(table.headers[c] for c in indexes)
+            raise TransformError(
+                f"{where}: values in column {js_json(name)} match more than one key with different results "
+                f"for row IDs: {_listed(ambiguous)} (values {_listed([js_json(v) for v in values])}); "
+                f"tighten the patterns or settle them with replace-cells before this transform "
+                f"(stf.py preview shows the keys)"
+            )
+        return resolve
+
     if op == "trim":
         return with_ids({"cellsChanged": map_cells(cols(), lambda v: v.strip(_JS_WHITESPACE))})
     if op == "blank-placeholders":
-        values = t["values"]
-        return with_ids({"cellsChanged": map_cells(cols(), lambda v: "" if v in values else v)})
+        indexes = cols()
+        return with_ids({"cellsChanged": map_cells(indexes, value_rule_for(indexes))})
     if op == "map-values":
         c = col(t["column"])
-        m = t["map"]
-        return with_ids({"column": t["column"], "cellsChanged": map_cells([c], lambda v: m[v] if v in m else v)})
+        return with_ids({"column": t["column"], "cellsChanged": map_cells([c], value_rule_for([c]))})
     if op == "rename-column":
         c = col(t["from"])
         if t["from"] != t["to"] and t["to"] in table.headers:
@@ -180,23 +261,42 @@ def _apply_one(t, index, table, id_column, renames):
         return with_ids({"column": t["column"], "cellsChanged": n})
     if op == "parse-dates":
         c = col(t["column"])
-        parse = _date_parser(t["format"])
+        formats = date_formats(t)
+        parsers = [_date_parser(f) for f in formats]
         rid = _id_index(table, id_column, renames)
         bad = []
+        ambiguous = []
         out = []
         for r, row in enumerate(table.rows):
-            if row[c] == "":
+            v = row[c]
+            if v == "":
                 out.append("")
                 continue
-            iso = parse(row[c])
-            if iso is None:
-                bad.append(row[rid] if rid >= 0 else f"row {r + 1}")
-            out.append(iso)
+            # A cell already in ISO form counts as one more reading, so a listed
+            # format that reads it as a different date makes it ambiguous.
+            readings = {v} if is_valid_iso_date(v) else set()
+            readings.update(iso for iso in (p(v) for p in parsers) if iso is not None)
+            row_id = row[rid] if rid >= 0 else f"row {r + 1}"
+            if not readings:
+                bad.append(row_id)
+            elif len(readings) > 1:
+                ambiguous.append(row_id)
+            out.append(next(iter(readings)) if len(readings) == 1 else None)
+        problems = []
         if bad:
-            raise TransformError(
-                f"{where}: values in column {js_json(t['column'])} do not match format "
-                f"{t['format']} for row IDs: {', '.join(bad)}"
+            which = f"format {formats[0]}" if len(formats) == 1 else f"any of the formats {', '.join(formats)}"
+            problems.append(
+                f"values in column {js_json(t['column'])} do not match {which} and are not "
+                f"{ISO_FORMAT} dates for row IDs: {_listed(bad)}"
             )
+        if ambiguous:
+            problems.append(
+                f"values in column {js_json(t['column'])} read as different dates under more than one "
+                f"format (counting {ISO_FORMAT}) for row IDs: {_listed(ambiguous)}; "
+                f"settle them with replace-cells before this transform"
+            )
+        if problems:
+            raise TransformError(f"{where}: {'; '.join(problems)}")
         n = 0
         for r, row in enumerate(table.rows):
             if row[c] != out[r]:
@@ -208,10 +308,10 @@ def _apply_one(t, index, table, id_column, renames):
         src = col(t["from"])
         if t["column"] in table.headers:
             raise TransformError(f"{where}: column {js_json(t['column'])} already exists")
+        resolve = value_rule_for([src])
         table.headers.append(t["column"])
-        m = t["map"]
         for row in table.rows:
-            row.append(m[row[src]] if row[src] in m else t["default"])
+            row.append(resolve(row[src]))
         return {"column": t["column"], "cellsChanged": 0}
     if op == "drop-column":
         c = col(t["column"])
@@ -222,12 +322,19 @@ def _apply_one(t, index, table, id_column, renames):
     raise TransformError(f"{where}: unknown op")
 
 
-def apply_transforms(tables: dict[str, Table], spec: dict) -> tuple[dict[str, Table], list[dict]]:
+def apply_transforms(tables: dict[str, Table], spec: dict, *, upto: int | None = None,
+                     entity: str | None = None) -> tuple[dict[str, Table], list[dict]]:
+    """Runs the transforms with index < upto (all if None); with entity, only that entity's,
+    and the others are not logged. Logged indexes are the spec's."""
     out = {name: _copy_table(t) for name, t in tables.items()}
     id_columns = {e["name"]: e.get("idColumn") for e in spec.get("entities") or []}
     transforms = spec.get("transforms") or []
     log = []
     for index, t in enumerate(transforms):
+        if upto is not None and index >= upto:
+            break
+        if entity is not None and t["entity"] != entity:
+            continue
         entry = {
             "index": index,
             "op": t["op"],

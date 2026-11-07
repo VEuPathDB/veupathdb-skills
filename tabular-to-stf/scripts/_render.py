@@ -423,17 +423,23 @@ def _write_text(path: Path, text: str) -> None:
         fh.write(text)
 
 
-def render_to_dir(spec_path: Path, out_dir: Path, copy_raw: bool = True) -> list[Path]:
-    """Renders spec_path into out_dir, with raw-data/ copies of the inputs unless copy_raw is False.
-    The saved spec reads from raw-data/, so the folder re-renders on its own. Inputs are never modified.
-    Returns the paths written: the STF files, the saved spec, then the raw-data copies."""
+def load_spec(spec_path: Path) -> tuple[dict, str]:
+    """The validated spec (RenderError listing every problem otherwise) and its absolute input dir."""
     spec_path = Path(spec_path)
-    out_dir = Path(os.path.abspath(out_dir))
     spec = json.loads(spec_path.read_text(encoding="utf-8"))
     spec_errors = validate_spec(spec)
     if spec_errors:
         raise RenderError(spec_errors)
     input_dir = spec["inputDir"] if os.path.isabs(spec["inputDir"]) else os.path.abspath(spec_path.parent / spec["inputDir"])
+    return spec, input_dir
+
+
+def render_to_dir(spec_path: Path, out_dir: Path, copy_raw: bool = True) -> list[Path]:
+    """Renders spec_path into out_dir, with raw-data/ copies of the inputs unless copy_raw is False.
+    The saved spec reads from raw-data/, so the folder re-renders on its own. Inputs are never modified.
+    Returns the paths written: the STF files, the saved spec, then the raw-data copies."""
+    out_dir = Path(os.path.abspath(out_dir))
+    spec, input_dir = load_spec(spec_path)
 
     if out_dir.exists() and any(out_dir.iterdir()) and not (out_dir / SAVED_SPEC).exists():
         raise ValueError(f"{out_dir} is not empty and has no {SAVED_SPEC}; choose an empty or new directory")

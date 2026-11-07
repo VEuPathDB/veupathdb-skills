@@ -53,6 +53,99 @@ def test_blank_placeholders():
     assert log[0]["cellsChanged"] == 1
 
 
+def uncertain():
+    return {"p": mk(["id", "age"], [["P1", "40?"], ["P2", "~35"], ["P3", "35"]])}
+
+
+def test_map_values_regex_with_capture():
+    out, log = run([T("map-values", column="age", match="regex", map={r"(\d+)\?": "$1"}),
+                    T("map-values", column="age", match="regex", map={r"~(\d+)": "$1"})], uncertain())
+    assert [r[1] for r in out["p"].rows] == ["40", "35", "35"]
+    assert log[0]["ids"] == ["P1"] and log[1]["ids"] == ["P2"]
+    assert log[0]["cellsChanged"] == 1
+
+
+def test_derive_column_regex_flag_before_strip():
+    out, _ = run([T("derive-column", column="age_uncertain", match="regex",
+                    map={r"~.*": "Yes", r".*\?": "Yes"}, default="No", **{"from": "age"})], uncertain())
+    assert [r[2] for r in out["p"].rows] == ["Yes", "Yes", "No"]
+
+
+def test_blank_placeholders_regex():
+    t = {"p": mk(["id", "v"], [["A", "n.a."], ["B", "N/A"], ["C", "nan"]])}
+    out, _ = run([T("blank-placeholders", match="regex", values=[r"(?i)n\.?/?a\.?"], columns=["v"])], t)
+    assert [r[1] for r in out["p"].rows] == ["", "", "nan"]
+
+
+def test_regex_matches_empty_cells_too():
+    out, _ = run([T("map-values", column="age", match="regex", map={".*": "x"})])
+    assert [r[1] for r in out["p"].rows] == ["x", "x", "x"]
+
+
+def test_ambiguous_regex_fails_naming_row_ids_and_values():
+    t = {"p": mk(["id", "age"], [["P1", "3?"], ["P2", "4"], ["P3", "3?"]])}
+    with pytest.raises(TransformError, match=re.escape(
+            'values in column "age" match more than one key with different results for row IDs: P1, P3 '
+            '(values "3?"); tighten the patterns or settle them with replace-cells before this transform '
+            "(stf.py preview shows the keys)")):
+        run([T("map-values", column="age", match="regex", map={r".*\?": "a", r"\d\?": "b"})], t)
+
+
+def test_ambiguous_regex_error_caps_row_ids_and_values_at_ten():
+    t = {"p": mk(["id", "age"], [[f"P{i}", f"{i}?"] for i in range(1, 26)])}
+    with pytest.raises(TransformError) as e:
+        run([T("map-values", column="age", match="regex", map={r".*\?": "a", r"\d+\?": "b"})], t)
+    ids = ", ".join(f"P{i}" for i in range(1, 11))
+    values = ", ".join(f'"{i}?"' for i in range(1, 11))
+    assert str(e.value).endswith(
+        f"for row IDs: {ids} and 15 more (values {values} and 15 more); tighten the patterns "
+        "or settle them with replace-cells before this transform (stf.py preview shows the keys)")
+
+
+@pytest.mark.parametrize("transform", [
+    T("map-values", column="age", map={"80+": "80"}),
+    T("blank-placeholders", values=["NA"]),
+    T("derive-column", column="c", map={"80+": "Yes"}, default="No", **{"from": "age"}),
+    T("blank-placeholders", match="regex", values=["N.?A"]),
+])
+def test_no_ambiguity_pass_when_results_cannot_differ(monkeypatch, transform):
+    # Exact keys are unique, and keys that all give one result cannot disagree, so
+    # the extra pass over the table (costly at 1M rows) must be skipped.
+    import _match
+
+    def fail(hits):
+        raise AssertionError("ambiguity check ran")
+    monkeypatch.setattr(_match.ValueMatcher, "is_ambiguous", staticmethod(fail))
+    run([transform])
+
+
+def test_ambiguous_derive_column_names_the_source_column():
+    t = {"p": mk(["id", "age"], [["P1", "3?"]])}
+    with pytest.raises(TransformError, match='values in column "age" match more than one key'):
+        run([T("derive-column", column="u", match="regex", map={r".*\?": "a", r"\d\?": "b"},
+               default="n", **{"from": "age"})], t)
+
+
+def test_overlapping_keys_with_the_same_result_are_fine():
+    t = {"p": mk(["id", "age"], [["P1", "~3?"]])}
+    out, _ = run([T("derive-column", column="u", match="regex", map={r"~.*": "Yes", r".*\?": "Yes"},
+                    default="No", **{"from": "age"})], t)
+    assert out["p"].rows[0][2] == "Yes"
+
+
+def test_exact_mode_value_with_dollar_is_literal():
+    out, _ = run([T("map-values", column="age", map={"80+": "$1"})])
+    assert out["p"].rows[0][1] == "$1"
+
+
+def test_upto_and_entity_limit_the_run_and_keep_spec_indexes():
+    s = {"entities": [{"name": "p", "idColumn": "id"}, {"name": "q", "idColumn": "id"}],
+         "transforms": [T("trim"), {**T("trim"), "entity": "q"}, T("drop-column", column="note")]}
+    out, log = apply_transforms(tables(), s, upto=2, entity="p")
+    assert [e["index"] for e in log] == [0]
+    assert "note" in out["p"].headers
+
+
 def test_map_values_exact_match_only():
     out, log = run([T("map-values", column="age", map={"80+": "80", "5": "5"})])
     assert [r[1] for r in out["p"].rows] == ["80", "5", ""]
@@ -135,7 +228,7 @@ def test_parse_dates_single_digit_tokens_and_bad_rows():
         run([T("parse-dates", column="d", format="DD/MM/YYYY")], bad)
     msg = str(e.value)
     assert "A" in msg and "B" in msg and not re.search(r"\bC\b", msg)
-    assert msg.endswith("do not match format DD/MM/YYYY for row IDs: A, B")
+    assert msg.endswith("do not match format DD/MM/YYYY and are not YYYY-MM-DD dates for row IDs: A, B")
 
 
 @pytest.mark.parametrize("value", [
@@ -170,6 +263,83 @@ def test_parse_dates_format_missing_a_component_never_matches():
     t = {"p": mk(["id", "d"], [["A", "2023-04"]])}
     with pytest.raises(TransformError, match="row IDs: A"):
         run([T("parse-dates", column="d", format="YYYY-MM")], t)
+
+
+def dates(*values):
+    return {"p": mk(["id", "d"], [[f"R{i}", v] for i, v in enumerate(values, 1)])}
+
+
+def parse(t, **kw):
+    out, log = run([T("parse-dates", column="d", **kw)], t)
+    return [r[1] for r in out["p"].rows], log[0]
+
+
+def test_parse_dates_formats_list_converts_mixed_columns_and_passes_iso_through():
+    t = dates("2024-07-07", "15/03/2024", "15/03/24", "2024/07-15", "")
+    values, log = parse(t, formats=["DD/MM/YYYY", "DD/MM/YY", "YYYY/MM-DD"])
+    assert values == ["2024-07-07", "2024-03-15", "2024-03-15", "2024-07-15", ""]
+    assert log["cellsChanged"] == 3
+
+
+def test_parse_dates_single_format_passes_valid_iso_through():
+    values, log = parse(dates("2023-04-03", "05/06/2023"), format="DD/MM/YYYY")
+    assert values == ["2023-04-03", "2023-06-05"]
+    assert log["cellsChanged"] == 1
+
+
+def test_parse_dates_yy_is_always_20yy():
+    assert parse(dates("01/02/99", "01/02/00"), format="DD/MM/YY")[0] == ["2099-02-01", "2000-02-01"]
+
+
+def test_parse_dates_unmatched_cells_name_every_format():
+    with pytest.raises(TransformError) as e:
+        parse(dates("15/03/2024", "March 2024", "2023-02-29"), formats=["DD/MM/YYYY", "DD/MM/YY"])
+    assert str(e.value).endswith(
+        'values in column "d" do not match any of the formats DD/MM/YYYY, DD/MM/YY '
+        "and are not YYYY-MM-DD dates for row IDs: R2, R3"
+    )
+
+
+def test_parse_dates_cells_read_two_ways_are_ambiguous():
+    # 03/04/23 is 3 April or 4 March; 13/04/23 fits only day-first; 04/04/23 reads the same either way
+    with pytest.raises(TransformError) as e:
+        parse(dates("03/04/23", "13/04/23", "04/04/23"), formats=["DD/MM/YY", "MM/DD/YY"])
+    msg = str(e.value)
+    assert "read as different dates under more than one format (counting YYYY-MM-DD) for row IDs: R1;" in msg
+    assert "replace-cells" in msg and "R2" not in msg and "R3" not in msg
+
+
+def test_parse_dates_iso_cell_another_format_reads_differently_is_ambiguous():
+    with pytest.raises(TransformError, match=r"different dates .* row IDs: R1;"):
+        parse(dates("2023-04-05", "2023-31-12"), format="YYYY-DD-MM")
+    assert parse(dates("2023-05-05", "2023-31-12"), format="YYYY-DD-MM")[0] == ["2023-05-05", "2023-12-31"]
+
+
+def test_parse_dates_unmatched_error_caps_row_ids_at_ten():
+    with pytest.raises(TransformError) as e:
+        parse(dates(*["nope"] * 25), format="DD/MM/YYYY")
+    ids = ", ".join(f"R{i}" for i in range(1, 11))
+    assert str(e.value).endswith(f"for row IDs: {ids} and 15 more")
+
+
+def test_parse_dates_ambiguous_error_caps_row_ids_at_ten():
+    with pytest.raises(TransformError) as e:
+        parse(dates(*["03/04/23"] * 12), formats=["DD/MM/YY", "MM/DD/YY"])
+    ids = ", ".join(f"R{i}" for i in range(1, 11))
+    assert f"for row IDs: {ids} and 2 more; settle them with replace-cells" in str(e.value)
+
+
+def test_parse_dates_lists_exactly_ten_row_ids_without_more():
+    with pytest.raises(TransformError) as e:
+        parse(dates(*["nope"] * 10), format="DD/MM/YYYY")
+    assert str(e.value).endswith("R9, R10")
+
+
+def test_parse_dates_reports_unmatched_and_ambiguous_together():
+    with pytest.raises(TransformError) as e:
+        parse(dates("03/04/23", "nope"), formats=["DD/MM/YY", "MM/DD/YY"])
+    msg = str(e.value)
+    assert "row IDs: R2" in msg and "row IDs: R1" in msg
 
 
 def test_derive_column_then_replace_cells():

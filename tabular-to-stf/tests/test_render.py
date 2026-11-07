@@ -18,7 +18,7 @@ DATASETS = ["clinical-epi", "mosquito", "coffee-shops"]
 def spec(variables, **extra):
     """Minimal one- or two-entity spec; `variables` are the root entity's."""
     return {
-        "specVersion": 1,
+        "specVersion": "1.0.0",
         "study": {"name": "Test study"},
         "inputDir": "/in",
         "entities": [{"name": "p", "displayName": "P", "displayNamePlural": "Ps", "file": "p.csv",
@@ -239,6 +239,37 @@ def test_render_notes_lists_row_ids_for_user_value_changes_capped_at_10_and_not_
     assert re.search(r"13 cells changed \(rows R1, R2, R3, R4, R5, R6, R7, R8, R9, R10 and 3 more\)\. Reason: many", notes)
     assert re.search(r"trim whitespace, 2 cells changed\. Reason: spaces", notes)
     assert "Q1" not in notes
+
+
+def test_render_notes_marks_regex_transforms():
+    s = spec([{"column": "a"}])
+    s["transforms"] = [
+        {"op": "map-values", "entity": "p", "column": "a", "match": "regex", "map": {"(\\d+)\\?": "$1"},
+         "approval": "user", "reason": "unsure"},
+        {"op": "map-values", "entity": "p", "column": "a", "map": {"x": "y"}, "approval": "user", "reason": "typo"},
+    ]
+    notes = render_notes(s, [
+        {"index": 0, "op": "map-values", "entity": "p", "column": "a", "approval": "user", "cellsChanged": 1, "ids": ["P1"]},
+        {"index": 1, "op": "map-values", "entity": "p", "column": "a", "approval": "user", "cellsChanged": 0, "ids": []},
+    ])
+    # Values are JSON-quoted in the notes, so a pattern reads as it does in the spec file.
+    assert '`p.a`: "(\\\\d+)\\\\?" → "$1" (regex), 1 cell changed (row P1). Reason: unsure' in notes
+    assert '`p.a`: "x" → "y", 0 cells changed. Reason: typo' in notes
+
+
+def test_render_notes_names_every_parse_dates_format():
+    s = spec([{"column": "a"}])
+    s["transforms"] = [
+        {"op": "parse-dates", "entity": "p", "column": "a", "format": "DD/MM/YYYY", "approval": "user", "reason": "uk"},
+        {"op": "parse-dates", "entity": "p", "column": "a", "formats": ["DD/MM/YYYY", "DD/MM/YY"],
+         "approval": "user", "reason": "mixed"},
+    ]
+    notes = render_notes(s, [
+        {"index": 0, "op": "parse-dates", "entity": "p", "column": "a", "approval": "user", "cellsChanged": 0, "ids": []},
+        {"index": 1, "op": "parse-dates", "entity": "p", "column": "a", "approval": "user", "cellsChanged": 0, "ids": []},
+    ])
+    assert "`p.a`: parse dates DD/MM/YYYY → YYYY-MM-DD" in notes
+    assert "`p.a`: parse dates DD/MM/YYYY or DD/MM/YY → YYYY-MM-DD" in notes
 
 
 @pytest.mark.parametrize("ds", DATASETS)

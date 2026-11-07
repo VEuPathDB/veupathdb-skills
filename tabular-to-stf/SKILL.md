@@ -28,6 +28,7 @@ never modify the input files and make no git changes.
 |---|---|
 | `uv run scripts/stf.py profile <inputDir> --out <path>` | Profiles every `.csv`/`.tsv`/`.txt` file in `<inputDir>`, writes the full JSON to `<path>` and prints one summary line per file |
 | `uv run scripts/stf.py profile <inputDir> --file <name> [--top N]` | Prints the compact JSON profile of one file, with the parent links that involve it |
+| `uv run scripts/stf.py preview <spec.json> <n> [--top N] [--bottom N]` | Shows what transform `n` (0-based) does to the data: matched, ambiguous and unmatched values with counts. Writes nothing |
 | `uv run scripts/stf.py render <spec.json> <outDir> [--no-raw-data]` | Renders the spec to an STF directory |
 | `uv run scripts/stf.py check <stfDir> [--json]` | Checks an STF directory; exit 1 on errors |
 | `uv run scripts/stf.py validate <stfDir> [--engine docker\|podman]` | Mode 2: validates in the pinned study-wrangler container |
@@ -119,6 +120,12 @@ continuing about anything you would be guessing at. Examples are two
 plausible parents, no clear ID column, or an entity name the data does not
 suggest. Ask these in one message.
 
+Once the tree is settled, write the first draft of the spec to
+`<work>/curation-spec.json`, beside `profile.json` and outside `<out>`,
+following [curation-spec.md](resources/curation-spec.md): `specVersion`,
+`study`, `inputDir` (the input folder's absolute path) and the entities, each
+with `"variables": []` for now. Steps 3 to 6 add to this file.
+
 ### 3. Cleaning
 
 Look for whitespace, placeholders, the same value written differently
@@ -130,6 +137,20 @@ typos and anything else that is a judgement about what was meant are shown
 to the user, never fixed silently. Data-altering fixes are batched per entity, shown with a proposed
 fix, and applied only when the user approves. Record a rejected fix, and what
 was done instead. See [cleaning.md](resources/cleaning.md).
+
+When many values share a shape, such as `40?`, `35?` and `24?`, a transform
+can use a pattern instead of listing each value (`"match": "regex"`). A
+pattern can match more than you meant, so such a transform is never `auto`.
+Write it into the spec as `proposed`, then run
+`uv run scripts/stf.py preview <spec.json> <n>` on the current spec
+(`<work>/curation-spec.json` before the first render,
+`<out>/curation-spec.json` after it), where `<n>` is its index in
+`transforms`. Read the output: the values it would change, any
+ambiguous ones, and the values it leaves alone. Use `--bottom N` to look for
+rare values the pattern missed. Show the user what it changes and anything
+suspicious it leaves, then set it to `user` if they accept, or `rejected`
+with `instead`. You may preview any other transform the same way before
+asking about it.
 
 ### 4. Variable metadata
 
@@ -152,17 +173,19 @@ apparent lat/long swap. See the geocoordinates section of
 
 ### 6. Category tree
 
-For each entity with about 10 or more variables, draft a variable tree. That
-is named categories with short definitions, nested if that helps. Show it to
-the user as an indented outline, apply their edits, then put it in the spec.
-See [category-tree.md](resources/category-tree.md).
+For each entity whose variables fall into themes (about three or more that
+belong together, such as money columns or test results), draft a variable
+tree, whatever the number of variables. That is named categories with short
+definitions, nested if that helps. Show it to the user as an indented
+outline, apply their edits, then put it in the spec. For each entity you
+skip, name it and give the reason. See
+[category-tree.md](resources/category-tree.md).
 
-### 7. Write the spec and render
+### 7. Finish the spec and render
 
-Write the first draft of the spec to `<work>/curation-spec.json`, beside
-`profile.json` and outside `<out>`, following
-[curation-spec.md](resources/curation-spec.md). Set `inputDir` to the input
-folder's absolute path. Then run
+The draft in `<work>/curation-spec.json` has been growing since step 2.
+Check that it holds everything from steps 3 to 6, following
+[curation-spec.md](resources/curation-spec.md). Then run
 `uv run scripts/stf.py render <work>/curation-spec.json <out>`. Writing the
 draft into `<out>` instead would defeat the renderer's guard against
 rendering into a directory that holds other files.
@@ -185,7 +208,7 @@ lists every problem in the spec. Fix the spec and render again.
 
 Run `uv run scripts/stf.py check <out>`. It checks ID integrity, the variable
 tree, that the files load, allowed values, data types and the EDA geo rules.
-Each `ERROR:` line is fixed in the spec, followed by a re-render and a
+It ends with a line counting the errors and warnings. Each `ERROR:` line is fixed in the spec, followed by a re-render and a
 re-check, until there are none. Read every `WARNING:` line and act on it or
 record it in `notes.flagged`. Then offer mode 2 if a container engine was
 found.
@@ -197,6 +220,19 @@ Make sure the spec's `notes` hold everything a later curator needs: flagged
 issues, the user's answers and decisions, PII, and, after mode 2, the
 validation runs. Then re-render. See
 [curation-notes.md](resources/curation-notes.md).
+
+### 10. Zip (only if asked)
+
+If the user asks for the STF as a `.zip` file, zip the files flat, with no
+directory structure (`-j`), and leave out `raw-data/`. Write the zip outside
+`<out>`, because the next render refuses a directory that holds files it
+did not write. From inside `<out>`:
+
+```
+zip -j ../<name>.zip study.yaml entity-*.tsv entity-*.yaml curation-notes.md curation-spec.json
+```
+
+Check it with `unzip -l ../<name>.zip`.
 
 ## Personal data
 
