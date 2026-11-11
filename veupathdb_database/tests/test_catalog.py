@@ -50,7 +50,7 @@ def test_live_catalog_plasmodb(live_client):
     names = all_search_names(cat)
     assert names.get("GenesByGoTerm") == "transcript"
     assert names.get("GenesByMolecularWeight") == "transcript"
-    assert len(catalog_lines(cat)) > 400  # 515 searches incl. non-gene types, minus booleans
+    assert len(catalog_lines(cat)) > 300  # ontology-offered searches incl. non-gene types, minus booleans
 
     # second call must come from disk cache (no HTTP): break the token
     from _client import Client

@@ -276,12 +276,38 @@ def stash_json(kind, data):
 DEFAULT_EXCLUDED_PARAM_PREFIXES = ("eda_",)
 # EDA notebook searches eda.py supports; other eda_ searches stay hidden
 SUPPORTED_EDA_NOTEBOOKS = ("differentialExpressionNotebook", "antibodyArrayNotebook")
-CATALOG_SCHEMA = 2  # 2 = entries carry edaNotebookType and queryName
+CATALOG_SCHEMA = 3  # 3 = entries carry fullName and takesInputStep; catalog carries offered_searches
+_OFFERED_SCOPES = frozenset({"webservice", "menu"})
 
 
 def _notebook_type(search):
     values = (search.get("properties") or {}).get("edaNotebookType") or []
     return values[0] if values else None
+
+
+def offered_search_names(ontology: dict) -> set[str]:
+    """Full names of the searches a site's Categories ontology offers.
+
+    A node offers a search when its targetType is "search", it names the search, and it has
+    no scope or a scope holding "webservice" or "menu".
+    """
+    offered: set[str] = set()
+
+    def walk(node):
+        props = node.get("properties") or {}
+        scope = props.get("scope")
+        names = props.get("name") or []
+        if (
+            props.get("targetType") == ["search"]
+            and names
+            and (scope is None or _OFFERED_SCOPES.intersection(scope))
+        ):
+            offered.add(names[0])
+        for child in node.get("children") or []:
+            walk(child)
+
+    walk(ontology.get("tree") or {})
+    return offered
 
 
 def get_excluded_param_prefixes() -> tuple[str, ...]:
@@ -328,7 +354,7 @@ def fetch_catalog(client, refresh=False, excluded_param_prefixes=None):
     raw_catalog = None
     if not refresh and cache.is_file() and time.time() - cache.stat().st_mtime < CACHE_TTL_S:
         cached = json.loads(cache.read_text())
-        if cached.get("schema") == CATALOG_SCHEMA:  # older caches lack edaNotebookType
+        if cached.get("schema") == CATALOG_SCHEMA:  # older caches lack fullName and the ontology
             raw_catalog = cached
     if raw_catalog is None:
         record_types = client.get("/record-types")
@@ -347,13 +373,20 @@ def fetch_catalog(client, refresh=False, excluded_param_prefixes=None):
                     "outputRecordClassName": s.get("outputRecordClassName", ""),
                     "edaNotebookType": _notebook_type(s),
                     "queryName": s.get("queryName", ""),
+                    "fullName": s.get("fullName", ""),
+                    "takesInputStep": bool(s.get("allowedPrimaryInputRecordClassNames")),
                 }
                 for s in listing
             ]
+        try:
+            offered = sorted(offered_search_names(client.get("/ontologies/Categories")))
+        except (WDKError, ValueError, TypeError, AttributeError):
+            offered = []  # no ontology: every search is offered
         raw_catalog = {
             "schema": CATALOG_SCHEMA,
             "cached_at": time.time(),
             "record_types": record_types,
+            "offered_searches": offered,
             "searches": searches,
         }
         cache.write_text(json.dumps(raw_catalog))
