@@ -30,7 +30,7 @@ params_template — disclose applied defaults to the user). Steps are created
 bottom-up; the strategy is created last with the assembled stepTree; each
 create is single-attempt (no retry-duplication).
 
-## Structure semantics (from pathfinder's FRAME rules)
+## Structure semantics
 
 - Alternative evidence for the same property → UNION those searches.
 - Distinct required properties → INTERSECT.

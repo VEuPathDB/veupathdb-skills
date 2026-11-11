@@ -1,7 +1,7 @@
 # Silent-failure modes (WDK accepts your request; the science is wrong)
 
-Each of these was learned the hard way in pathfinder and is machine-checked
-there (docs/knowledge/wdk/rules). The CLI guards the starred ones.
+Each of these is a documented WDK rule, machine-checked in `ai-veupathdb-client`
+(`docs/knowledge/wdk/rules/`). The CLI guards the starred ones.
 
 1. ★ Tree parent submitted directly under countOnlyLeaves → 0 rows, no error.
    Guard: encode_params expands parents to leaves.

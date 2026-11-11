@@ -55,7 +55,9 @@ To delete the stored token:
 
     uv run scripts/wdk.py logout
 
-## How auth actually works (distilled from pathfinder's WDK rules)
+## How auth actually works
+
+Source: `ai-veupathdb-client` `docs/knowledge/wdk/rules/auth-and-transport.md`.
 
 - The token travels as both a COOKIE: `Cookie: Authorization=<token>` (honored
   by Tomcat for `/users/…` strategy paths) and an `Authorization: Bearer <token>`
