@@ -36,7 +36,7 @@ def test_old_schema_catalog_cache_is_refetched(wdk_cache):
     cat = fetch_catalog(fake)
     assert "/record-types" in fake.calls
     assert cat["searches"]["transcript"]
-    assert json.loads((wdk_cache / "plasmodb.json").read_text())["schema"] == 2
+    assert json.loads((wdk_cache / "plasmodb.json").read_text())["schema"] == 3
 
 
 def test_encode_params_serialises_object_values_as_json():

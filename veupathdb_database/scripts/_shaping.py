@@ -26,6 +26,19 @@ def _camel_words(name):
     return re.sub(r"(?<!^)(?=[A-Z])", " ", name).lower()
 
 
+def is_offered(catalog, search):
+    """True when the agent may find this search by listing or ranking.
+
+    The site's Categories ontology decides. A search that takes an input step (a transform)
+    is in no ontology and is always offered; so is every search when the ontology did not load.
+    Reads by name never call this.
+    """
+    offered = catalog.get("offered_searches")
+    if not offered or search.get("takesInputStep"):
+        return True
+    return search.get("fullName") in offered
+
+
 def display_name(search):
     nb = search.get("edaNotebookType")
     if nb:
@@ -39,7 +52,7 @@ def catalog_lines(catalog, record_type=None):
         if record_type and rt != record_type:
             continue
         for s in searches:
-            if _is_boolean(s["name"]):
+            if _is_boolean(s["name"]) or not is_offered(catalog, s):
                 continue
             desc = strip_html(s["description"])[:250]
             lines.append(f"{rt}\t{s['name']}\t{display_name(s)}\t{desc}")
@@ -62,7 +75,7 @@ def score_searches(catalog, query, limit=20):
     scored = []
     for rt, searches in catalog["searches"].items():
         for s in searches:
-            if _is_boolean(s["name"]):
+            if _is_boolean(s["name"]) or not is_offered(catalog, s):
                 continue
             name = s["name"].lower()
             disp = s["displayName"].lower()

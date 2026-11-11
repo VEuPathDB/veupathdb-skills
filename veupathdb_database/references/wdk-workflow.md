@@ -64,7 +64,7 @@ When asked about a gene by symbol, name, or product (e.g. `SRPN2`, `K13`):
 | record-types SITE | list record type segments |
 | inspect-record-type SITE RT [--filter Q] [--name-only] [--exclude P] | record schema: PK, attributes, tables |
 | searches SITE RT | searches for one record type (TSV) |
-| catalog SITE [--record-type RT] [--refresh] | full compact catalog (TSV) — discovery input |
+| catalog SITE [--record-type RT] [--refresh] | compact catalog (TSV) of the searches the site's Categories ontology offers, plus transforms — discovery input. Searches outside the ontology (site metrics, `All*` lists, internal test questions) are not listed, but a search you name is still read, validated and run |
 | find-searches SITE QUERY | lexical convenience lookup |
 | inspect-search SITE SEARCH [--filter HINT] | parameter sheet (alias: inspect) |
 | param-options SITE SEARCH PARAM [--filter Q] [--context P=V] | browse a vocabulary |
