@@ -54,4 +54,29 @@ variables:
     definition: Whether the shop is open.
     data_type: string
     data_shape: categorical
+  - variable: lat
+    provider_label:
+      - lat
+    display_name: Latitude
+    definition: Latitude of the shop, in decimal degrees (WGS84 assumed).
+    data_type: number
+    data_shape: continuous
+    stable_id: OBI_0001620
+    display_type: latitude
+  - variable: lng
+    provider_label:
+      - lng
+    display_name: Longitude
+    definition: Longitude of the shop, in decimal degrees (WGS84 assumed).
+    data_type: longitude
+    data_shape: continuous
+    stable_id: OBI_0001621
+    display_type: longitude
+  - variable: shop_extended_lease
+    provider_label:
+      - Extended lease
+    display_name: Extended lease
+    definition: Whether the shop has a lease of more than five years.
+    data_type: string
+    data_shape: categorical
 categories: []

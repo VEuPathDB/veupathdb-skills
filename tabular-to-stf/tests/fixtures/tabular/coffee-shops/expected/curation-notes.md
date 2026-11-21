@@ -16,6 +16,8 @@ This directory was rendered from [curation-spec.json](curation-spec.json), the c
   - `raw-data/monthly_accounts.csv` (120 rows)
   - `raw-data/coffee-shops-data-dictionary.md`
 
+Before `eda` validation or export, run `map_entities(study, infer_geo_variables_for_eda)`
+
 ## Entity tree
 
 - `region` (Regions): `raw-data/regions.csv`, ID `region_id`
@@ -30,8 +32,10 @@ This directory was rendered from [curation-spec.json](curation-spec.json), the c
 
 - `region` (all columns): trim whitespace, 1 cell changed. Reason: Stray leading and trailing spaces were found in several columns.
 - `region.name`: "north" → "North", 1 cell changed. Reason: Same region name written with different case or spacing; unified to the form most rows use.
-- `coffee_shop` (all columns): trim whitespace, 2 cells changed. Reason: Stray leading and trailing spaces were found in several columns.
+- `coffee_shop` (all columns): trim whitespace, 3 cells changed. Reason: Stray leading and trailing spaces were found in several columns.
 - `coffee_shop.status`: "open" → "Open", 1 cell changed. Reason: Same status written with different case or spacing; unified to the form most rows use.
+- `coffee_shop.long_lease`: rename to "extended_lease". Reason: A `long_` prefix makes EDA read the column as a longitude, but the shop already has a longitude; renamed.
+- `coffee_shop` (columns `lat`, `lng`): blank "n/a", 2 cells changed. Reason: `n/a` means the coordinates are missing.
 - `team` (all columns): trim whitespace, 2 cells changed. Reason: Stray leading and trailing spaces were found in several columns.
 - `team` (columns `name`, `shift`): blank "-", "n/a", 3 cells changed. Reason: `-` and `n/a` mean the value is missing.
 - `team.name`: "KITCHEN" → "Kitchen", 1 cell changed. Reason: Same team name written with different case or spacing; unified to the form most rows use.
@@ -63,9 +67,12 @@ This directory was rendered from [curation-spec.json](curation-spec.json), the c
 
 - `region.name`: "Souht East" → "South East", "Midlnds" → "Midlands", 2 cells changed (rows R001, R003). Reason: Likely typos of region name values, corrected to the nearby valid value; approved by the user.
 - `region.contact`: "Rwan Patel" → "Ryan Patel", 1 cell changed (row R002). Reason: Likely typo of the contact name; approved by the user.
+- `region.centroid_long`: "3.2000" → "-3.2000" (row R002). Reason: The South West centroid longitude has no minus sign, which would put it in the North Sea; the shops in the region (Bristol, Bath, Exeter) all sit at about -2.4 to -3.5. Approved by the user.
 - `coffee_shop.name`: "Copper  Finch" → "Copper Finch", "Litlte Lantern" → "Little Lantern", 2 cells changed (rows S001, S003). Reason: A doubled space and a transposed-letter typo in shop names; approved by the user.
 - `coffee_shop.opened`: "14/12/19" → "2019-12-14", "14/09/2018" → "2018-09-14", "14/04/19" → "2019-04-14", "14/11/2020" → "2020-11-14", 4 cells changed (rows S002, S003, S004, S008). Reason: Opening dates were written as DD/MM/YYYY, DD/MM/YY (read as 20YY) or YYYY/MM-DD; day-first order confirmed by the user. Rewritten as ISO YYYY-MM-DD.
 - `coffee_shop.name`: "-" → "TBC: Totally Brilliant Coffee" (row S011). Reason: The source gave `-` for the name of the Leeds shop (S011), the only unnamed shop. The user chose the placeholder name "TBC: Totally Brilliant Coffee" until the real name is known.
+- `coffee_shop.lat`: "-1.2577" → "51.7520" (row S003); "51,3811" → "51.3811" (row S005); "520.9534" → "52.9534" (row S008). Reason: S003 (Oxford) had its latitude and longitude swapped; S005 used a comma decimal separator; S008 (Nottingham) had a misplaced decimal point (520.9534 is not a latitude). Approved by the user.
+- `coffee_shop.lng`: "51.7520" → "-1.2577" (row S003); "1.1398W" → "-1.1398" (row S009). Reason: S003 (Oxford) had its latitude and longitude swapped; S009 (Leicester) gave a hemisphere letter (1.1398W) instead of a negative number. Approved by the user.
 - `team.shift`: "Eary" → "Early", 1 cell changed (row T018). Reason: Likely typos of shift values, corrected to the nearby valid value; approved by the user.
 - `staff_member.first`: "Hgo" → "Hugo", "Rroy" → "Rory", "Feya" → "Freya", "Teho" → "Theo", "Ajrun" → "Arjun", "Harpre" → "Harper", "Ferya" → "Freya", "Ainka" → "Anika", "Huo" → "Hugo", "Teo" → "Theo", 10 cells changed (rows P021, P050, P057, P062, P078, P079, P102, P112, P133, P168). Reason: Likely typos of first names, each one or two letters from a name used elsewhere in the data; approved by the user. Teo was read as Theo on the user's judgement (neighbouring keys on a QWERTY keyboard).
 - `staff_member.role`: "Kitcen assistant" → "Kitchen assistant", "Brista" → "Barista", "Kitchen asisstant" → "Kitchen assistant", "Cafe assistatn" → "Cafe assistant", "Head brista" → "Head barista", "Kitchen assstant" → "Kitchen assistant", "Barisat" → "Barista", "Kichen lead" → "Kitchen lead", "Ktchen lead" → "Kitchen lead", "Braista" → "Barista", "Kitchen assistnt" → "Kitchen assistant", "Cafe assisatnt" → "Cafe assistant", 12 cells changed (rows P029, P052, P089, P093, P096, P104, P114, P116, P131, P145 and 2 more). Reason: Likely typos of role values, corrected to the nearby valid value; approved by the user.
@@ -108,6 +115,7 @@ This directory was rendered from [curation-spec.json](curation-spec.json), the c
 
 - `menu_item.cost`: item I026 has a cost of 2.11, much higher than the other costs for similar items. It was kept as given and may be worth confirming with the provider.
 - Twenty-four cells in seven columns were given with a trailing `?`. The `?` was removed and the cell recorded in the matching `*_uncertainty` flag column. The provider has not confirmed those values.
+- `coffee_shop` coordinates: the source had, in the latitude and longitude columns, one swapped pair (S003), one comma decimal separator (S005), one out-of-range value (S008), one hemisphere letter (S009) and one `n/a` pair (S011, left blank). The fixes were approved by the user; the Leeds shop (S011) has no coordinates. `region.centroid_long` for R002 lost its minus sign and was restored (checked against the region's shops).
 - PII: `staff_member`: first names are kept in full. Surnames were abbreviated to the shortest letters that tell apart surnames sharing a first name, so people are harder to identify. `hourly_pay_rate`, `start_date` and the free-text notes remain, and with the first name and role could still identify a person in a small team. The unabbreviated surnames remain in `raw-data/staff.csv`.
 - PII: `region.region_contact` holds the names of the regional managers, `coffee_shop.shop_address` the street addresses of shops and `team.team_extension` internal phone extensions. They were kept as business information, not private personal data.
 
@@ -118,12 +126,17 @@ This directory was rendered from [curation-spec.json](curation-spec.json), the c
 - All dates in the source were read as day-first (DD/MM/YYYY or DD/MM/YY), never month-first, and rewritten as ISO dates. Two-digit years are read as 20YY. `2025/02-01` and similar are read as YYYY/MM-DD.
 - Numbers entered with a comma decimal separator (e.g. `28948,97`) were converted to a decimal point. The company has continental European staff who enter figures that way. The letter O typed in place of zero was also corrected.
 - `initial_training` is ordinal No < Pending < Yes. `return_status` is ordinal Draft < Checked < Final. Money is in GBP, `contracted_hours` is per week, and `transactions` is a count per month.
-- No latitude or longitude columns exist, so no geo metadata was set.
 - Variable output names are prefixed with the entity (`shop_name`, `team_name`, `item_price` and so on) so that no two entities share a variable name.
 - `staff_member.first_name`: `Teo` was corrected to `Theo`, although it is also one edit from `Leo`. The user judged it most likely a keyboard slip.
 - Category trees were drafted for the two entities with about 10 or more variables, staff member and monthly account, and applied as drafted. The uncertainty flag columns sit in their own category in each.
 - `team.team_extension` is a string with a categorical shape: it is a code, not a quantity. (In the original curation session study-wrangler 1.0.53 rejected the all-digit string column, VEuPathDB/study-wrangler#95, and it was typed integer as a workaround. 1.0.54 fixes that, so the fixture uses string.)
+- Geo is set on `region` (`centroid_lat`, `centroid_long`) and on `coffee_shop` (`lat`, `lng`). The region columns do not pass EDA's validator by name (an underscore is not a word boundary), so they are written as `latitude` and `longitude`; the shop columns already pass, so they keep their names, and the two entities do not clash. No geohash columns were written; study-wrangler derives them.
+- `coffee_shop.long_lease` was renamed `extended_lease` because EDA's inference would otherwise read `long_` as a second longitude.
+- `region.centroid_lat` is the latitude; written as `latitude` so that both EDA's inference and its validator recognise it.
+- `region.centroid_long` is the longitude; written as `longitude` so that both EDA's inference and its validator recognise it.
+- `coffee_shop.shop_extended_lease`: provider_label set to "Extended lease" (original header "long_lease").
 
 ## Validation
 
 - study-wrangler 1.0.54, `validate(study, profiles = c("baseline", "eda"))` after `map_entities(study, infer_geo_variables_for_eda)`: passed, study and all 7 entities valid. Under 1.0.53 the same spec failed on `team_extension` (VEuPathDB/study-wrangler#95).
+- study-wrangler 1.0.56, `validate(study, profiles = c("baseline", "eda"))` after `map_entities(study, infer_geo_variables_for_eda)`, with geo on `region` and `coffee_shop`: passed (the opt-in container test, `STF_CONTAINER_TESTS=1`).

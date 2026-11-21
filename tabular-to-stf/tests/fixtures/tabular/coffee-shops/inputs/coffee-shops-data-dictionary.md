@@ -14,6 +14,8 @@ The areas we group the shops into for day-to-day management.
 | name | What we call the region, e.g. South East. |
 | area | A bit more detail about the area it covers. |
 | contact | The person who looks after that region. |
+| centroid_lat | Roughly the middle of the region, north-south (decimal degrees). |
+| centroid_long | Roughly the middle of the region, east-west (decimal degrees). |
 
 ## Coffee shops
 
@@ -29,6 +31,9 @@ The basic details for each of our shops.
 | opened | When the shop first opened. |
 | seats | How many customers we can seat. |
 | status | Whether the shop is open. |
+| lat | Where the shop is, north-south (decimal degrees). |
+| lng | Where the shop is, east-west (decimal degrees). |
+| long_lease | Whether we have a lease of more than five years on the shop. |
 
 ## Teams
 

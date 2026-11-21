@@ -28,4 +28,22 @@ variables:
     definition: The person who looks after the region.
     data_type: string
     data_shape: categorical
+  - variable: latitude
+    provider_label:
+      - centroid_lat
+    display_name: Centroid latitude
+    definition: Latitude of the approximate centre of the region, in decimal degrees (WGS84 assumed).
+    data_type: number
+    data_shape: continuous
+    stable_id: OBI_0001620
+    display_type: latitude
+  - variable: longitude
+    provider_label:
+      - centroid_long
+    display_name: Centroid longitude
+    definition: Longitude of the approximate centre of the region, in decimal degrees (WGS84 assumed).
+    data_type: longitude
+    data_shape: continuous
+    stable_id: OBI_0001621
+    display_type: longitude
 categories: []
