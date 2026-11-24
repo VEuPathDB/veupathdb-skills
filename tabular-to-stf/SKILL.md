@@ -40,7 +40,8 @@ Ask for whatever is missing:
 
 - **An input folder** of CSV or TSV tables, UTF-8, one header row, one file
   per entity. Each file has its own ID column and, except the root, a column
-  holding its parent's ID.
+  holding its parent's ID. In a web chat the user attaches the files instead;
+  see [Working in a web chat](#working-in-a-web-chat).
 - **A study description** (optional): a paragraph of free text, pasted or in
   a file.
 - **A data dictionary** (optional), in any format. Read it yourself. There is
@@ -221,9 +222,9 @@ issues, the user's answers and decisions, PII, and, after mode 2, the
 validation runs. Then re-render. See
 [curation-notes.md](resources/curation-notes.md).
 
-### 10. Zip (only if asked)
+### 10. Deliver
 
-If the user asks for the STF as a `.zip` file, zip the files flat, with no
+Finish by giving the user the STF as a `.zip`. Zip the files flat, with no
 directory structure (`-j`), and leave out `raw-data/`. Write the zip outside
 `<out>`, because the next render refuses a directory that holds files it
 did not write. From inside `<out>`:
@@ -233,6 +234,39 @@ zip -j ../<name>.zip study.yaml entity-*.tsv entity-*.yaml curation-notes.md cur
 ```
 
 Check it with `unzip -l ../<name>.zip`.
+
+- **In a web chat** (see [Working in a web chat](#working-in-a-web-chat)), do
+  this without being asked: the user can't see `<out>`, so the zip is the only
+  way they get the result. Share the zip file, then tell them to open it in the
+  chat and use its download button (the panel says "No preview available" for
+  a zip; that is normal). Say what the zip holds, and that it leaves out their
+  original input files.
+- **In Claude Code or another local agent**, offer the zip in one line. The
+  files are already in `<out>`.
+- If the user may want to re-render or keep the originals, offer a second zip
+  that includes `raw-data/`, from inside `<out>`:
+  `zip -r ../<name>-with-raw-data.zip . -x '*.zip'`.
+
+## Working in a web chat
+
+In a claude.ai chat the user attaches files and downloads results. They can't
+see your working directories, and the sandbox's files may not last beyond the
+chat. So:
+
+- Ask them to attach the tables to the chat, instead of asking for a folder.
+  Find the attached files in the sandbox and use that location as the input
+  folder. Refer to them as "your attached files", not by path.
+- Write `<out>` and `<work>` to new directories in the sandbox.
+- Share files with the user explicitly. A file you create is not visible to
+  them until you share it.
+- After the first render passes `check`, share a zip of it as a checkpoint,
+  and say it is a safe copy in case the chat is interrupted. Share the final
+  zip at step 10.
+- `validate --detect` will print `none` here, so mode 2 is not available. Say
+  that validation in a container was not run, and that the STF is ready to be
+  loaded by study-wrangler.
+- Speak in plain terms (files, download, zip), not paths, working directories
+  or script names. Mention a script only if the user asks.
 
 ## Personal data
 
