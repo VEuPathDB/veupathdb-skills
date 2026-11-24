@@ -3,6 +3,11 @@
 Agent skills for [VEuPathDB](https://veupathdb.org) genomics sites (PlasmoDB, VectorBase,
 ToxoDB, FungiDB, TriTrypDB and others).
 
+Skills:
+
+- [veupathdb_database](#veupathdb_database)
+- [tabular-to-stf](#tabular-to-stf)
+
 ## veupathdb_database
 
 Lets an agent query the VEuPathDB WDK and EDA REST APIs: find genes by biological
@@ -128,9 +133,7 @@ result in the pinned study-wrangler container.
 
 ### Install in claude.ai (web chat)
 
-Any claude.ai plan can use the skill, including Free. This skill only needs package
-installs (for `uv`), not access to VEuPathDB sites, so the default network setting is
-enough. Container validation isn't available on the web. See
+Any claude.ai plan can use the skill, including Free. See
 [Use skills in Claude](https://support.claude.com/en/articles/12512180-use-skills-in-claude)
 if a menu label differs from the steps below.
 
