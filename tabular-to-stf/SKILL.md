@@ -31,6 +31,7 @@ never modify the input files and make no git changes.
 | `uv run scripts/stf.py preview <spec.json> <n> [--top N] [--bottom N]` | Shows what transform `n` (0-based) does to the data: matched, ambiguous and unmatched values with counts. Writes nothing |
 | `uv run scripts/stf.py render <spec.json> <outDir> [--no-raw-data]` | Renders the spec to an STF directory |
 | `uv run scripts/stf.py check <stfDir> [--json]` | Checks an STF directory; exit 1 on errors |
+| `uv run scripts/stf.py zip <stfDir> [--out <path.zip>] [--with-raw-data]` | Zips the STF files flat for hand-over, to `<stfDir>.zip` by default; `--with-raw-data` also includes `raw-data/`. Prints the files it holds |
 | `uv run scripts/stf.py validate <stfDir> [--engine docker\|podman]` | Mode 2: validates in the pinned study-wrangler container |
 | `uv run scripts/stf.py validate --detect` | Prints `docker`, `podman` or `none` |
 
@@ -224,16 +225,17 @@ validation runs. Then re-render. See
 
 ### 10. Deliver
 
-Finish by giving the user the STF as a `.zip`. Zip the files flat, with no
-directory structure (`-j`), and leave out `raw-data/`. Write the zip outside
-`<out>`, because the next render refuses a directory that holds files it
-did not write. From inside `<out>`:
+Finish by giving the user the STF as a `.zip`:
 
 ```
-zip -j ../<name>.zip study.yaml entity-*.tsv entity-*.yaml curation-notes.md curation-spec.json
+uv run scripts/stf.py zip <out>
 ```
 
-Check it with `unzip -l ../<name>.zip`.
+This writes `<out>.zip`, beside `<out>` and never inside it, because the next
+render refuses a directory that holds files it did not write. Use `--out
+<path.zip>` to put it elsewhere. The STF files are flat in the zip, and
+`raw-data/` is left out. The command prints each file it put in the zip, so
+there is nothing to check by hand.
 
 - **In a web chat** (see [Working in a web chat](#working-in-a-web-chat)), do
   this without being asked: the user can't see `<out>`, so the zip is the only
@@ -244,8 +246,9 @@ Check it with `unzip -l ../<name>.zip`.
 - **In Claude Code or another local agent**, offer the zip in one line. The
   files are already in `<out>`.
 - If the user may want to re-render or keep the originals, offer a second zip
-  that includes `raw-data/`, from inside `<out>`:
-  `zip -r ../<name>-with-raw-data.zip . -x '*.zip'`.
+  that includes `raw-data/`:
+  `uv run scripts/stf.py zip <out> --with-raw-data --out <name>-with-raw-data.zip`
+  (give `--out` a path outside `<out>`).
 
 ## Working in a web chat
 

@@ -40,6 +40,15 @@ check: checks an STF directory (study.yaml, entity-<name>.{tsv,yaml}) for the
 problems that stop study-wrangler loading it. Read-only. Prints ERROR:/WARNING:
 lines, or JSON with --json, and exits 1 if there are errors.
 
+  stf.py zip <stfDir> [--out <path.zip>] [--with-raw-data]
+
+zip: zips an STF directory for hand-over: study.yaml, the entity files,
+curation-notes.md and curation-spec.json, flat at the top of the zip. Writes
+<stfDir>.zip beside the directory unless --out says otherwise (the zip must not
+be inside the STF directory). --with-raw-data also includes raw-data/, keeping
+its folder, so the zip can be re-rendered on its own. Prints the files it holds.
+The same files in the same order always give the same bytes.
+
   stf.py validate <stfDir> [--engine docker|podman]
   stf.py validate --detect
 
@@ -65,6 +74,7 @@ PROFILE_USAGE = "Usage: stf.py profile <inputDir> [--top N] [--file <name>] [--o
 RENDER_USAGE = "Usage: stf.py render <spec.json> <outDir> [--no-raw-data]"
 PREVIEW_USAGE = "Usage: stf.py preview <spec.json> <n> [--top N] [--bottom N]"
 CHECK_USAGE = "Usage: stf.py check <stfDir> [--json]"
+ZIP_USAGE = "Usage: stf.py zip <stfDir> [--out <path.zip>] [--with-raw-data]"
 VALIDATE_USAGE = "Usage: stf.py validate <stfDir> [--engine docker|podman] | --detect"
 _VALIDATE_EXIT = {"pass": 0, "fail": 1, "error": 2, "load-error": 2}
 _TABLE_NAME = re.compile(r"\.(csv|tsv|txt)$", re.IGNORECASE)
@@ -203,6 +213,18 @@ def cmd_check(args) -> int:
     return 1 if result["errors"] else 0
 
 
+def cmd_zip(args) -> int:
+    from _zip import zip_stf
+
+    if len(args.stfDir) != 1:
+        raise ValueError(ZIP_USAGE)
+    path, names = zip_stf(args.stfDir[0], args.out, with_raw_data=args.with_raw_data)
+    for name in names:
+        print(name)
+    print(f"Wrote {path} ({len(names)} files, {_kb(path.stat().st_size)})")
+    return 0
+
+
 def _count(n: int, word: str) -> str:
     return f"{n} {word}{'' if n == 1 else 's'}"
 
@@ -270,6 +292,13 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("stfDir", nargs="*", metavar="stfDir", help="the STF directory")
     c.add_argument("--json", action="store_true", help="print {errors, warnings} as JSON")
     c.set_defaults(func=cmd_check)
+
+    z = sub.add_parser("zip", usage=ZIP_USAGE.removeprefix("Usage: "),
+                       description="Zip an STF directory for hand-over.")
+    z.add_argument("stfDir", nargs="*", metavar="stfDir", help="the STF directory")
+    z.add_argument("--out", metavar="PATH.zip", help="where to write the zip (default: <stfDir>.zip)")
+    z.add_argument("--with-raw-data", action="store_true", help="also include raw-data/, keeping its folder")
+    z.set_defaults(func=cmd_zip)
 
     v = sub.add_parser("validate", usage=VALIDATE_USAGE.removeprefix("Usage: "),
                        description="Validate an STF directory with study-wrangler in its pinned container.")
