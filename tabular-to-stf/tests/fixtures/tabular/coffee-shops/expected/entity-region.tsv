@@ -1,5 +1,5 @@
-region_id \\ Descriptors	region_name	region_area	region_contact
-R001	South East	London and Home Counties	Ellis Morgan
-R002	South West	West Country	Ryan Patel
-R003	Midlands	Central England	Alex Bennett
-R004	North	Northern England	Jamie Clarke
+region_id \\ Descriptors	region_name	region_area	region_contact	latitude	longitude
+R001	South East	London and Home Counties	Ellis Morgan	51.3500	-0.6000
+R002	South West	West Country	Ryan Patel	50.9500	-3.2000
+R003	Midlands	Central England	Alex Bennett	52.6000	-1.5000
+R004	North	Northern England	Jamie Clarke	53.7500	-1.6000

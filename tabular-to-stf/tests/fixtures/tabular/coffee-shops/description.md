@@ -11,6 +11,13 @@ Files: `regions.csv`, `coffee_shops.csv`, `teams.csv`, `staff.csv`,
 (team > staff member), (menu > menu item) and monthly account. There are 500
 leaf records: 180 staff, 200 menu items and 120 monthly accounts.
 
+The regions (`centroid_lat`, `centroid_long`) and shops (`lat`, `lng`) carry
+fictional but vaguely realistic coordinates, added later to stress-test geo
+handling. They include a swapped lat/long pair, a comma decimal, an
+out-of-range latitude, a hemisphere letter (`1.1398W`), an `n/a` pair, a
+dropped minus sign, and a `long_lease` column whose name looks like a
+longitude.
+
 This dataset is synthetic. ChatGPT wrote it, as if typed into spreadsheets by
 hand, from this prompt:
 
