@@ -64,9 +64,13 @@ must stay allowed (`pypi.org` and similar). Each of the options below includes i
 
 1. Download `veupathdb_database-<version>.zip` from the
    [latest release](../../releases/latest) (the named asset, not "Source code"). Don't unzip it.
-2. In claude.ai, go to Customize → Skills, click **+** → **Create skill** → **Upload a
-   skill**, and choose the zip.
-3. Switch the skill on.
+2. In claude.ai, open the **Skills** tab and use **Add** to upload the zip. Where to find
+   it depends on your account (these names change from time to time):
+   - Personal account: **Plugins** in the left navigation → **Skills** tab → **Add** →
+     **Upload plugin**.
+   - Team account: **Customize** in the left navigation → **Skills** tab → **Add** →
+     **Upload skill**.
+3. Check the skill is switched on.
 
 **2. Allow network access.** Pick the case that matches your account.
 
@@ -139,9 +143,13 @@ if a menu label differs from the steps below.
 
 1. Download `tabular-to-stf-<version>.zip` from the
    [latest release](../../releases/latest) (the named asset, not "Source code"). Don't unzip it.
-2. In claude.ai, go to Customize → Skills, click **+** → **Create skill** → **Upload a
-   skill**, and choose the zip.
-3. Switch the skill on.
+2. In claude.ai, open the **Skills** tab and use **Add** to upload the zip. Where to find
+   it depends on your account (these names change from time to time):
+   - Personal account: **Plugins** in the left navigation → **Skills** tab → **Add** →
+     **Upload plugin**.
+   - Team account: **Customize** in the left navigation → **Skills** tab → **Add** →
+     **Upload skill**.
+3. Check the skill is switched on.
 4. Check network access allows package managers:
    - Personal account: Settings → Capabilities → **Use the internet while making
      files** on, with **Allowed websites** set to "Standard download sites only".
