@@ -1,4 +1,6 @@
+import os
 import shutil
+import time
 import zipfile
 
 import pytest
@@ -51,10 +53,30 @@ def test_unzipped_zip_is_a_valid_stf_directory(stf_dir, tmp_path):
     assert check_stf(out)["errors"] == []
 
 
-def test_same_directory_gives_the_same_bytes(stf_dir, tmp_path):
-    a, _ = zip_stf(stf_dir, tmp_path / "a.zip")
-    b, _ = zip_stf(stf_dir, tmp_path / "b.zip")
+def test_files_keep_their_modified_times(stf_dir):
+    when = time.mktime((2024, 3, 5, 12, 0, 0, 0, 0, -1))
+    os.utime(stf_dir / "study.yaml", (when, when))
+    path, _ = zip_stf(stf_dir)
+    with zipfile.ZipFile(path) as z:
+        assert z.getinfo("study.yaml").date_time == (2024, 3, 5, 12, 0, 0)
+        assert all(i.date_time[0] >= 2024 for i in z.infolist())
+
+
+def test_reproducible_gives_the_same_bytes_for_the_same_files(stf_dir, tmp_path):
+    a, _ = zip_stf(stf_dir, tmp_path / "a.zip", reproducible=True)
+    os.utime(stf_dir / "study.yaml", (1_000_000_000, 1_000_000_000))
+    b, _ = zip_stf(stf_dir, tmp_path / "b.zip", reproducible=True)
     assert a.read_bytes() == b.read_bytes()
+    with zipfile.ZipFile(a) as z:
+        assert {i.date_time for i in z.infolist()} == {(1980, 1, 1, 0, 0, 0)}
+
+
+def test_reproducible_flag_works_on_the_cli_but_is_not_in_help(stf_dir):
+    r = run_cli("zip", str(stf_dir), "--reproducible")
+    assert r.returncode == 0, r.stderr
+    with zipfile.ZipFile(stf_dir.with_name("study-stf.zip")) as z:
+        assert {i.date_time for i in z.infolist()} == {(1980, 1, 1, 0, 0, 0)}
+    assert "reproducible" not in run_cli("zip", "--help").stdout
 
 
 def test_out_path_is_used_and_an_existing_zip_is_replaced(stf_dir, tmp_path):

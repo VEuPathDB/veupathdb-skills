@@ -5,7 +5,7 @@ import shutil
 import zipfile
 from pathlib import Path
 
-# A fixed timestamp makes the archive byte-for-byte reproducible.
+# For reproducible archives (tests) every file gets this time, the earliest a zip can hold.
 _FIXED_TIME = (1980, 1, 1, 0, 0, 0)
 
 
@@ -30,8 +30,12 @@ def _entries(stf_dir: Path, with_raw_data: bool) -> list[tuple[str, Path]]:
     return entries
 
 
-def zip_stf(stf_dir, out_path=None, with_raw_data: bool = False) -> tuple[Path, list[str]]:
+def zip_stf(stf_dir, out_path=None, with_raw_data: bool = False,
+            reproducible: bool = False) -> tuple[Path, list[str]]:
     """Writes the zip and returns (its path, the names it holds).
+
+    Files keep their modified times. With reproducible=True every file gets a fixed
+    time instead, so the same files in the same order give the same bytes.
 
     The default path is <stf_dir>.zip, beside the directory. The zip must not be
     inside the STF directory, because a later render refuses a directory that holds
@@ -54,9 +58,12 @@ def zip_stf(stf_dir, out_path=None, with_raw_data: bool = False) -> tuple[Path, 
     try:
         with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as z:
             for name, path in entries:
-                info = zipfile.ZipInfo(name, _FIXED_TIME)
+                if reproducible:
+                    info = zipfile.ZipInfo(name, _FIXED_TIME)
+                    info.external_attr = 0o644 << 16
+                else:
+                    info = zipfile.ZipInfo.from_file(path, name, strict_timestamps=False)
                 info.compress_type = zipfile.ZIP_DEFLATED
-                info.external_attr = 0o644 << 16
                 with open(path, "rb") as src, z.open(info, "w") as dst:
                     shutil.copyfileobj(src, dst)
         os.replace(tmp, out)

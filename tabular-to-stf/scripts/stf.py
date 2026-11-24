@@ -47,7 +47,6 @@ curation-notes.md and curation-spec.json, flat at the top of the zip. Writes
 <stfDir>.zip beside the directory unless --out says otherwise (the zip must not
 be inside the STF directory). --with-raw-data also includes raw-data/, keeping
 its folder, so the zip can be re-rendered on its own. Prints the files it holds.
-The same files in the same order always give the same bytes.
 
   stf.py validate <stfDir> [--engine docker|podman]
   stf.py validate --detect
@@ -218,7 +217,8 @@ def cmd_zip(args) -> int:
 
     if len(args.stfDir) != 1:
         raise ValueError(ZIP_USAGE)
-    path, names = zip_stf(args.stfDir[0], args.out, with_raw_data=args.with_raw_data)
+    path, names = zip_stf(args.stfDir[0], args.out, with_raw_data=args.with_raw_data,
+                           reproducible=args.reproducible)
     for name in names:
         print(name)
     print(f"Wrote {path} ({len(names)} files, {_kb(path.stat().st_size)})")
@@ -298,6 +298,8 @@ def build_parser() -> argparse.ArgumentParser:
     z.add_argument("stfDir", nargs="*", metavar="stfDir", help="the STF directory")
     z.add_argument("--out", metavar="PATH.zip", help="where to write the zip (default: <stfDir>.zip)")
     z.add_argument("--with-raw-data", action="store_true", help="also include raw-data/, keeping its folder")
+    # Hidden (not in --help or the docs): fixed file times, so equal input gives equal bytes. For tests.
+    z.add_argument("--reproducible", action="store_true", help=argparse.SUPPRESS)
     z.set_defaults(func=cmd_zip)
 
     v = sub.add_parser("validate", usage=VALIDATE_USAGE.removeprefix("Usage: "),
