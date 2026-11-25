@@ -12,6 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Stamp release version into User-Agent
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          f=veupathdb_database/scripts/_version.py
+          sed -i "s/^SKILL_VERSION = .*/SKILL_VERSION = \"$TAG\"/" "$f"
+          grep -qF "SKILL_VERSION = \"$TAG\"" "$f"
       - name: Build skill zip
         env:
           TAG: ${{ github.event.release.tag_name }}
