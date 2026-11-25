@@ -10,6 +10,7 @@ import time
 import httpx
 
 from _sites import SITES, service_url
+from _version import SKILL_VERSION
 
 CACHE_DIR = pathlib.Path.home() / ".cache" / "veupathdb-wdk"
 CACHE_TTL_S = 7 * 24 * 3600
@@ -119,7 +120,11 @@ class Client:
         self.site_id = site_id
         self.token = token
         self.backoff = backoff
-        headers = {"Accept": "application/json", "Content-Type": "application/json"}
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": f"veupathdb-skills/veupathdb_database/{SKILL_VERSION}",
+        }
         if token:
             headers["Cookie"] = f"Authorization={token}"
             headers["Authorization"] = f"Bearer {token}"

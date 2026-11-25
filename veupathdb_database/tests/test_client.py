@@ -347,3 +347,18 @@ def test_live_create_id_dataset(live_client):
 
 
 
+
+
+def test_user_agent_identifies_skill_for_wdk_and_eda():
+    from _client import eda_client
+    from _version import SKILL_VERSION
+
+    seen = []
+
+    def handler(request):
+        seen.append(request.headers["user-agent"])
+        return httpx.Response(200, json={})
+
+    _client(handler).get("/x")
+    eda_client("plasmodb", token="t", transport=httpx.MockTransport(handler), backoff=0).get("/x")
+    assert seen == [f"veupathdb-skills/veupathdb_database/{SKILL_VERSION}"] * 2
